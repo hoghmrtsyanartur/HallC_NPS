@@ -71,7 +71,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction(G4double crys_x, G4double crys_y, G4double crys_z)
+DetectorConstruction::DetectorConstruction()
   :G4VUserDetectorConstruction(),
    fVacuumMater(0),
    fDetectorMater(0), fLogicDetector(0),
@@ -79,8 +79,7 @@ DetectorConstruction::DetectorConstruction(G4double crys_x, G4double crys_y, G4d
    fLogicPMT(0), fLogicWrap(0), fLogicPMTcover(0), fLogicWrapFront(0),
    fPMTmater(0), fWrapMater(0), fPMTcoverMater(0), 
    fFrameMater(0),
-   fWorldMater(0), fPhysiWorld(0),
-  fDetectorMessenger(0)
+   fWorldMater(0), fPhysiWorld(0)
 {
   //Initialized here. Some of the values change later on.
   fWorld_X = 4.5*m;
@@ -90,9 +89,10 @@ DetectorConstruction::DetectorConstruction(G4double crys_x, G4double crys_y, G4d
   gap = 0.5*mm;
   fFrame_length = 20.*mm;
 
-  fCrystal_X = crys_x*mm;
-  fCrystal_Y = crys_y*mm;
-  fCrystal_Z = crys_z*mm;
+  // Size of crystals (can be overrided in DetectorMessenger)
+  fCrystal_X = 20*mm;
+  fCrystal_Y = 20*mm;
+  fCrystal_Z = 200*mm;
   fCrystal_pos_X = 0*mm;//In case there will be PMT someday, 
   fCrystal_pos_Y = 0*mm;
   fCrystal_pos_Z = 0*mm;//initialize first, defined later.
@@ -118,7 +118,8 @@ DetectorConstruction::DetectorConstruction(G4double crys_x, G4double crys_y, G4d
   fPMT_length = 88.*mm;
 
   DefineMaterials();
-    
+
+  // Custom UImessenger for Detector geometry modification
   fDetectorMessenger = new DetectorMessenger(this);
 }
 
@@ -646,8 +647,17 @@ void DetectorConstruction::ConstructSDandField()
 
   void DetectorConstruction::SetDetectorGap(G4double value)
   {
-    gap = value;
+    gap = value*mm;
     G4RunManager::GetRunManager()->ReinitializeGeometry();
+  }
+
+  void DetectorConstruction::SetCrystalSize(G4ThreeVector vector){
+    fCrystal_X = vector.getX();
+    fCrystal_Y = vector.getY();
+    fCrystal_Z = vector.getZ();
+    G4cout << "DetectorConstruction::SetCrystalSize()" << G4endl;
+    G4cout << "- setting crystal size to " << vector.getX() << "x" << vector.getY() << "x" << vector.getZ() << G4endl;
+    G4RunManager::GetRunManager()->ReinitializeGeometry(true);
   }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

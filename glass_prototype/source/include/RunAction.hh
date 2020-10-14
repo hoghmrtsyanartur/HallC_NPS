@@ -49,7 +49,7 @@ class RunAction : public G4UserRunAction
 {
 public:
 
-  RunAction(HistoManager*, G4String, G4int, long, long);
+  RunAction(HistoManager*, G4String);
   virtual ~RunAction();
 
   virtual void BeginOfRunAction(const G4Run*);

@@ -36,6 +36,7 @@
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include "G4ThreeVector.hh"
 #include "globals.hh"
 
 #include "G4SystemOfUnits.hh"//to use cm
@@ -50,7 +51,7 @@ class SensitiveDetector;
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
 public:
-  DetectorConstruction(G4double, G4double, G4double);
+  DetectorConstruction();
   ~DetectorConstruction();
 
 public:
@@ -59,7 +60,8 @@ public:
     
   virtual void ConstructSDandField();
 
-  void SetDetectorGap(G4double value);  
+  void SetDetectorGap(G4double value);
+  void SetCrystalSize(G4ThreeVector vector);
   void PrintParameters();
  
 private:

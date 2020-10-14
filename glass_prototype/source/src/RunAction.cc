@@ -41,13 +41,21 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction(HistoManager* histo, G4String fileName, G4int n, long i, long j)
+RunAction::RunAction(HistoManager* histo, G4String fileName)
   : G4UserRunAction(),
     fHistoManager(histo),
-    fFileName(fileName),
-    fIndex(n), fIndex2(n),
-    fSeed1(i), fSeed2(j), fSeed3(i)
-{}
+    fFileName(fileName)
+{
+	  G4int    index = -1;
+	  G4long   seed1 = G4long(534524575674523);
+	  G4long   seed2 = G4long(526345623452457);
+
+	  fIndex = index;
+	  fIndex2 = index;
+	  fSeed1 = seed1;
+	  fSeed2 = seed2;
+	  fSeed3 = seed1;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -65,7 +73,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   G4Random::setTheSeeds(seeds, index);
   G4Random::showEngineStatus();
 
-G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
     
   //histograms
   fHistoManager->Book(fFileName); 

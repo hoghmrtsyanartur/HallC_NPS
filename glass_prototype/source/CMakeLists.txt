@@ -37,13 +37,15 @@ include(${ROOT_USE_FILE})
 # Locate sources and headers for this project
 #
 include_directories(${PROJECT_SOURCE_DIR}/include 
-                    ${PROJECT_SOURCE_DIR}/shared/include 
+#                   ${PROJECT_SOURCE_DIR}/shared/include 
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc
-                  ${PROJECT_SOURCE_DIR}/shared/src/*.cc)
+#                 ${PROJECT_SOURCE_DIR}/shared/src/*.cc
+                  )
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh
-                  ${PROJECT_SOURCE_DIR}/shared/include/*.hh)
+#                 ${PROJECT_SOURCE_DIR}/shared/include/*.hh
+                  )
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
@@ -57,7 +59,7 @@ target_link_libraries(glass ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} )
 # relies on these scripts being in the current working directory.
 #
 set(glass_SCRIPTS
-    /macros/vis.mac /macros/test.mac 
+    /macros/vis.mac /macros/test.mac /macros/interactive.mac 
   )
 
 foreach(_script ${glass_SCRIPTS})
