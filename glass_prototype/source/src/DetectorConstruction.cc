@@ -370,7 +370,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 
   ////////////////////////////////////////////////////////////////////////
 
-  //Each Crystals Logical Volume
+  // Each Crystals Logical Volume
   G4Box*
     sCrystal = new G4Box("Crystal_sol", 0.5*fCrystal_X, 0.5*fCrystal_Y, 0.5*fCrystal_Z);
 

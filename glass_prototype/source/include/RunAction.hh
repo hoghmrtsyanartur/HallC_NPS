@@ -59,8 +59,10 @@ private:
   HistoManager* fHistoManager;
 
   G4String fFileName;
-  G4int    fIndex, fIndex2;
-  long     fSeed1, fSeed2, fSeed3;
+  // Petr Stepanov: why do we need this?
+  // G4int    fIndex;
+  // G4int    fIndex2;
+  // long     fSeed1, fSeed2, fSeed3;
 
 };
 

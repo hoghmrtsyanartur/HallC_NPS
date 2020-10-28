@@ -85,6 +85,10 @@ EventAction::~EventAction()
 
 void EventAction::BeginOfEventAction(const G4Event* evt)
 {  
+  // Petr Stepanov:
+  // This method is invoked before converting the primary particles to G4Track objects.
+  // A typical use of this method would be to initialize or book histograms for a particular event.
+
   fEvtNb = evt->GetEventID();
   if (fEvtNb%fPrintModulo == 0) 
     //    G4cout << "\n---> Begin of event: " << evtNb << G4endl;

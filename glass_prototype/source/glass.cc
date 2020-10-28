@@ -46,6 +46,8 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
+#include "G4PhysListFactory.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 int main(int argc, char **argv) {
@@ -59,7 +61,10 @@ int main(int argc, char **argv) {
 		ui = new G4UIExecutive(argc, argv);
 	}
 
-	//Construct the default run manager
+  // Choose the Random engine
+  G4Random::setTheEngine(new CLHEP::RanecuEngine);
+
+	// Construct the default run manager
 	G4RunManager *runManager = new G4RunManager;
 
 	// Contruct the detector
@@ -67,27 +72,35 @@ int main(int argc, char **argv) {
 	DetectorConstruction *detector = new DetectorConstruction();
 	runManager->SetUserInitialization(detector);
 
-	// Instantiate local physics list and define physics
+	// PS: Instantiate local physics list and define physics
+	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/physicsDef.html?highlight=g4vuserphysicslists#how-to-specify-physics-processes
 	PhysicsList *phys = new PhysicsList();
 	runManager->SetUserInitialization(phys);
 
-	// What is this?
+  // TODO: Try physics factory instead of ?
+	// G4PhysListFactory factory;
+	// G4VModularPhysicsList* physlist = factory.GetReferencePhysList("FTFP_BERT_EMV");
+	// physlist.SetVerboseLevel(verbose);
+	// runManager->SetUserInitialization(physlist);
+
+	// PS: Object that outputs the ROOT file
 	HistoManager *histoManager = new HistoManager();
 
-	// Choose the Random engine
-	G4Random::setTheEngine(new CLHEP::RanecuEngine);
-
+	// Instantiate General Particle Source (gps)
+	// Save primary particle information in Histogram Manager
 	PrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction(histoManager);
 	runManager->SetUserAction(gen_action);
 
-	// What is this action for?
-	G4String fileNamee = "output_file.txt";
-	RunAction *run_action = new RunAction(histoManager, fileNamee);
+  // PS: custom handling of the beamOn command
+	// PS: initiate random seeds before beamOn, save HistoManager after beamOn?
+	RunAction *run_action = new RunAction(histoManager, "output_file.root");
 	runManager->SetUserAction(run_action);
 
+	// PS: Custom handling of every particle being shot from the gun
 	EventAction *event_action = new EventAction(histoManager);
 	runManager->SetUserAction(event_action);
 
+	// PS: Save output to file for stepping points >= 1
 	SteppingAction *stepping_action = new SteppingAction(detector, event_action, histoManager);
 	runManager->SetUserAction(stepping_action);
 
@@ -102,7 +115,7 @@ int main(int argc, char **argv) {
 		G4String command = "/control/execute ";
 		G4String fileName = argv[1];
 
-		// Initialize visualization
+		// Initialize Manager to process the Macro
 		G4UImanager *uIManager = G4UImanager::GetUIpointer();
 		uIManager->ApplyCommand(command+fileName);
 	}

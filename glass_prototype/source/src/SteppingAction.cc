@@ -75,9 +75,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4VPhysicalVolume* volume_pre 
     = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
 
-  if(
-     volume_pre->GetLogicalVolume()->GetName() == "Crystal_log"
-     ){
+  // Petr Stepanov: "Crystal_log" is crystals' logical volume
+  if(volume_pre->GetLogicalVolume()->GetName() == "Crystal_log"){
 
     G4TouchableHistory* touchable
       = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());

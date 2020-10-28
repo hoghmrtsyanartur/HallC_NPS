@@ -46,15 +46,6 @@ RunAction::RunAction(HistoManager* histo, G4String fileName)
     fHistoManager(histo),
     fFileName(fileName)
 {
-	  G4int    index = -1;
-	  G4long   seed1 = G4long(534524575674523);
-	  G4long   seed2 = G4long(526345623452457);
-
-	  fIndex = index;
-	  fIndex2 = index;
-	  fSeed1 = seed1;
-	  fSeed2 = seed2;
-	  fSeed3 = seed1;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -66,16 +57,21 @@ RunAction::~RunAction()
 
 void RunAction::BeginOfRunAction(const G4Run* aRun)
 { 
-  G4int index = fIndex2;
+  // PS:
+  // This method is invoked before entering the event loop (BeamOn?).
+  // A typical use of this method would be to initialize and/or book histograms for a particular run.
+
+  // PS: added automatic time-based random seeds for each run
   long seeds[2];
-  seeds[0] = fSeed3;
-  seeds[1] = fSeed2;
-  G4Random::setTheSeeds(seeds, index);
+  time_t systime = time(NULL);
+  seeds[0] = (long) systime;
+  seeds[1] = (long) (systime*G4UniformRand());
+  G4Random::setTheSeeds(seeds);
   G4Random::showEngineStatus();
 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
     
-  //histograms
+  // histograms
   fHistoManager->Book(fFileName); 
 }
 
@@ -83,11 +79,14 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
 
 void RunAction::EndOfRunAction(const G4Run* aRun)
 {
+  // PS:
+  // This method is invoked at the very end of the run processing.
+  // It is typically used for a simple analysis of the processed run.
+
   G4int NbOfEvents = aRun->GetNumberOfEvent();
   if (NbOfEvents == 0) return;
 
-  //save histograms
-  //
+  // Save histograms
   fHistoManager->Save();   
 }
 

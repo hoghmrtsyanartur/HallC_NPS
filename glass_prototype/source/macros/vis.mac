@@ -1,5 +1,5 @@
 # Custom message: set crystals' size
-/NPS_Energy_Resolution/det/setCrystalSize 30 20 200 mm
+/NPS_Energy_Resolution/det/setCrystalSize 20 20 400 mm
 
 /run/initialize
 
