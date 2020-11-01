@@ -47,7 +47,7 @@
 #include "PhysicsListMessenger.hh"
 
 // Optical Physics
-// #include "G4OpticalPhysics.hh"
+#include "G4OpticalPhysics.hh"
 
 #include "G4DecayPhysics.hh"
 #include "G4EmStandardPhysics.hh"
@@ -115,7 +115,7 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList(),
   fEmPhysicsList = new G4EmStandardPhysics(verboseLevel);
 
   // Optical Physics
-  // fOptPhysicsList = new G4OpticalPhysics(); 
+  fOptPhysicsList = new G4OpticalPhysics();
 
 }
 
@@ -128,7 +128,7 @@ PhysicsList::~PhysicsList()
   delete fEmPhysicsList;
 
   // Optical Physics
-  // delete fOptPhysicsList; 
+  delete fOptPhysicsList;
 
   delete fStepMaxProcess;
   for(size_t i=0; i<fHadronPhys.size(); i++) {
@@ -143,7 +143,7 @@ void PhysicsList::ConstructParticle()
   fParticleList->ConstructParticle();
 
   // Optical Physics
-  // fOptPhysicsList->ConstructParticle();
+  fOptPhysicsList->ConstructParticle();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
@@ -155,7 +155,7 @@ void PhysicsList::ConstructProcess()
   fParticleList->ConstructProcess();
 
   // Optical Physics
-  // fOptPhysicsList->ConstructProcess();
+  fOptPhysicsList->ConstructProcess();
 
   for(size_t i=0; i<fHadronPhys.size(); i++) {
     fHadronPhys[i]->ConstructProcess();

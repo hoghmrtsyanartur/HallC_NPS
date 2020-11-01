@@ -1,5 +1,3 @@
-/NPS_Energy_Resolution/det/setCrystalSize 20 20 200 mm
-
 /control/verbose 2
 /run/verbose 2
 
@@ -11,7 +9,16 @@
 
 #/process/optical/verbose 2
 
-# Only have scintillation
+#/process/optical/cerenkov/setMaxPhotons 3
+#/process/optical/cerenkov/setMaxBetaChange 10
+
+#/process/optical/scintillation/setExcitationRatio .5
+#/process/optical/scintillation/setByParticleType false
+#/process/optical/scintillation/setTrackInfo      false
+#/process/optical/scintillation/setFiniteRiseTime true
+#/process/optical/scintillation/setStackPhotons   true
+
+# Turn off Cherenkov process
 /process/optical/processActivation Cerenkov      false
 /process/optical/processActivation OpAbsorption  false
 /process/optical/processActivation OpBoundary    false
@@ -20,38 +27,24 @@
 /process/optical/processActivation OpMieHG       false
 /process/optical/processActivation OpWLS         false
 
-#/process/optical/cerenkov/setMaxPhotons 3
-#/process/optical/cerenkov/setMaxBetaChange 10
-
-/process/optical/scintillation/setExcitationRatio .5
-/process/optical/scintillation/setByParticleType false
-/process/optical/scintillation/setTrackInfo      false
-/process/optical/scintillation/setFiniteRiseTime false
-/process/optical/scintillation/setStackPhotons   false
-
+/NPS_Energy_Resolution/det/setCrystalSize 20 20 200 mm
 
 /run/initialize
 
-/vis/open OGL 600x600-0+0
-#/vis/open VRML2FILE
-#/vis/open HepRepFile
-/vis/drawVolume
-/vis/scene/add/trajectories
-#/vis/scene/add/hits
-/vis/scene/endOfEventAction accumulate 1
-
-/process/list
+#/vis/ASCIITree/verbose 10
+#/vis/drawTree
 
 /gps/source/intensity 1
 /gps/particle e-
 /gps/pos/type Point
 /gps/ene/mono 1 GeV
 /gps/pos/centre 0.  0. -2000. mm
-
 /gps/direction 0. 0. 1.
-
 /gps/source/multiplevertex true
 /gps/source/list
+
+
+/process/list
 
 #/run/printProgress 1
 /tracking/verbose 2

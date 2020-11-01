@@ -35,7 +35,7 @@
 #include "PhysicsList.hh"
 
 #include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
+#include "ActionInitialization.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
 #include "SteppingAction.hh"
@@ -47,6 +47,13 @@
 #include "G4UIExecutive.hh"
 
 #include "G4PhysListFactory.hh"
+
+// PS: add optical photon physics
+#include "FTFP_BERT.hh"
+#include "QGSP_BERT.hh"
+#include "G4OpticalPhysics.hh"
+#include "G4EmStandardPhysics_option4.hh"
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -65,7 +72,7 @@ int main(int argc, char **argv) {
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
 
 	// Construct the default run manager
-	G4RunManager *runManager = new G4RunManager;
+	G4RunManager *runManager = new G4RunManager();
 
 	// Contruct the detector
 	// TODO: use TextGeometry to define the detector geometry instead?
@@ -74,55 +81,79 @@ int main(int argc, char **argv) {
 
 	// PS: Instantiate local physics list and define physics
 	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/physicsDef.html?highlight=g4vuserphysicslists#how-to-specify-physics-processes
-	PhysicsList *phys = new PhysicsList();
-	runManager->SetUserInitialization(phys);
+	// PhysicsList *phys = new PhysicsList();
+	// runManager->SetUserInitialization(phys);
 
-  // TODO: Try physics factory instead of ?
+  // PS: Try adding optical physics
+	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsProcess.html?highlight=ftfp_bert#g4opticalphysics-constructor
+  G4VModularPhysicsList* physicsList = new QGSP_BERT();
+  // G4VModularPhysicsList* physicsList = new FTFP_BERT;
+  G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
+  physicsList->RegisterPhysics(opticalPhysics);
+  runManager-> SetUserInitialization(physicsList);
+
+  // PS: Try set up physics using factory
 	// G4PhysListFactory factory;
 	// G4VModularPhysicsList* physlist = factory.GetReferencePhysList("FTFP_BERT_EMV");
 	// physlist.SetVerboseLevel(verbose);
 	// runManager->SetUserInitialization(physlist);
 
 	// PS: Object that outputs the ROOT file
-	HistoManager *histoManager = new HistoManager();
 
 	// Instantiate General Particle Source (gps)
 	// Save primary particle information in Histogram Manager
-	PrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction(histoManager);
-	runManager->SetUserAction(gen_action);
 
-  // PS: custom handling of the beamOn command
+  // Batch session crashes here...
+	// PS: Do we need Action Initialization here??
+
+//  PrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction(histoManager);
+  runManager->SetUserInitialization(new ActionInitialization);
+
+//	runManager->SetUserAction(gen_action);
+
+	// PS: custom handling of the beamOn command
 	// PS: initiate random seeds before beamOn, save HistoManager after beamOn?
-	RunAction *run_action = new RunAction(histoManager, "output_file.root");
-	runManager->SetUserAction(run_action);
+	// RunAction *run_action = new RunAction(histoManager, "output_file.root");
+	// runManager->SetUserAction(run_action);
+
 
 	// PS: Custom handling of every particle being shot from the gun
-	EventAction *event_action = new EventAction(histoManager);
-	runManager->SetUserAction(event_action);
+	// EventAction *event_action = new EventAction(histoManager);
+	// runManager->SetUserAction(event_action);
 
 	// PS: Save output to file for stepping points >= 1
-	SteppingAction *stepping_action = new SteppingAction(detector, event_action, histoManager);
-	runManager->SetUserAction(stepping_action);
+	// SteppingAction *stepping_action = new SteppingAction(detector, event_action, histoManager);
+	// runManager->SetUserAction(stepping_action);
 
-	if (ui) {
-		// Interactive mode
-		G4VisManager* visManager = new G4VisExecutive();
-		visManager->Initialize();
-		ui->SessionStart();
-		delete ui;
-	} else {
-		// Batch mode
-		G4String command = "/control/execute ";
-		G4String fileName = argv[1];
+  // PS: do we need this here? Initialize G4 kernel
+  // runManager->Initialize();
 
-		// Initialize Manager to process the Macro
-		G4UImanager *uIManager = G4UImanager::GetUIpointer();
-		uIManager->ApplyCommand(command+fileName);
-	}
+  // Initialize visualization
+  G4VisManager* visManager = new G4VisExecutive();
+  visManager->Initialize();
+
+  // Get the pointer to the User Interface manager
+  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+
+  if (!ui){
+    // batch mode
+    G4String command = "/control/execute ";
+    G4String fileName = argv[1];
+    UImanager->ApplyCommand(command+fileName);
+  }
+  else {
+    // interactive mode
+    UImanager->ApplyCommand("/control/execute init_vis.mac");
+    ui->SessionStart();
+    delete ui;
+  }
 
 	// Print CPU time
 	timer->Stop();
 	G4cout << "Elapsed time: " << timer->GetRealElapsed() << G4endl;
+
+  delete visManager;
+  delete runManager;
 
 	return 0;
 }

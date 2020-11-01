@@ -29,7 +29,7 @@
 //
 // $Id: PrimaryGeneratorAction.hh 66241 2012-12-13 18:34:42Z gunter $
 //
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -40,10 +40,11 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 #include "G4GeneralParticleSource.hh"
-
-class G4Event;
-class G4GeneralParticleSource;
-class HistoManager;
+#include "HistoManager.hh"
+#include "G4Event.hh"
+//class G4Event;
+//class G4GeneralParticleSource;
+//class HistoManager;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -51,17 +52,17 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
 
-    PrimaryGeneratorAction(HistoManager*);    
+    PrimaryGeneratorAction();
    ~PrimaryGeneratorAction();
 
-  public:
     virtual void GeneratePrimaries(G4Event*);
-  G4GeneralParticleSource* GetParticleGun() {return fParticleGun;};
+
+    G4GeneralParticleSource* GetParticleGun() {
+      return fParticleGun;
+    };
 
   private:
-  G4GeneralParticleSource*  fParticleGun;
-
-  HistoManager* fHistoManager;
+  G4GeneralParticleSource* fParticleGun;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

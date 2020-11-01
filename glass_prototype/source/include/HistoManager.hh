@@ -55,7 +55,7 @@ public:
   HistoManager();
   ~HistoManager();
    
-  void Book(G4String);
+  void Book();
   void FillNtuple();
   void FillNtuple_Flux();
   void Save();
@@ -67,6 +67,8 @@ public:
   void PrintStatistic();
         
 private:
+  G4String fFileName;
+
   TFile*   fRootFile;
   TTree*   fNtuple;
   TTree*   fNtuple_Flux;

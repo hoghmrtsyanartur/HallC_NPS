@@ -41,11 +41,10 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction(HistoManager* histo, G4String fileName)
-  : G4UserRunAction(),
-    fHistoManager(histo),
-    fFileName(fileName)
+RunAction::RunAction()
+ : G4UserRunAction(), fHistoManager(0)
 {
+ fHistoManager = new HistoManager();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -72,7 +71,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
     
   // histograms
-  fHistoManager->Book(fFileName); 
+  fHistoManager->Book();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

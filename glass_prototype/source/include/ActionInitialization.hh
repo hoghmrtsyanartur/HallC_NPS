@@ -23,61 +23,30 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm4/src/PrimaryGeneratorAction.cc
-/// \brief Implementation of the PrimaryGeneratorAction class
 //
-//
-// $Id: PrimaryGeneratorAction.cc 67268 2013-02-13 11:38:40Z ihrivnac $
-//
-// 
+/// \file  ActionInitialization.hh
+/// \brief Definition of the  ActionInitialization class
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "PrimaryGeneratorAction.hh"
+#ifndef ActionInitialization_h
+#define ActionInitialization_h 1
 
-#include "HistoManager.hh"
-
-#include "G4Event.hh"
-#include "G4ParticleTable.hh"
-#include "G4IonTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4Geantino.hh"
-#include "G4SystemOfUnits.hh"
-#include "Randomize.hh"
-
-#include "G4GeneralParticleSource.hh"
+#include "G4VUserActionInitialization.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
- : G4VUserPrimaryGeneratorAction(),
-   fParticleGun(0)
+class  ActionInitialization : public G4VUserActionInitialization
 {
-   fParticleGun = new G4GeneralParticleSource();
-}
+  public:
+    ActionInitialization();
+   ~ActionInitialization();
+
+    virtual void BuildForMaster() const;
+    virtual void Build() const;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction()
-{
-  delete fParticleGun;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-{
-  fParticleGun->GeneratePrimaryVertex(anEvent);
-
-  G4double t = fParticleGun->GetParticleTime();
-  G4int PID = fParticleGun->GetParticleDefinition()->GetPDGEncoding();
-  G4ThreeVector xyz = fParticleGun->GetParticlePosition();
-  G4ThreeVector Pxyz = fParticleGun->GetParticleMomentumDirection();
-  G4double E = fParticleGun->GetParticleEnergy();
-
-  // fHistoManager->SetPrimaryParticle(t, PID, xyz, Pxyz, E);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+#endif

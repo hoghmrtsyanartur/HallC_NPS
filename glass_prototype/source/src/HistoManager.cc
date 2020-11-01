@@ -44,13 +44,14 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HistoManager::HistoManager()
-  :fRootFile(0),
-   fNtuple(0),
-   fNtuple_Flux(0),
-   fPrimaryTime(-999.),
-   fPrimaryPID(-999),
-   fPrimaryEnergy(-999.),
-   fEvtNb(0)
+  : fFileName("output_file.root"),
+    fRootFile(0),
+    fNtuple(0),
+    fNtuple_Flux(0),
+    fPrimaryTime(-999.),
+    fPrimaryPID(-999),
+    fPrimaryEnergy(-999.),
+    fEvtNb(0)
 
 {
   fEdep[MaxNtuple] = {0.};
@@ -78,12 +79,12 @@ HistoManager::~HistoManager()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void HistoManager::Book(G4String fileName)
+void HistoManager::Book()
 { 
   // Creating a tree container to handle histograms and ntuples.
   // This tree is associated to an output file.
   //
-  fRootFile = new TFile(fileName,"RECREATE");
+  fRootFile = new TFile(fFileName,"RECREATE");
   if (! fRootFile) {
     G4cout << " HistoManager::Book :" 
            << " problem creating the ROOT TFile "
@@ -113,7 +114,7 @@ void HistoManager::Book(G4String fileName)
   fNtuple_Flux->Branch("z", fFluxPos_Z, "Postion z per step[9]/D");
 
 
-  G4cout << "\n----> Output file is open in " << fileName << G4endl;
+  G4cout << "\n----> Output file is open in " << fFileName << G4endl;
 
 }
 

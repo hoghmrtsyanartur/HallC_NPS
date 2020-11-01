@@ -23,61 +23,40 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm4/src/PrimaryGeneratorAction.cc
-/// \brief Implementation of the PrimaryGeneratorAction class
 //
-//
-// $Id: PrimaryGeneratorAction.cc 67268 2013-02-13 11:38:40Z ihrivnac $
-//
-// 
+/// \file ActionInitialization.cc
+/// \brief Implementation of the ActionInitialization class
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+#include "ActionInitialization.hh"
+#include "RunAction.hh"
 #include "PrimaryGeneratorAction.hh"
-
-#include "HistoManager.hh"
-
-#include "G4Event.hh"
-#include "G4ParticleTable.hh"
-#include "G4IonTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4Geantino.hh"
-#include "G4SystemOfUnits.hh"
-#include "Randomize.hh"
-
-#include "G4GeneralParticleSource.hh"
+// #include "TrackingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
- : G4VUserPrimaryGeneratorAction(),
-   fParticleGun(0)
+ActionInitialization::ActionInitialization()
+ : G4VUserActionInitialization()
+{ }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+ActionInitialization::~ActionInitialization()
+{ }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ActionInitialization::BuildForMaster() const
 {
-   fParticleGun = new G4GeneralParticleSource();
+  SetUserAction(new RunAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction()
+void ActionInitialization::Build() const
 {
-  delete fParticleGun;
+  SetUserAction(new RunAction);
+  SetUserAction(new PrimaryGeneratorAction);
+  // SetUserAction(new TrackingAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-{
-  fParticleGun->GeneratePrimaryVertex(anEvent);
-
-  G4double t = fParticleGun->GetParticleTime();
-  G4int PID = fParticleGun->GetParticleDefinition()->GetPDGEncoding();
-  G4ThreeVector xyz = fParticleGun->GetParticlePosition();
-  G4ThreeVector Pxyz = fParticleGun->GetParticleMomentumDirection();
-  G4double E = fParticleGun->GetParticleEnergy();
-
-  // fHistoManager->SetPrimaryParticle(t, PID, xyz, Pxyz, E);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
