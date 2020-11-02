@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
   // Choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
 
-	// Construct the default run manager
+	// Create an instance of the G4RunManager class
+  // It controls the flow of the program and manages the event loop(s) within a run
 	G4RunManager *runManager = new G4RunManager();
 
 	// Contruct the detector
@@ -81,16 +82,16 @@ int main(int argc, char **argv) {
 
 	// PS: Instantiate local physics list and define physics
 	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/physicsDef.html?highlight=g4vuserphysicslists#how-to-specify-physics-processes
-	// PhysicsList *phys = new PhysicsList();
-	// runManager->SetUserInitialization(phys);
+  PhysicsList *phys = new PhysicsList();
+  runManager->SetUserInitialization(phys);
 
-  // PS: Try adding optical physics
+  // PS: Try adding optical physics (works)
 	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsProcess.html?highlight=ftfp_bert#g4opticalphysics-constructor
-  G4VModularPhysicsList* physicsList = new QGSP_BERT();
-  // G4VModularPhysicsList* physicsList = new FTFP_BERT;
-  G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
-  physicsList->RegisterPhysics(opticalPhysics);
-  runManager-> SetUserInitialization(physicsList);
+  // G4VModularPhysicsList* physicsList = new QGSP_BERT();
+  // // G4VModularPhysicsList* physicsList = new FTFP_BERT();
+  // G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
+  // physicsList->RegisterPhysics(opticalPhysics);
+  // runManager-> SetUserInitialization(physicsList);
 
   // PS: Try set up physics using factory
 	// G4PhysListFactory factory;
@@ -132,7 +133,8 @@ int main(int argc, char **argv) {
   G4VisManager* visManager = new G4VisExecutive();
   visManager->Initialize();
 
-  // Get the pointer to the User Interface manager
+  // Get the pointer to the User Interface manager (created by runManager)
+  // In order for the user to issue commands to the program
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   if (!ui){
@@ -143,7 +145,7 @@ int main(int argc, char **argv) {
   }
   else {
     // interactive mode
-    UImanager->ApplyCommand("/control/execute init_vis.mac");
+    // UImanager->ApplyCommand("/control/execute init_vis.mac");
     ui->SessionStart();
     delete ui;
   }

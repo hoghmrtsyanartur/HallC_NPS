@@ -2,7 +2,7 @@
 /run/verbose 2
 
 #/testhadr/ListPhysics
-#/testhadr/Physics QBBC
+/testhadr/Physics QBBC
 
 #/physics_lists/select QGSC_BERT_EMZ
 #/physics_lists/factory/addOptical
@@ -20,12 +20,12 @@
 
 # Turn off Cherenkov process
 /process/optical/processActivation Cerenkov      false
-/process/optical/processActivation OpAbsorption  false
-/process/optical/processActivation OpBoundary    false
+/process/optical/processActivation OpAbsorption  true
+/process/optical/processActivation OpBoundary    true
 /process/optical/processActivation Scintillation true
-/process/optical/processActivation OpRayleigh    false
-/process/optical/processActivation OpMieHG       false
-/process/optical/processActivation OpWLS         false
+/process/optical/processActivation OpRayleigh    true
+/process/optical/processActivation OpMieHG       true
+/process/optical/processActivation OpWLS         true
 
 /NPS_Energy_Resolution/det/setCrystalSize 20 20 200 mm
 
