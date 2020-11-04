@@ -52,9 +52,10 @@ const G4int MaxNtuple = 9;
 class HistoManager
 {
 public:
-  HistoManager();
   ~HistoManager();
-   
+  // Singleton
+  static HistoManager* getInstance();
+
   void Book();
   void FillNtuple();
   void FillNtuple_Flux();
@@ -67,6 +68,10 @@ public:
   void PrintStatistic();
         
 private:
+  // Singleton
+  HistoManager();
+  static HistoManager* instance;
+
   G4String fFileName;
 
   TFile*   fRootFile;

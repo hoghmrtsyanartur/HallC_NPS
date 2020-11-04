@@ -44,8 +44,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HistoManager::HistoManager()
-  : fFileName("output_file.root"),
-    fRootFile(0),
+  : fRootFile(0),
     fNtuple(0),
     fNtuple_Flux(0),
     fPrimaryTime(-999.),
@@ -54,6 +53,9 @@ HistoManager::HistoManager()
     fEvtNb(0)
 
 {
+  // PS: hardcode the output filename
+  // TODO: move to special histo messenger?
+  fFileName = "output_file.root";
   fEdep[MaxNtuple] = {0.};
   fOP_sc[MaxNtuple] = {0};
   fOP_ce[MaxNtuple] = {0};
@@ -70,6 +72,15 @@ HistoManager::HistoManager()
   fFluxPos_Z[MaxNtuple] = {0.};
 }
 
+HistoManager* HistoManager::instance = NULL;
+
+HistoManager* HistoManager::getInstance(){
+    if (!instance){
+        instance = new HistoManager;
+    }
+    return instance;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HistoManager::~HistoManager()
@@ -84,8 +95,8 @@ void HistoManager::Book()
   // Creating a tree container to handle histograms and ntuples.
   // This tree is associated to an output file.
   //
-  fRootFile = new TFile(fFileName,"RECREATE");
-  if (! fRootFile) {
+  fRootFile = new TFile(fFileName.c_str(), "RECREATE");
+  if (!fRootFile) {
     G4cout << " HistoManager::Book :" 
            << " problem creating the ROOT TFile "
            << G4endl;

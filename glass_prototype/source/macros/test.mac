@@ -9,6 +9,7 @@
 #must be intiated before /run/initialize
 /testhadr/Physics QBBC
 #
+/NPS_Energy_Resolution/det/setCrystalSize 20 20 200 mm
 /run/initialize
 #
 /process/list

@@ -53,7 +53,7 @@ class HistoManager;
 class EventAction : public G4UserEventAction
 {
 public:
-  EventAction(HistoManager*);
+  EventAction();
   virtual ~EventAction();
 
   virtual void  BeginOfEventAction(const G4Event*);
@@ -63,8 +63,6 @@ public:
   G4int GetEventNb();
     
 private:
-   HistoManager* fHistoManager;
-
   G4int fEvtNb;
 
   G4int fHCHCID;

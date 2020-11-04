@@ -36,10 +36,12 @@
 
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "SteppingAction.hh"
-#include "HistoManager.hh"
+// #include "RunAction.hh"
+// #include "EventAction.hh"
+// #include "SteppingAction.hh"
+
+// PS: 4. Remove Histo Manager
+// #include "HistoManager.hh"
 
 #include "G4Timer.hh"
 #include "G4VisManager.hh"
@@ -53,7 +55,7 @@
 #include "QGSP_BERT.hh"
 #include "G4OpticalPhysics.hh"
 #include "G4EmStandardPhysics_option4.hh"
-
+#include "HistoManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -85,6 +87,9 @@ int main(int argc, char **argv) {
   PhysicsList *phys = new PhysicsList();
   runManager->SetUserInitialization(phys);
 
+	// PS: 5. Replace Physics
+  // runManager->SetUserInitialization(new FTFP_BERT);
+
   // PS: Try adding optical physics (works)
 	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsProcess.html?highlight=ftfp_bert#g4opticalphysics-constructor
   // G4VModularPhysicsList* physicsList = new QGSP_BERT();
@@ -108,7 +113,8 @@ int main(int argc, char **argv) {
 	// PS: Do we need Action Initialization here??
 
   //  PrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction(histoManager);
-  runManager->SetUserInitialization(new ActionInitialization);
+  ActionInitialization* actionInitialization = new ActionInitialization(detector);
+  runManager->SetUserInitialization(actionInitialization);
 
   //	runManager->SetUserAction(gen_action);
 
@@ -127,10 +133,12 @@ int main(int argc, char **argv) {
 	// runManager->SetUserAction(stepping_action);
 
   // PS: do we need this here? Initialize G4 kernel
+  // PS: we don't need this because we communicate with physics messenger?
+  // see dmparticle.cc - also no runManager->Initialize();
   // runManager->Initialize();
 
   // Initialize visualization
-  G4VisManager* visManager = new G4VisExecutive();
+  G4VisManager* visManager = new G4VisExecutive;
   visManager->Initialize();
 
   // Get the pointer to the User Interface manager (created by runManager)

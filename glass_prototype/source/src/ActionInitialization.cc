@@ -31,12 +31,16 @@
 #include "RunAction.hh"
 #include "PrimaryGeneratorAction.hh"
 // #include "TrackingAction.hh"
+#include "EventAction.hh"
+#include "SteppingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization()
+ActionInitialization::ActionInitialization(DetectorConstruction *detector)
  : G4VUserActionInitialization()
-{ }
+{
+  fDetector = detector;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -47,6 +51,7 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::BuildForMaster() const
 {
+  // TODO: check with advanced/amsEcal - do we need this?
   SetUserAction(new RunAction);
 }
 
@@ -54,9 +59,15 @@ void ActionInitialization::BuildForMaster() const
 
 void ActionInitialization::Build() const
 {
-  SetUserAction(new RunAction);
-  SetUserAction(new PrimaryGeneratorAction);
-  // SetUserAction(new TrackingAction);
+  SetUserAction(new PrimaryGeneratorAction());
+  SetUserAction(new RunAction());
+  // PS: Add Event Action and Tracking action here?
+  EventAction *eventAction = new EventAction();
+  SetUserAction(eventAction);
+
+  // PS: Save output to file for stepping points >= 1
+  SteppingAction *steppingAction = new SteppingAction(fDetector, eventAction);
+  SetUserAction(steppingAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

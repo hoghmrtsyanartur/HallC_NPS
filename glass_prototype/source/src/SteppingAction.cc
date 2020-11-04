@@ -45,11 +45,9 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SteppingAction::SteppingAction(DetectorConstruction* det,
-				 EventAction* evt,
-				 HistoManager* histo)
+				 EventAction* evt)
 : G4UserSteppingAction(), 
-  fDetector(det), fEventAction(evt),
-  fHistoManager(histo)                                         
+  fDetector(det), fEventAction(evt)
 { }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -78,8 +76,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   // Petr Stepanov: "Crystal_log" is crystals' logical volume
   if(volume_pre->GetLogicalVolume()->GetName() == "Crystal_log"){
 
-    G4TouchableHistory* touchable
-      = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
+    G4TouchableHistory* touchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
 
     G4VPhysicalVolume* cellPhysical = touchable->GetVolume(2);
     G4int rowNo = cellPhysical->GetCopyNo();//0~2(3) in total
@@ -94,12 +91,12 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
     G4double eDep = aStep->GetTotalEnergyDeposit();
 
     G4int evtNb = fEventAction->GetEventNb();
-    fHistoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
-    fHistoManager->FillNtuple_Flux();
 
+    // PS: 5. Remove Histo Manager
+    // HistoManager* histoManager = HistoManager::getInstance();
+    // histoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
+    // histoManager->FillNtuple_Flux();
   }
-
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
