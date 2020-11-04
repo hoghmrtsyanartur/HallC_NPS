@@ -107,10 +107,10 @@ int main(int argc, char **argv) {
   // Batch session crashes here...
 	// PS: Do we need Action Initialization here??
 
-//  PrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction(histoManager);
+  //  PrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction(histoManager);
   runManager->SetUserInitialization(new ActionInitialization);
 
-//	runManager->SetUserAction(gen_action);
+  //	runManager->SetUserAction(gen_action);
 
 	// PS: custom handling of the beamOn command
 	// PS: initiate random seeds before beamOn, save HistoManager after beamOn?
