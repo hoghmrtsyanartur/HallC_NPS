@@ -143,7 +143,9 @@ void PhysicsList::ConstructParticle()
   fParticleList->ConstructParticle();
 
   // Optical Physics
-  fOptPhysicsList->ConstructParticle();
+//  if (fUseOpticalPhysics){
+//    fOptPhysicsList->ConstructParticle();
+//  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
@@ -155,7 +157,9 @@ void PhysicsList::ConstructProcess()
   fParticleList->ConstructProcess();
 
   // Optical Physics
-  fOptPhysicsList->ConstructProcess();
+  if (fUseOpticalPhysics){
+    fOptPhysicsList->ConstructProcess();
+  }
 
   for(size_t i=0; i<fHadronPhys.size(); i++) {
     fHadronPhys[i]->ConstructProcess();
@@ -170,6 +174,12 @@ void PhysicsList::AddPhysicsList(const G4String& name)
   if (verboseLevel>0) {
     G4cout << "PhysicsList::AddPhysicsList: <" << name << ">" << G4endl;
   }
+  // Account on optical physics
+  if (name == "optical") {
+    fUseOpticalPhysics = true;
+  }
+
+  // Electromagnetic physics
   if (name == "emstandard_opt0") {
 
     delete fEmPhysicsList;
