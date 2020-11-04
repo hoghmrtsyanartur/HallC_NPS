@@ -4,7 +4,8 @@
 /run/verbose 2
 
 #/testhadr/ListPhysics
-#/testhadr/Physics QBBC
+/testhadr/Physics QBBC
+/testhadr/Physics optical
 
 #/physics_lists/select QGSC_BERT_EMZ
 #/physics_lists/factory/addOptical
@@ -13,8 +14,8 @@
 
 # Only have scintillation
 /process/optical/processActivation Cerenkov      false
-/process/optical/processActivation OpAbsorption  false
-/process/optical/processActivation OpBoundary    false
+/process/optical/processActivation OpAbsorption  true
+/process/optical/processActivation OpBoundary    true
 /process/optical/processActivation Scintillation true
 /process/optical/processActivation OpRayleigh    false
 /process/optical/processActivation OpMieHG       false
