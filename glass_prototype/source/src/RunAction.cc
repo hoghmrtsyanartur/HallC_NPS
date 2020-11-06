@@ -35,7 +35,7 @@
 #include "RunAction.hh"
 
 // PS: 4. Remove Histo Manager
-// #include "HistoManager.hh"
+#include "HistoManager.hh"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
@@ -73,8 +73,8 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
     
   // histograms
   // PS: 4. Remove Histo Manager
-  // HistoManager* histoManager = HistoManager::getInstance();
-  // histoManager->Book();
+  HistoManager* histoManager = HistoManager::getInstance();
+  histoManager->Book();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -90,8 +90,8 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 
   // Save histograms
   // PS: 4. Remove Histo Manager
-  // HistoManager* histoManager = HistoManager::getInstance();
-  // histoManager->Save();
+  HistoManager* histoManager = HistoManager::getInstance();
+  histoManager->Save();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

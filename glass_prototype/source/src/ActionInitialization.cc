@@ -60,14 +60,15 @@ void ActionInitialization::BuildForMaster() const
 void ActionInitialization::Build() const
 {
   SetUserAction(new PrimaryGeneratorAction());
+  // Action Events before and after beamOn
   SetUserAction(new RunAction());
-  // PS: Add Event Action and Tracking action here?
-  EventAction *eventAction = new EventAction();
-  SetUserAction(eventAction);
+  // Action invoked before and after every event
+  // EventAction* eventAction = new EventAction();
+  // SetUserAction(new EventAction());
 
   // PS: Save output to file for stepping points >= 1
-  SteppingAction *steppingAction = new SteppingAction(fDetector, eventAction);
-  SetUserAction(steppingAction);
+  // SteppingAction *steppingAction = new SteppingAction(fDetector, eventAction);
+  // SetUserAction(steppingAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -115,7 +115,7 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList(),
   fEmPhysicsList = new G4EmStandardPhysics(verboseLevel);
 
   // Optical Physics
-  fOptPhysicsList = new G4OpticalPhysics();
+  // fOptPhysicsList = new G4OpticalPhysics();
 
 }
 
@@ -157,9 +157,9 @@ void PhysicsList::ConstructProcess()
   fParticleList->ConstructProcess();
 
   // Optical Physics
-  if (fUseOpticalPhysics){
-    fOptPhysicsList->ConstructProcess();
-  }
+//  if (fUseOpticalPhysics){
+//    fOptPhysicsList->ConstructProcess();
+//  }
 
   for(size_t i=0; i<fHadronPhys.size(); i++) {
     fHadronPhys[i]->ConstructProcess();

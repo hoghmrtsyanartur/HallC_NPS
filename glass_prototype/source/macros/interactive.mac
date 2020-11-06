@@ -5,7 +5,7 @@
 
 #/testhadr/ListPhysics
 /testhadr/Physics QBBC
-/testhadr/Physics optical
+#/testhadr/Physics optical
 
 #/physics_lists/select QGSC_BERT_EMZ
 #/physics_lists/factory/addOptical
@@ -13,22 +13,22 @@
 #/process/optical/verbose 2
 
 # Only have scintillation
-/process/optical/processActivation Cerenkov      false
-/process/optical/processActivation OpAbsorption  true
-/process/optical/processActivation OpBoundary    true
-/process/optical/processActivation Scintillation true
-/process/optical/processActivation OpRayleigh    false
-/process/optical/processActivation OpMieHG       false
-/process/optical/processActivation OpWLS         false
+#/process/optical/processActivation Cerenkov      false
+#/process/optical/processActivation OpAbsorption  true
+#/process/optical/processActivation OpBoundary    true
+#/process/optical/processActivation Scintillation true
+#/process/optical/processActivation OpRayleigh    true
+#/process/optical/processActivation OpMieHG       true
+#/process/optical/processActivation OpWLS         true
+
+#/process/optical/scintillation/setExcitationRatio .5
+#/process/optical/scintillation/setByParticleType false
+#/process/optical/scintillation/setTrackInfo      false
+#/process/optical/scintillation/setFiniteRiseTime false
+#/process/optical/scintillation/setStackPhotons   false
 
 #/process/optical/cerenkov/setMaxPhotons 3
 #/process/optical/cerenkov/setMaxBetaChange 10
-
-/process/optical/scintillation/setExcitationRatio .5
-/process/optical/scintillation/setByParticleType false
-/process/optical/scintillation/setTrackInfo      false
-/process/optical/scintillation/setFiniteRiseTime false
-/process/optical/scintillation/setStackPhotons   false
 
 
 /run/initialize
@@ -40,6 +40,8 @@
 /vis/scene/add/trajectories
 #/vis/scene/add/hits
 /vis/scene/endOfEventAction accumulate 1
+
+/vis/viewer/set/viewpointVector -1 -1 1
 
 /process/list
 
