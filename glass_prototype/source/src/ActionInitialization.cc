@@ -33,6 +33,7 @@
 // #include "TrackingAction.hh"
 #include "EventAction.hh"
 #include "SteppingAction.hh"
+#include "HistoManager.hh"
 
 class DetectorConstruction;
 
@@ -54,6 +55,7 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::BuildForMaster() const
 {
+  HistoManager* histoManager = HistoManager::getInstance();
   // PS: this is invoked in Multi-threading mode
   RunAction* runAction = new RunAction();
   SetUserAction(runAction);
@@ -63,6 +65,7 @@ void ActionInitialization::BuildForMaster() const
 
 void ActionInitialization::Build() const
 {
+  HistoManager* histoManager = HistoManager::getInstance();
   // PS: this is invoked in Sequential mode
   PrimaryGeneratorAction* primaryGeneratorAction = new PrimaryGeneratorAction();
   SetUserAction(primaryGeneratorAction);

@@ -40,7 +40,7 @@
 // #include "EventAction.hh"
 // #include "SteppingAction.hh"
 
-#include "HistoManager.hh"
+// #include "HistoManager.hh"
 
 #include "G4Timer.hh"
 #include "G4VisManager.hh"
@@ -73,7 +73,6 @@ int main(int argc, char **argv) {
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
 
   // For some reason it only works here
-  HistoManager* histoManager = HistoManager::getInstance();
 
 	// Create an instance of the G4RunManager class
   // It controls the flow of the program and manages the event loop(s) within a run
