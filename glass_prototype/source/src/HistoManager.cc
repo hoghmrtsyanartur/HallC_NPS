@@ -75,17 +75,24 @@ HistoManager::HistoManager()
 HistoManager* HistoManager::instance = NULL;
 
 HistoManager* HistoManager::getInstance(){
-    if (!instance){
-        instance = new HistoManager;
-    }
-    return instance;
+  if (!instance){
+      instance = new HistoManager;
+  }
+  return instance;
+  // Better approach for singletons
+  // https://stackoverflow.com/questions/20098254/singleton-pattern-destructor-c
+  // static HistoManager* instance = new HistoManager();
+  // return instance;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HistoManager::~HistoManager()
 {
-  if (fRootFile) delete fRootFile;
+  if (fRootFile){
+    delete fRootFile;
+  }
+  G4cout << "Histogram Manager deleted" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

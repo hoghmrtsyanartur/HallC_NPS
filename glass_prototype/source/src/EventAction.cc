@@ -36,8 +36,7 @@
 
 #include "EventAction.hh"
 
-// PS: 4. Remove Histo Manager
-// #include "HistoManager.hh"
+#include "HistoManager.hh"
 
 #include "G4Event.hh"
 
@@ -175,8 +174,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   }   
 
   // HCEnergy
-  // PS: 5. Remove Histo Manager
-  // HistoManager* histoManager = HistoManager::getInstance();
+  HistoManager* histoManager = HistoManager::getInstance();
   for (G4int i=0;i<9;i++)
     {
       B5HadCalorimeterHit* hit = (*hcHC)[i];
@@ -202,11 +200,9 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       G4int PMTcoverOP = PMTChit->GetOPInt();  
       fPMTcoverOP[i] = PMTcoverOP;
 
-      // PS: 5. Remove Histo Manager
-      // histoManager->SetEnergy( i, fHadCalEdep[i], fOP_sc[i], fOP_ce[i], fCrystCoverOP[i], fCrystFrontCoverOP[i], fPMTcoverOP[i]);
+      histoManager->SetEnergy( i, fHadCalEdep[i], fOP_sc[i], fOP_ce[i], fCrystCoverOP[i], fCrystFrontCoverOP[i], fPMTcoverOP[i]);
     }
-  // PS: 5. Remove Histo Manager
-  // histoManager->FillNtuple();
+  histoManager->FillNtuple();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

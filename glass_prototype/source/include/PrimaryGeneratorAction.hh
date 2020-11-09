@@ -40,11 +40,10 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 #include "G4GeneralParticleSource.hh"
-#include "HistoManager.hh"
 #include "G4Event.hh"
 //class G4Event;
 //class G4GeneralParticleSource;
-//class HistoManager;
+// class HistoManager;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

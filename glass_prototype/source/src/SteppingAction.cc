@@ -92,10 +92,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 
     G4int evtNb = fEventAction->GetEventNb();
 
-    // PS: 5. Remove Histo Manager
-    // HistoManager* histoManager = HistoManager::getInstance();
-    // histoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
-    // histoManager->FillNtuple_Flux();
+    HistoManager* histoManager = HistoManager::getInstance();
+    histoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
+    histoManager->FillNtuple_Flux();
   }
 }
 

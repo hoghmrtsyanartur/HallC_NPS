@@ -37,7 +37,7 @@
 #include "PrimaryGeneratorAction.hh"
 
 // PS: 4. Remove Histo Manager
-// #include "HistoManager.hh"
+#include "HistoManager.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleTable.hh"
@@ -77,8 +77,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4double E = fParticleGun->GetParticleEnergy();
 
   // PS: 4. Remove Histo Manager
-  // HistoManager* histoManager = HistoManager::getInstance();
-  // histoManager->SetPrimaryParticle(t, PID, xyz, Pxyz, E);
+  HistoManager* histoManager = HistoManager::getInstance();
+  histoManager->SetPrimaryParticle(t, PID, xyz, Pxyz, E);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

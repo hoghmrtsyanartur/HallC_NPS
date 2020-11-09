@@ -34,14 +34,14 @@
 #include "G4UImanager.hh"
 #include "PhysicsList.hh"
 
-#include "DetectorConstruction.hh"
+#include "DetectorConstructionAna02.hh"
 #include "ActionInitialization.hh"
 // #include "RunAction.hh"
 // #include "EventAction.hh"
 // #include "SteppingAction.hh"
 
 // PS: 4. Remove Histo Manager
-// #include "HistoManager.hh"
+#include "HistoManager.hh"
 
 #include "G4Timer.hh"
 #include "G4VisManager.hh"
@@ -73,12 +73,16 @@ int main(int argc, char **argv) {
   // Choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
 
+  // For some reason it only works here
+  HistoManager* histoManager = HistoManager::getInstance();
+
 	// Create an instance of the G4RunManager class
   // It controls the flow of the program and manages the event loop(s) within a run
 	G4RunManager *runManager = new G4RunManager();
 
 	// Contruct the detector
 	// TODO: use TextGeometry to define the detector geometry instead?
+	// PS: try using the detector construction from AnaEx02
 	DetectorConstruction *detector = new DetectorConstruction();
 	runManager->SetUserInitialization(detector);
 
@@ -88,7 +92,8 @@ int main(int argc, char **argv) {
   runManager->SetUserInitialization(phys);
 
 	// PS: 5. Replace Physics
-  // runManager->SetUserInitialization(new FTFP_BERT);
+  // G4VModularPhysicsList* physicsList = new FTFP_BERT();
+  // runManager->SetUserInitialization(physicsList);
 
   // PS: Try adding optical physics (works)
 	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsProcess.html?highlight=ftfp_bert#g4opticalphysics-constructor
@@ -164,6 +169,7 @@ int main(int argc, char **argv) {
 
   delete visManager;
   delete runManager;
+  delete histoManager;
 
 	return 0;
 }

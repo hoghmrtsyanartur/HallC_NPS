@@ -35,6 +35,7 @@
 
 #include "G4VUserActionInitialization.hh"
 #include "DetectorConstruction.hh"
+//#include "HistoManager.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class  ActionInitialization : public G4VUserActionInitialization
@@ -48,6 +49,7 @@ class  ActionInitialization : public G4VUserActionInitialization
 
   private:
     DetectorConstruction *fDetector;
+//    HistoManager* fHistoManager;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

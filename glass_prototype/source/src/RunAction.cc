@@ -72,7 +72,6 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
     
   // histograms
-  // PS: 4. Remove Histo Manager
   HistoManager* histoManager = HistoManager::getInstance();
   histoManager->Book();
 }

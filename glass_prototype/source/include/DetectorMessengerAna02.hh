@@ -23,61 +23,52 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file DetectorMessengerAna02.hh
+/// \brief Definition of the DetectorMessengerAna02 class
 //
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
+//
+//
+//
 
-#include "ActionInitialization.hh"
-#include "RunAction.hh"
-#include "PrimaryGeneratorAction.hh"
-// #include "TrackingAction.hh"
-#include "EventAction.hh"
-#include "SteppingAction.hh"
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class DetectorConstruction;
+#ifndef DetectorMessengerAna02_h
+#define DetectorMessengerAna02_h 1
+
+#include "globals.hh"
+#include "G4UImessenger.hh"
+
+class DetectorConstructionAna02;
+class G4UIdirectory;
+class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
+class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithoutParameter;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(DetectorConstruction *detector)
- : G4VUserActionInitialization()
+class DetectorMessengerAna02: public G4UImessenger
 {
-  fDetector = detector;
-}
+  public:
+    DetectorMessengerAna02(DetectorConstructionAna02* );
+    virtual ~DetectorMessengerAna02();
+    
+    virtual void SetNewValue(G4UIcommand*, G4String);
+    
+  private:
+    DetectorConstructionAna02* fDetector;
+
+    G4UIdirectory*             fDetDir;
+    G4UIcmdWithAString*        fAbsMaterCmd;
+    G4UIcmdWithAString*        fGapMaterCmd;
+    G4UIcmdWithADoubleAndUnit* fAbsThickCmd;
+    G4UIcmdWithADoubleAndUnit* fGapThickCmd;
+    G4UIcmdWithADoubleAndUnit* fSizeYZCmd;
+    G4UIcmdWithAnInteger*      fNbLayersCmd;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::~ActionInitialization()
-{
-}
+#endif
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
-{
-  // PS: this is invoked in Multi-threading mode
-  RunAction* runAction = new RunAction();
-  SetUserAction(runAction);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::Build() const
-{
-  // PS: this is invoked in Sequential mode
-  PrimaryGeneratorAction* primaryGeneratorAction = new PrimaryGeneratorAction();
-  SetUserAction(primaryGeneratorAction);
-
-  // Action Events before and after beamOn
-  RunAction* runAction = new RunAction();
-  SetUserAction(runAction);
-
-  // Action invoked before and after every event
-  EventAction* eventAction = new EventAction();
-  SetUserAction(eventAction);
-
-  // PS: Save output to file for stepping points >= 1
-  SteppingAction *steppingAction = new SteppingAction(fDetector, eventAction);
-  SetUserAction(steppingAction);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
