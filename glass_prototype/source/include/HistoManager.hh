@@ -66,11 +66,13 @@ public:
   void SetFluxEnergy(G4int, G4int , G4double, G4ThreeVector);
  
   void PrintStatistic();
-        
+
+//  void Destroy();
+
 private:
   // Singleton
   HistoManager();
-  static HistoManager* instance;
+  // static HistoManager* instance;
 
   G4String fFileName;
 

@@ -43,19 +43,43 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+// HistoManager* HistoManager::instance = NULL;
+
+HistoManager* HistoManager::getInstance(){
+//  if (!instance){
+//      instance = new HistoManager();
+//  }
+//  return instance;
+
+  // Better approach for singletons
+  // https://stackoverflow.com/questions/20098254/singleton-pattern-destructor-c
+   static HistoManager instance;
+   return &instance;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+//void HistoManager::Destroy(){
+//  if (instance != 0){
+//    delete instance;
+//    instance = 0;
+//  }
+//}
+
 HistoManager::HistoManager()
-  : fRootFile(0),
+  : fFileName("output_file.root"),
+    fRootFile(0),
     fNtuple(0),
     fNtuple_Flux(0),
     fPrimaryTime(-999.),
     fPrimaryPID(-999),
     fPrimaryEnergy(-999.),
     fEvtNb(0)
-
 {
   // PS: hardcode the output filename
+  // fFileName = "output_file.root";
+
   // TODO: move to special histo messenger?
-  fFileName = "output_file.root";
   fEdep[MaxNtuple] = {0.};
   fOP_sc[MaxNtuple] = {0};
   fOP_ce[MaxNtuple] = {0};
@@ -72,25 +96,19 @@ HistoManager::HistoManager()
   fFluxPos_Z[MaxNtuple] = {0.};
 }
 
-HistoManager* HistoManager::instance = NULL;
-
-HistoManager* HistoManager::getInstance(){
-  if (!instance){
-      instance = new HistoManager;
-  }
-  return instance;
-  // Better approach for singletons
-  // https://stackoverflow.com/questions/20098254/singleton-pattern-destructor-c
-  // static HistoManager* instance = new HistoManager();
-  // return instance;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 HistoManager::~HistoManager()
 {
-  if (fRootFile){
+  if (fRootFile !=0 ){
     delete fRootFile;
+    fRootFile = 0;
+  }
+  if (fNtuple !=0 ){
+    delete fNtuple;
+    fNtuple = 0;
+  }
+  if (fNtuple_Flux !=0 ){
+    delete fNtuple_Flux;
+    fNtuple_Flux = 0;
   }
   G4cout << "Histogram Manager deleted" << G4endl;
 }
@@ -155,7 +173,7 @@ void HistoManager::Save()
   if (! fRootFile) return;
   fRootFile->Write();       // Writing the histograms to the file
   fRootFile->Close();       // and closing the tree (and the file)
-  
+  // delete HistoManager::getInstance();
   G4cout << "\n----> Histograms and ntuples are saved\n" << G4endl;
 }
 

@@ -40,7 +40,6 @@
 // #include "EventAction.hh"
 // #include "SteppingAction.hh"
 
-// PS: 4. Remove Histo Manager
 #include "HistoManager.hh"
 
 #include "G4Timer.hh"
@@ -169,7 +168,6 @@ int main(int argc, char **argv) {
 
   delete visManager;
   delete runManager;
-  delete histoManager;
 
 	return 0;
 }
