@@ -31,7 +31,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "HistoManager.hh"
-#include <TH1D.h>
+//#include <TH1D.h>
 //#include <TFile.h>
 //#include <TTree.h>
 //#include <CLHEP/Units/SystemOfUnits.h>
@@ -43,29 +43,6 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-// HistoManager* HistoManager::instance = NULL;
-
-//HistoManager* HistoManager::getInstance(){
-////  if (!instance){
-////      instance = new HistoManager();
-////  }
-////  return instance;
-//
-//  // Better approach for singletons
-//  // https://stackoverflow.com/questions/20098254/singleton-pattern-destructor-c
-//   static HistoManager instance;
-//   return &instance;
-//}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-//void HistoManager::Destroy(){
-//  if (instance != 0){
-//    delete instance;
-//    instance = 0;
-//  }
-//}
-
 HistoManager::HistoManager()
   : fFileName("output_file.root"),
     fRootFile(0),
@@ -74,60 +51,55 @@ HistoManager::HistoManager()
     fPrimaryTime(-999.),
     fPrimaryPID(-999),
     fPrimaryEnergy(-999.),
-    fEvtNb(0)
+    fEvtNb(0),
+    // PS: use the initializer list for array members (C++11)
+    fEdep {0},
+    fOP_sc {0},
+    fOP_ce {0},
+    fOP_cover {0},
+    fOP_frontcover {0},
+    fOP_pmtcover {0},
+    fPrimaryPos {-999,-999,-999},
+    fPrimaryMom {-999,-999,-999},
+    fFluxEne {0},
+    fFluxPos_X {0},
+    fFluxPos_Y {0},
+    fFluxPos_Z {0}
 {
-  // PS: hardcode the output filename
-  // fFileName = "output_file.root";
-
-  // TODO: move to special histo messenger?
-  fEdep[MaxNtuple] = {0.};
-  fOP_sc[MaxNtuple] = {0};
-  fOP_ce[MaxNtuple] = {0};
-  fOP_cover[MaxNtuple] = {0};
-  fOP_frontcover[MaxNtuple] = {0};
-  fOP_pmtcover[MaxNtuple] = {0};
-
-  fPrimaryPos[3] = {-999.};
-  fPrimaryMom[3] = {-999.};
-
-  fFluxEne[MaxNtuple] = {0.};
-  fFluxPos_X[MaxNtuple] = {0.};
-  fFluxPos_Y[MaxNtuple] = {0.};
-  fFluxPos_Z[MaxNtuple] = {0.};
 }
 
 HistoManager::~HistoManager()
 {
-  if (fRootFile !=0 ){
-    delete fRootFile;
-    fRootFile = 0;
-  }
-  if (fNtuple !=0 ){
-    delete fNtuple;
-    fNtuple = 0;
-  }
-  if (fNtuple_Flux !=0 ){
-    delete fNtuple_Flux;
-    fNtuple_Flux = 0;
-  }
+//  if (fRootFile !=0 ){
+//    delete fRootFile;
+//    fRootFile = 0;
+//  }
+//  if (fNtuple !=0 ){
+//    delete fNtuple;
+//    fNtuple = 0;
+//  }
+//  if (fNtuple_Flux !=0 ){
+//    delete fNtuple_Flux;
+//    fNtuple_Flux = 0;
+//  }
   G4cout << "Histogram Manager deleted" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void HistoManager::Book()
-{ 
+{
   // Creating a tree container to handle histograms and ntuples.
   // This tree is associated to an output file.
   //
   fRootFile = new TFile(fFileName.c_str(), "RECREATE");
   if (!fRootFile) {
-    G4cout << " HistoManager::Book :" 
+    G4cout << " HistoManager::Book :"
            << " problem creating the ROOT TFile "
            << G4endl;
     return;
   }
-  
+
   fNtuple = new TTree("t","Energy deposition and OP in crystas");
   fNtuple->Branch("edep", fEdep, "energy_deposition[9]/D");
   fNtuple->Branch("sc", fOP_sc, "scintillated OP[9]/I");
@@ -169,7 +141,7 @@ void HistoManager::FillNtuple_Flux()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void HistoManager::Save()
-{ 
+{
   if (! fRootFile) return;
   fRootFile->Write();       // Writing the histograms to the file
   fRootFile->Close();       // and closing the tree (and the file)

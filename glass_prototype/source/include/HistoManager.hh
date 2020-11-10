@@ -59,8 +59,6 @@ class HistoManager {
 public:
   HistoManager();
   ~HistoManager();
-  // Singleton
-  // static HistoManager* getInstance();
 
   void Book();
   void FillNtuple();
@@ -70,20 +68,22 @@ public:
   void SetPrimaryParticle(G4double, G4int, G4ThreeVector, G4ThreeVector, G4double);
   void SetEnergy(G4int, G4double, G4int, G4int, G4int, G4int, G4int);
   void SetFluxEnergy(G4int, G4int , G4double, G4ThreeVector);
- 
+
   void PrintStatistic();
 
-//  void Destroy();
-
 private:
-  // Singleton
-  // static HistoManager* instance;
+
 
   G4String fFileName;
 
   TFile*   fRootFile;
   TTree*   fNtuple;
   TTree*   fNtuple_Flux;
+
+  G4double fPrimaryTime;
+  G4int    fPrimaryPID;
+  G4double fPrimaryEnergy;
+  G4int    fEvtNb;
 
   G4double fEdep[MaxNtuple];
   G4int    fOP_sc[MaxNtuple];
@@ -92,13 +92,9 @@ private:
   G4int    fOP_frontcover[MaxNtuple];
   G4int    fOP_pmtcover[MaxNtuple];
 
-  G4double fPrimaryTime;
-  G4int    fPrimaryPID;
   G4double fPrimaryPos[3];
   G4double fPrimaryMom[3];
-  G4double fPrimaryEnergy;
 
-  G4int    fEvtNb;
   G4double fFluxEne[MaxNtuple];
   G4double fFluxPos_X[MaxNtuple];
   G4double fFluxPos_Y[MaxNtuple];

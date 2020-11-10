@@ -86,7 +86,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 
     G4int evtNb = fEventAction->GetEventNb();
 
-//    HistoManager* histoManager = HistoManager::getInstance();
     fHistoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
     fHistoManager->FillNtuple_Flux();
   }

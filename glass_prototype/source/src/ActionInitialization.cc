@@ -32,14 +32,14 @@
 #include "PrimaryGeneratorAction.hh"
 #include "EventAction.hh"
 #include "SteppingAction.hh"
-//#include "HistoManager.hh"
+#include "HistoManager.hh"
 
 class DetectorConstruction;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(DetectorConstruction *detector, HistoManager* histoManager)
- : G4VUserActionInitialization(), fDetector(detector), fHistoManager(histoManager)
+ActionInitialization::ActionInitialization(DetectorConstruction *detector)
+ : G4VUserActionInitialization(), fDetector(detector)
 {
 }
 
@@ -54,8 +54,8 @@ ActionInitialization::~ActionInitialization()
 void ActionInitialization::BuildForMaster() const
 {
   // PS: this is invoked in Multi-threading mode
-//  HistoManager* histoManager = new HistoManager();
-  RunAction* runAction = new RunAction(fHistoManager);
+  HistoManager* histoManager = new HistoManager();
+  RunAction* runAction = new RunAction(histoManager);
   SetUserAction(runAction);
 }
 
@@ -64,22 +64,22 @@ void ActionInitialization::BuildForMaster() const
 void ActionInitialization::Build() const
 {
   // PS: this is invoked in Sequential mode
-//  HistoManager* histoManager = new HistoManager();
+  HistoManager* histoManager = new HistoManager();
 
   // General Particle Source
-  PrimaryGeneratorAction* primaryGeneratorAction = new PrimaryGeneratorAction(fHistoManager);
+  PrimaryGeneratorAction* primaryGeneratorAction = new PrimaryGeneratorAction(histoManager);
   SetUserAction(primaryGeneratorAction);
 
   // Action Events before and after beamOn
-  RunAction* runAction = new RunAction(fHistoManager);
+  RunAction* runAction = new RunAction(histoManager);
   SetUserAction(runAction);
 
   // Action invoked before and after every event
-  EventAction* eventAction = new EventAction(fHistoManager);
+  EventAction* eventAction = new EventAction(histoManager);
   SetUserAction(eventAction);
 
   // PS: Save output to file for stepping points >= 1
-  SteppingAction *steppingAction = new SteppingAction(fHistoManager, fDetector, eventAction);
+  SteppingAction *steppingAction = new SteppingAction(histoManager, fDetector, eventAction);
   SetUserAction(steppingAction);
 }
 

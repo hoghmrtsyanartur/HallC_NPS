@@ -35,13 +35,13 @@
 
 #include "G4VUserActionInitialization.hh"
 #include "DetectorConstruction.hh"
-#include "HistoManager.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class  ActionInitialization : public G4VUserActionInitialization
 {
   public:
-    ActionInitialization(DetectorConstruction *detector, HistoManager* histoManager);
+    ActionInitialization(DetectorConstruction *detector);
    ~ActionInitialization();
 
     virtual void BuildForMaster() const;
@@ -49,7 +49,6 @@ class  ActionInitialization : public G4VUserActionInitialization
 
   private:
     DetectorConstruction *fDetector;
-    HistoManager* fHistoManager;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

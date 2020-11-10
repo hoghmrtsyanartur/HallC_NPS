@@ -37,7 +37,7 @@
 #include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
 
-#include "HistoManager.hh"
+//#include "HistoManager.hh"
 //#include "DetectorConstructionAna02.hh"
 #include "ActionInitialization.hh"
 #include "G4VisManager.hh"
@@ -48,7 +48,7 @@
 //#include "G4PhysListFactory.hh"
 
 // PS: add optical photon physics
-//#include "FTFP_BERT.hh"
+#include "FTFP_BERT.hh"
 //#include "G4OpticalPhysics.hh"
 //#include "QGSP_BERT.hh"
 //#include "G4EmStandardPhysics_option4.hh"
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   PhysicsList *phys = new PhysicsList();
   runManager->SetUserInitialization(phys);
 
-	// PS: 5. Replace Physics
+  // PS: 5. Replace Physics
   // G4VModularPhysicsList* physicsList = new FTFP_BERT();
   // runManager->SetUserInitialization(physicsList);
 
@@ -111,9 +111,8 @@ int main(int argc, char **argv) {
 
   // Batch session crashes here...
 	// PS: Do we need Action Initialization here?
-  HistoManager* histoManager = new HistoManager();
 
-  ActionInitialization* actionInitialization = new ActionInitialization(detector, histoManager);
+  ActionInitialization* actionInitialization = new ActionInitialization(detector);
   runManager->SetUserInitialization(actionInitialization);
 
   // PS: why we not initialize the Run Manager here?
