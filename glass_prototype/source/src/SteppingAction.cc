@@ -34,20 +34,14 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "SteppingAction.hh"
-
-#include "DetectorConstruction.hh"
-#include "EventAction.hh"
-#include "HistoManager.hh"
-
 #include "G4Step.hh"
 #include "G4TouchableHistory.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SteppingAction::SteppingAction(DetectorConstruction* det,
-				 EventAction* evt)
+SteppingAction::SteppingAction(HistoManager* histoManager, DetectorConstruction* det, EventAction* evt)
 : G4UserSteppingAction(), 
-  fDetector(det), fEventAction(evt)
+  fHistoManager(histoManager), fDetector(det), fEventAction(evt)
 { }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -92,9 +86,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 
     G4int evtNb = fEventAction->GetEventNb();
 
-    HistoManager* histoManager = HistoManager::getInstance();
-    histoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
-    histoManager->FillNtuple_Flux();
+//    HistoManager* histoManager = HistoManager::getInstance();
+    fHistoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
+    fHistoManager->FillNtuple_Flux();
   }
 }
 

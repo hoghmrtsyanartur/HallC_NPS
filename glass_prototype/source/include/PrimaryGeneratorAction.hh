@@ -38,21 +38,17 @@
 #define PrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
-#include "globals.hh"
-#include "G4GeneralParticleSource.hh"
 #include "G4Event.hh"
-//class G4Event;
-//class G4GeneralParticleSource;
-// class HistoManager;
+#include "G4GeneralParticleSource.hh"
+#include "HistoManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-
-    PrimaryGeneratorAction();
-   ~PrimaryGeneratorAction();
+    PrimaryGeneratorAction(HistoManager* histoManager);
+    ~PrimaryGeneratorAction();
 
     virtual void GeneratePrimaries(G4Event*);
 
@@ -61,7 +57,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     };
 
   private:
-  G4GeneralParticleSource* fParticleGun;
+    HistoManager* fHistoManager;
+    G4GeneralParticleSource* fParticleGun;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

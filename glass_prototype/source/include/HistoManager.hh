@@ -34,14 +34,20 @@
 #define HistoManager_h 1
 
 #include "globals.hh"
-
 #include "G4ThreeVector.hh"
+
+// Ignoring warning shadow messages (doiPETAnalysis.hh)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include "TFile.h"
+#include "TTree.h"
+#pragma GCC diagnostic pop
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class TFile;
-class TTree;
-class TH1D;
+//class TFile;
+//class TTree;
+//class TH1D;
 
 const G4int MaxHisto = 4;
 const G4int MaxNtuple = 9;
@@ -49,12 +55,12 @@ const G4int MaxNtuple = 9;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class HistoManager
-{
+class HistoManager {
 public:
+  HistoManager();
   ~HistoManager();
   // Singleton
-  static HistoManager* getInstance();
+  // static HistoManager* getInstance();
 
   void Book();
   void FillNtuple();
@@ -71,7 +77,6 @@ public:
 
 private:
   // Singleton
-  HistoManager();
   // static HistoManager* instance;
 
   G4String fFileName;

@@ -33,18 +33,13 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "RunAction.hh"
-
-// PS: 4. Remove Histo Manager
-#include "HistoManager.hh"
-
-#include "G4Run.hh"
-#include "G4RunManager.hh"
-#include "G4UnitsTable.hh"
+#include "globals.hh"
+#include "Randomize.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction()
- : G4UserRunAction()
+RunAction::RunAction(HistoManager* histoManager)
+ : G4UserRunAction(), fHistoManager(histoManager)
 {
 }
 
@@ -71,9 +66,8 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
     
-  // histograms
-  HistoManager* histoManager = HistoManager::getInstance();
-  histoManager->Book();
+  // Instantiate histograms
+  fHistoManager->Book();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -88,9 +82,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   if (NbOfEvents == 0) return;
 
   // Save histograms
-  // PS: 4. Remove Histo Manager
-  HistoManager* histoManager = HistoManager::getInstance();
-  histoManager->Save();
+  fHistoManager->Save();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

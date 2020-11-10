@@ -39,30 +39,25 @@
 
 #include "G4UserEventAction.hh"
 #include "globals.hh"
-
-//to compilable in cc-in2p3
-#include <string>
 #include <vector>
-
-#include "G4ThreeVector.hh"
-
-class HistoManager;
+#include "HistoManager.hh"
+#include "G4Event.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class EventAction : public G4UserEventAction
 {
 public:
-  EventAction();
+  EventAction(HistoManager* histoManager);
   virtual ~EventAction();
 
-  virtual void  BeginOfEventAction(const G4Event*);
-  virtual void    EndOfEventAction(const G4Event*);
+  virtual void  BeginOfEventAction(const G4Event* event);
+  virtual void    EndOfEventAction(const G4Event* event);
 
-public:
   G4int GetEventNb();
     
 private:
+  HistoManager* fHistoManager;
   G4int fEvtNb;
 
   G4int fHCHCID;
@@ -79,7 +74,7 @@ private:
   G4int fPMTcoverHCID;
   std::vector<G4int> fPMTcoverOP;
 
-   G4int     fPrintModulo;                             
+  G4int     fPrintModulo;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

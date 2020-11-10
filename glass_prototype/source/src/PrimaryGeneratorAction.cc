@@ -35,26 +35,15 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PrimaryGeneratorAction.hh"
-
-// PS: 4. Remove Histo Manager
-#include "HistoManager.hh"
-
-#include "G4Event.hh"
-#include "G4ParticleTable.hh"
-#include "G4IonTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4Geantino.hh"
-#include "G4SystemOfUnits.hh"
+#include "globals.hh"
 #include "Randomize.hh"
-
-#include "G4GeneralParticleSource.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
- : G4VUserPrimaryGeneratorAction()
+PrimaryGeneratorAction::PrimaryGeneratorAction(HistoManager* histoManager)
+ : G4VUserPrimaryGeneratorAction(), fHistoManager(histoManager)
 {
-   fParticleGun = new G4GeneralParticleSource();
+  fParticleGun = new G4GeneralParticleSource();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -76,9 +65,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4ThreeVector Pxyz = fParticleGun->GetParticleMomentumDirection();
   G4double E = fParticleGun->GetParticleEnergy();
 
-  // PS: 4. Remove Histo Manager
-  HistoManager* histoManager = HistoManager::getInstance();
-  histoManager->SetPrimaryParticle(t, PID, xyz, Pxyz, E);
+  fHistoManager->SetPrimaryParticle(t, PID, xyz, Pxyz, E);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

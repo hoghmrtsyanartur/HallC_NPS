@@ -30,12 +30,12 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include <TH1D.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <CLHEP/Units/SystemOfUnits.h>
-
 #include "HistoManager.hh"
+#include <TH1D.h>
+//#include <TFile.h>
+//#include <TTree.h>
+//#include <CLHEP/Units/SystemOfUnits.h>
+
 #include "G4UnitsTable.hh"
 
 #include "G4SystemOfUnits.hh"
@@ -45,17 +45,17 @@
 
 // HistoManager* HistoManager::instance = NULL;
 
-HistoManager* HistoManager::getInstance(){
-//  if (!instance){
-//      instance = new HistoManager();
-//  }
-//  return instance;
-
-  // Better approach for singletons
-  // https://stackoverflow.com/questions/20098254/singleton-pattern-destructor-c
-   static HistoManager instance;
-   return &instance;
-}
+//HistoManager* HistoManager::getInstance(){
+////  if (!instance){
+////      instance = new HistoManager();
+////  }
+////  return instance;
+//
+//  // Better approach for singletons
+//  // https://stackoverflow.com/questions/20098254/singleton-pattern-destructor-c
+//   static HistoManager instance;
+//   return &instance;
+//}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

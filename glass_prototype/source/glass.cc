@@ -29,32 +29,29 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include "G4Timer.hh"
 #include "G4UIExecutive.hh"
+#include "Randomize.hh"
 #include "G4RunManager.hh"
-#include "G4UImanager.hh"
+
+#include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
 
-#include "DetectorConstructionAna02.hh"
+#include "HistoManager.hh"
+//#include "DetectorConstructionAna02.hh"
 #include "ActionInitialization.hh"
-// #include "RunAction.hh"
-// #include "EventAction.hh"
-// #include "SteppingAction.hh"
-
-// #include "HistoManager.hh"
-
-#include "G4Timer.hh"
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
-#include "G4UIExecutive.hh"
+#include "G4UImanager.hh"
+//#include "G4UIExecutive.hh"
 
-#include "G4PhysListFactory.hh"
+//#include "G4PhysListFactory.hh"
 
 // PS: add optical photon physics
-#include "FTFP_BERT.hh"
-#include "QGSP_BERT.hh"
-#include "G4OpticalPhysics.hh"
-#include "G4EmStandardPhysics_option4.hh"
-#include "HistoManager.hh"
+//#include "FTFP_BERT.hh"
+//#include "G4OpticalPhysics.hh"
+//#include "QGSP_BERT.hh"
+//#include "G4EmStandardPhysics_option4.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -113,35 +110,17 @@ int main(int argc, char **argv) {
 	// Save primary particle information in Histogram Manager
 
   // Batch session crashes here...
-	// PS: Do we need Action Initialization here??
+	// PS: Do we need Action Initialization here?
+  HistoManager* histoManager = new HistoManager();
 
-  //  PrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction(histoManager);
-  ActionInitialization* actionInitialization = new ActionInitialization(detector);
+  ActionInitialization* actionInitialization = new ActionInitialization(detector, histoManager);
   runManager->SetUserInitialization(actionInitialization);
 
-  //	runManager->SetUserAction(gen_action);
-
-	// PS: custom handling of the beamOn command
-	// PS: initiate random seeds before beamOn, save HistoManager after beamOn?
-	// RunAction *run_action = new RunAction(histoManager, "output_file.root");
-	// runManager->SetUserAction(run_action);
-
-
-	// PS: Custom handling of every particle being shot from the gun
-	// EventAction *event_action = new EventAction(histoManager);
-	// runManager->SetUserAction(event_action);
-
-	// PS: Save output to file for stepping points >= 1
-	// SteppingAction *stepping_action = new SteppingAction(detector, event_action, histoManager);
-	// runManager->SetUserAction(stepping_action);
-
-  // PS: do we need this here? Initialize G4 kernel
-  // PS: we don't need this because we communicate with physics messenger?
-  // see dmparticle.cc - also no runManager->Initialize();
+  // PS: why we not initialize the Run Manager here?
   // runManager->Initialize();
 
   // Initialize visualization
-  G4VisManager* visManager = new G4VisExecutive;
+  G4VisManager* visManager = new G4VisExecutive();
   visManager->Initialize();
 
   // Get the pointer to the User Interface manager (created by runManager)
