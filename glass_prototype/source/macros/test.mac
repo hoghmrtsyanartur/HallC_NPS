@@ -6,6 +6,7 @@
 
 # Refer to TestEm9 20171019
 /testhadr/Physics QBBC
+/testhadr/Physics optical
 
 /NPS_Energy_Resolution/det/setCrystalSize 20 20 200 mm
 /run/initialize
@@ -41,4 +42,4 @@
 ################
 #
 /run/printProgress 1
-/run/beamOn 25
+/run/beamOn 1

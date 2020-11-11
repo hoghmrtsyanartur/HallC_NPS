@@ -78,7 +78,9 @@ void B5HadCalorimeterSD::Initialize(G4HCofThisEvent* hce)
 G4bool B5HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
   G4double edep = step->GetTotalEnergyDeposit();
-  if (edep==0.) return true;
+  if (edep==0.){
+    return true;
+  }
     
   G4TouchableHistory* touchable
     = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
