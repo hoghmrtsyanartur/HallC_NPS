@@ -660,5 +660,9 @@ void DetectorConstruction::ConstructSDandField()
     G4RunManager::GetRunManager()->ReinitializeGeometry(true);
   }
 
+  G4ThreeVector* DetectorConstruction::GetCrystalSize(){
+    return new G4ThreeVector(fCrystal_X,fCrystal_Y,fCrystal_Z);
+  }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

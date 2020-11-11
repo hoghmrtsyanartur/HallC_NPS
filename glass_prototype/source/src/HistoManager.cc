@@ -37,9 +37,12 @@
 //#include <CLHEP/Units/SystemOfUnits.h>
 
 #include "G4UnitsTable.hh"
+#include "TString.h"
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4RunManager.hh"
+#include "DetectorConstruction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -66,6 +69,17 @@ HistoManager::HistoManager()
     fFluxPos_Y {0},
     fFluxPos_Z {0}
 {
+  // PS: set output filename as "ene_edep_res_x_20mm_y_20mm_z_200mm.root"
+  // We're getting crystal ize from the DetectorConstruction
+  DetectorConstruction* detectorConstruction = (DetectorConstruction*) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  if (detectorConstruction != NULL){
+    G4ThreeVector* vector = detectorConstruction->GetCrystalSize();
+    G4int x = vector->getX();
+    G4int y = vector->getY();
+    G4int z = vector->getZ();
+    TString fileName = TString::Format("ene_edep_res_x_%dmm_y_%dmm_z_%dmm.root", x, y, z);
+    fFileName = fileName.Data();
+  }
 }
 
 HistoManager::~HistoManager()
@@ -98,6 +112,10 @@ void HistoManager::Book()
            << " problem creating the ROOT TFile "
            << G4endl;
     return;
+  } else {
+    G4cout << " HistoManager::Book :"
+           << " created output file \"" << fFileName.c_str() << "\""
+           << G4endl;
   }
 
   fNtuple = new TTree("t","Energy deposition and OP in crystas");
@@ -145,7 +163,6 @@ void HistoManager::Save()
   if (! fRootFile) return;
   fRootFile->Write();       // Writing the histograms to the file
   fRootFile->Close();       // and closing the tree (and the file)
-  // delete HistoManager::getInstance();
   G4cout << "\n----> Histograms and ntuples are saved\n" << G4endl;
 }
 

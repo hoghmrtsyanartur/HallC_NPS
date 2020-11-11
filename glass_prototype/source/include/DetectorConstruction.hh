@@ -63,6 +63,7 @@ public:
 
   void SetDetectorGap(G4double value);
   void SetCrystalSize(G4ThreeVector vector);
+  G4ThreeVector* GetCrystalSize();
   void PrintParameters();
  
 private:
