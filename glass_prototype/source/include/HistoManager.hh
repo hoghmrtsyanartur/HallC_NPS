@@ -45,6 +45,9 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+// Forward Declaration of Messenger
+class HistoManagerMessenger;
+
 //class TFile;
 //class TTree;
 //class TH1D;
@@ -71,10 +74,12 @@ public:
 
   void PrintStatistic();
 
+  G4String getFileNamePattern();
+  void setFileNamePattern(G4String fileNamePattern);
 private:
 
-
-  G4String fFileName;
+  HistoManagerMessenger* fHistoManagerMessenger;
+  G4String fFileNamePattern;
 
   TFile*   fRootFile;
   TTree*   fNtuple;

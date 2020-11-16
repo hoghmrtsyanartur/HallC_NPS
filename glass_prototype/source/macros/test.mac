@@ -6,9 +6,11 @@
 
 # Refer to TestEm9 20171019
 /testhadr/Physics QBBC
-/testhadr/Physics optical
+#/testhadr/Physics optical
 
 /NPS_Energy_Resolution/det/setCrystalSize 20 20 200 mm
+/histoManager/setOutputFileNamePattern output_x_%dmm_y_%dmm_z_%dmm_%.1fGeV.root
+
 /run/initialize
 
 /process/list

@@ -43,11 +43,15 @@
 #include "G4PhysicalConstants.hh"
 #include "G4RunManager.hh"
 #include "DetectorConstruction.hh"
-
+#include "PrimaryGeneratorAction.hh"
+#include "HistoManagerMessenger.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4GeneralParticleSource.hh"
+#include "G4SingleParticleSource.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HistoManager::HistoManager()
-  : fFileName("output_file.root"),
+  : fFileNamePattern("file_x_%dmm_y_%dmm_z_%dmm_%.1fGeV.root"),
     fRootFile(0),
     fNtuple(0),
     fNtuple_Flux(0),
@@ -69,17 +73,8 @@ HistoManager::HistoManager()
     fFluxPos_Y {0},
     fFluxPos_Z {0}
 {
-  // PS: set output filename as "ene_edep_res_x_20mm_y_20mm_z_200mm.root"
-  // We're getting crystal ize from the DetectorConstruction
-  DetectorConstruction* detectorConstruction = (DetectorConstruction*) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-  if (detectorConstruction != NULL){
-    G4ThreeVector* vector = detectorConstruction->GetCrystalSize();
-    G4int x = vector->getX();
-    G4int y = vector->getY();
-    G4int z = vector->getZ();
-    TString fileName = TString::Format("ene_edep_res_x_%dmm_y_%dmm_z_%dmm.root", x, y, z);
-    fFileName = fileName.Data();
-  }
+  // Custom UImessenger for Detector geometry modification
+  fHistoManagerMessenger = new HistoManagerMessenger(this);
 }
 
 HistoManager::~HistoManager()
@@ -103,10 +98,30 @@ HistoManager::~HistoManager()
 
 void HistoManager::Book()
 {
-  // Creating a tree container to handle histograms and ntuples.
-  // This tree is associated to an output file.
-  //
-  fRootFile = new TFile(fFileName.c_str(), "RECREATE");
+  // Construct filename
+  G4int x = 0;
+  G4int y = 0;
+  G4int z = 0;
+  DetectorConstruction* detectorConstruction = (DetectorConstruction*) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  if (detectorConstruction != NULL){
+    G4ThreeVector* vector = detectorConstruction->GetCrystalSize();
+    x = vector->getX();
+    y = vector->getY();
+    z = vector->getZ();
+  }
+  G4double gunEnergy = 0;
+  PrimaryGeneratorAction* primaryGeneratorAction = (PrimaryGeneratorAction*) G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+  if (primaryGeneratorAction != NULL){
+    // PS: we're setting energy via "/gps/ene/mono". Therefore energy is saved
+    // in G4SingleParticleSource (check in G4GeneralParticcleSourcceMessenger) which is a member ofG4GeneralParticleSource
+    G4GeneralParticleSource* particleGun = primaryGeneratorAction->GetParticleGun();
+    G4SingleParticleSource* particleSource = particleGun->GetCurrentSource();
+    gunEnergy = particleSource->GetEneDist()->GetMonoEnergy();
+    gunEnergy /= 1E3; // convert to GeVs
+  }
+  TString fileName = TString::Format(fFileNamePattern.c_str(), x, y, z, gunEnergy);
+
+  fRootFile = new TFile(fileName.Data(), "RECREATE");
   if (!fRootFile) {
     G4cout << " HistoManager::Book :"
            << " problem creating the ROOT TFile "
@@ -114,7 +129,7 @@ void HistoManager::Book()
     return;
   } else {
     G4cout << " HistoManager::Book :"
-           << " created output file \"" << fFileName.c_str() << "\""
+           << " created output file \"" << fileName.Data() << "\""
            << G4endl;
   }
 
@@ -140,7 +155,7 @@ void HistoManager::Book()
   fNtuple_Flux->Branch("z", fFluxPos_Z, "Postion z per step[9]/D");
 
 
-  G4cout << "\n----> Output file is open in " << fFileName << G4endl;
+  // G4cout << "\n----> Output file is open in " << fFileName << G4endl;
 
 }
 
@@ -196,7 +211,6 @@ void HistoManager::SetEnergy(G4int id, G4double edep, G4int sc, G4int ce, G4int 
 
 void HistoManager::SetFluxEnergy(G4int evtNb, G4int id, G4double edep, G4ThreeVector position)
 {
-
   fEvtNb = evtNb;
 
   for(int i = 0 ; i < MaxNtuple ; i++) {fFluxEne[i] = 0.; fFluxPos_X[i] = 0.; fFluxPos_Y[i] = 0.; fFluxPos_Z[i] = 0.;}
@@ -206,3 +220,11 @@ void HistoManager::SetFluxEnergy(G4int evtNb, G4int id, G4double edep, G4ThreeVe
   fFluxPos_Z[id] = position.z();
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4String HistoManager::getFileNamePattern(){
+  return fFileNamePattern;
+}
+
+void HistoManager::setFileNamePattern(G4String fileNamePattern){
+  fFileNamePattern = fileNamePattern;
+}
