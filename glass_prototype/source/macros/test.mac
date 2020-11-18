@@ -13,7 +13,7 @@
 #/detector/setCrystalMaterial BaSi2O5
 /detector/setCrystalMaterial PbWO4
 /histoManager/setOutputFileNamePattern output_x_%dmm_y_%dmm_z_%dmm_%.1fGeV.root
-/histoManager/setWriteStepPoints false
+/histoManager/writeStepPoints false
 
 /run/initialize
 

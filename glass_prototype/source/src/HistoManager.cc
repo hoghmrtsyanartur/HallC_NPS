@@ -52,6 +52,7 @@
 
 HistoManager::HistoManager()
   : fFileNamePattern("file_x_%dmm_y_%dmm_z_%dmm_%.1fGeV.root"),
+    fWriteStepPoints(true),
     fRootFile(0),
     fNtuple(0),
     fNtuple_Flux(0),
@@ -146,14 +147,14 @@ void HistoManager::Book()
   // fNtuple->Branch("PP", fPrimaryPos, "Primary vertex Position[3]/D");
   // fNtuple->Branch("PM", fPrimaryMom, "Primary vertex Momentum[3]/D");
   // fNtuple->Branch("PE", &fPrimaryEnergy, "Primary vertex Energy/D");
-
-  fNtuple_Flux = new TTree("t_Flux","Checking the energy shower profile in crystals");
-  fNtuple_Flux->Branch("evtNb", &fEvtNb, "Event number/I");
-  fNtuple_Flux->Branch("edep", fFluxEne, "Energy deposition per step[9]/D");
-  fNtuple_Flux->Branch("x", fFluxPos_X, "Postion x per step[9]/D");
-  fNtuple_Flux->Branch("y", fFluxPos_Y, "Postion y per step[9]/D");
-  fNtuple_Flux->Branch("z", fFluxPos_Z, "Postion z per step[9]/D");
-
+  if (fWriteStepPoints){
+    fNtuple_Flux = new TTree("t_Flux","Checking the energy shower profile in crystals");
+    fNtuple_Flux->Branch("evtNb", &fEvtNb, "Event number/I");
+    fNtuple_Flux->Branch("edep", fFluxEne, "Energy deposition per step[9]/D");
+    fNtuple_Flux->Branch("x", fFluxPos_X, "Postion x per step[9]/D");
+    fNtuple_Flux->Branch("y", fFluxPos_Y, "Postion y per step[9]/D");
+    fNtuple_Flux->Branch("z", fFluxPos_Z, "Postion z per step[9]/D");
+  }
 
   // G4cout << "\n----> Output file is open in " << fFileName << G4endl;
 
@@ -169,7 +170,9 @@ void HistoManager::FillNtuple()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void HistoManager::FillNtuple_Flux()
 {
-  fNtuple_Flux->Fill();
+  if (fWriteStepPoints){
+    fNtuple_Flux->Fill();
+  }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -211,20 +214,41 @@ void HistoManager::SetEnergy(G4int id, G4double edep, G4int sc, G4int ce, G4int 
 
 void HistoManager::SetFluxEnergy(G4int evtNb, G4int id, G4double edep, G4ThreeVector position)
 {
-  fEvtNb = evtNb;
+  if (fWriteStepPoints){
+    fEvtNb = evtNb;
 
-  for(int i = 0 ; i < MaxNtuple ; i++) {fFluxEne[i] = 0.; fFluxPos_X[i] = 0.; fFluxPos_Y[i] = 0.; fFluxPos_Z[i] = 0.;}
-  fFluxEne[id] = edep;
-  fFluxPos_X[id] = position.x();
-  fFluxPos_Y[id] = position.y();
-  fFluxPos_Z[id] = position.z();
+    for (int i = 0; i < MaxNtuple; i++){
+      fFluxEne[i] = 0.; fFluxPos_X[i] = 0.; fFluxPos_Y[i] = 0.; fFluxPos_Z[i] = 0.;
+    }
+    fFluxEne[id] = edep;
+    fFluxPos_X[id] = position.x();
+    fFluxPos_Y[id] = position.y();
+    fFluxPos_Z[id] = position.z();
+  }
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void HistoManager::setFileNamePattern(G4String fileNamePattern){
+  fFileNamePattern = fileNamePattern;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4String HistoManager::getFileNamePattern(){
   return fFileNamePattern;
 }
 
-void HistoManager::setFileNamePattern(G4String fileNamePattern){
-  fFileNamePattern = fileNamePattern;
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void HistoManager::setWriteStepPoints(G4bool value){
+  fWriteStepPoints = value;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4bool HistoManager::getWriteStepPoints(){
+  return fWriteStepPoints;
+}
+
+

@@ -77,10 +77,13 @@ public:
   // HistoManagerMessenger methods
   void setFileNamePattern(G4String fileNamePattern);
   G4String getFileNamePattern();
+  void setWriteStepPoints(G4bool value);
+  G4bool getWriteStepPoints();
 
 private:
   HistoManagerMessenger* fHistoManagerMessenger;
   G4String fFileNamePattern;
+  G4bool fWriteStepPoints;
 
   TFile*   fRootFile;
   TTree*   fNtuple;
