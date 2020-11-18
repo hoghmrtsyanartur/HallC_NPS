@@ -1,14 +1,12 @@
-/NPS_Energy_Resolution/det/setCrystalSize 20 20 200 mm
-
 /control/verbose 2
 /run/verbose 2
 
-#/testhadr/ListPhysics
 /testhadr/Physics QBBC
-#/testhadr/Physics optical
+/testhadr/Physics optical
 
-#/physics_lists/select QGSC_BERT_EMZ
-#/physics_lists/factory/addOptical
+/detector/setCrystalSize 20 20 200 mm
+/detector/setCrystalMaterial BaSi2O5
+#/detector/setCrystalMaterial PbWO4
 
 #/process/optical/verbose 2
 
@@ -41,8 +39,6 @@
 #/vis/scene/add/hits
 /vis/scene/endOfEventAction accumulate 1
 
-/vis/viewer/set/viewpointVector -1 -1 1
-
 /process/list
 
 /gps/source/intensity 1
@@ -59,6 +55,11 @@
 #/run/printProgress 1
 /tracking/verbose 2
 /run/beamOn 1
+
+# https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
+/vis/viewer/set/viewpointVector -1 -1 1
+/vis/viewer/panTo 1.52 0.875 m
+/vis/viewer/zoomTo 50
 
 # Turn off visualization
 ##### /vis/disable

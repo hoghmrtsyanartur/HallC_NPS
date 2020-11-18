@@ -62,8 +62,14 @@ public:
   virtual void ConstructSDandField();
 
   void SetDetectorGap(G4double value);
+  G4double GetDetectorGap();
+
   void SetCrystalSize(G4ThreeVector vector);
   G4ThreeVector* GetCrystalSize();
+
+  void SetCrystalMaterial(const char* material);
+  G4String GetCrystalMaterial();
+
   void PrintParameters();
  
 private:

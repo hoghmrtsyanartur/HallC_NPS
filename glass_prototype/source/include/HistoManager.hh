@@ -74,10 +74,11 @@ public:
 
   void PrintStatistic();
 
-  G4String getFileNamePattern();
+  // HistoManagerMessenger methods
   void setFileNamePattern(G4String fileNamePattern);
-private:
+  G4String getFileNamePattern();
 
+private:
   HistoManagerMessenger* fHistoManagerMessenger;
   G4String fFileNamePattern;
 

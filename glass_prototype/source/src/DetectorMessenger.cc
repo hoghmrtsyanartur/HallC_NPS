@@ -42,20 +42,27 @@
 
 DetectorMessenger::DetectorMessenger(DetectorConstruction* Det) : G4UImessenger(), fDetectorConstruction(Det) {
 	// Instantiate the Command directory
-//	fDirectory = new G4UIdirectory("/NPS_Energy_Resolution/det/");
-//	fDirectory->SetGuidance("Commands for Detector construction");
+	fDirectory = new G4UIdirectory("/detector/");
+	fDirectory->SetGuidance("Commands for Detector construction");
 
 	// Instantiate command for setting the gap between crystals
-	fSetGapCmd = new G4UIcmdWithADoubleAndUnit("/NPS_Energy_Resolution/det/setGap", this);
+	fSetGapCmd = new G4UIcmdWithADoubleAndUnit("/detector/setGap", this);
 	fSetGapCmd->SetGuidance("Set the gap between the crystals.");
 	fSetGapCmd->SetUnitCategory("Length");
 	fSetGapCmd->SetParameterName("choice", false);
 	fSetGapCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
 
 	// Instantiate command for setting crystal size
-	fSetCrystalSizeCmd = new G4UIcmdWith3VectorAndUnit("/NPS_Energy_Resolution/det/setCrystalSize", this);
+	fSetCrystalSizeCmd = new G4UIcmdWith3VectorAndUnit("/detector/setCrystalSize", this);
 	fSetCrystalSizeCmd->SetGuidance("Set crystal size.");
-	fSetGapCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
+	fSetCrystalSizeCmd->SetDefaultUnit("mm");
+	fSetCrystalSizeCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
+
+
+  // Instantiate command for setting crystal Material
+  fSetCrystalMaterialCmd = new G4UIcmdWithAString("/detector/setCrystalMaterial", this);
+  fSetCrystalMaterialCmd->SetGuidance("Set crystal material type, \"BaSi2O5\" (default) or \"PbWO4\"");
+  fSetCrystalMaterialCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -63,6 +70,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* Det) : G4UImessenger(
 DetectorMessenger::~DetectorMessenger() {
   delete fSetGapCmd;
   delete fSetCrystalSizeCmd;
+  delete fSetCrystalMaterialCmd;
 //  delete fDirectory;
 }
 
@@ -73,7 +81,19 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
 	  fDetectorConstruction->SetDetectorGap(fSetGapCmd->GetNewDoubleValue(newValue));
   } else if (command == fSetCrystalSizeCmd){
 	  fDetectorConstruction->SetCrystalSize(fSetCrystalSizeCmd->GetNew3VectorValue(newValue));
+  } else if (command==fSetCrystalMaterialCmd){
+    fDetectorConstruction->SetCrystalMaterial(newValue.c_str());
   }
 }
 
+//G4String DetectorMessenger::GetCurrentValue(G4UIcommand* command){
+//  if (command == fSetGapCmd){
+//    return fSetGapCmd->ConvertToString(fDetectorConstruction->GetDetectorGap());
+//  } else if (command == fSetCrystalSizeCmd){
+//    fSetCrystalSizeCmd->ConvertToString(*(fDetectorConstruction->GetCrystalSize()));
+//  } else if (command==fSetCrystalMaterialCmd){
+//    return fDetectorConstruction->GetCrystalMaterial();
+//  }
+//  return "";
+//}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

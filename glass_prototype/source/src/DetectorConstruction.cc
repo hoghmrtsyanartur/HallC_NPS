@@ -69,6 +69,7 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4OpticalSurface.hh"
 
+#include "Materials.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
@@ -139,76 +140,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
 void DetectorConstruction::DefineMaterials()
 {
-  // build materials
-
-  G4double density, fractionmass;
-  G4int ncomponents, natoms;
-
   G4NistManager* nist = G4NistManager::Instance();
+  fVacuumMater = nist->FindOrBuildMaterial("G4_Galactic");
 
-  //World Material
-  G4Element* N  = new G4Element("Nitrogen",  "N",   7, 14.01*g/mole);
-  G4Element* O  = new G4Element("Oxygen",    "O",   8, 16.00*g/mole);
-  G4Element* Al  = new G4Element("Aluminium","Al", 13, 26.98*g/mole);
-  G4Material* Air20 = new G4Material("Air", 1.205*mg/cm3, ncomponents=2,
-				     kStateGas, 293.*kelvin, 1.*atmosphere);
-  Air20->AddElement(N, fractionmass=0.7);
-  Air20->AddElement(O, fractionmass=0.3);
-
-  fWorldMater = Air20;
-
-  fVacuumMater = nist->FindOrBuildMaterial("G4_Galactic");//vacuum
-
-  //Detector Material PbWO4
-  G4Isotope *Pb204 = new G4Isotope("204Pb", 82, 204, 203.97*g/mole);
-  G4Isotope *Pb206 = new G4Isotope("204Pb", 82, 206, 205.97*g/mole);
-  G4Isotope *Pb207 = new G4Isotope("204Pb", 82, 207, 206.98*g/mole);
-  G4Isotope *Pb208 = new G4Isotope("204Pb", 82, 208, 207.98*g/mole);
-  G4Element* Pb = new G4Element("Plomo"    ,"Pb", 4); //Introducimos el plomo  
-  Pb->AddIsotope(Pb204, 1.400*perCent);
-  Pb->AddIsotope(Pb206, 24.100*perCent);
-  Pb->AddIsotope(Pb207, 22.100*perCent);
-  Pb->AddIsotope(Pb208, 52.400*perCent);
-
-  G4Isotope *W180 = new G4Isotope("180W", 74, 180, 179.95*g/mole);
-  G4Isotope *W182 = new G4Isotope("182W", 74, 182, 181.95*g/mole);
-  G4Isotope *W183 = new G4Isotope("183W", 74, 183, 182.95*g/mole);
-  G4Isotope *W184 = new G4Isotope("184W", 74, 184, 183.95*g/mole);
-  G4Isotope *W186 = new G4Isotope("186W", 74, 186, 185.95*g/mole);
-  G4Element* W  = new G4Element("Wolframio","W" , 5); //Introducimos el Wolframio
-  W->AddIsotope(W180, 0.120*perCent);
-  W->AddIsotope(W182, 26.500*perCent);
-  W->AddIsotope(W183, 14.310*perCent);
-  W->AddIsotope(W184, 30.640*perCent);
-  W->AddIsotope(W186, 28.430*perCent);
-
-  G4Element* Ba = new G4Element("Barium", "Ba", 56, 137.33*g/mole);
-  G4Element* Si = new G4Element("Silicon", "Si", 14, 28.09*g/mole);
-  fPMTmater = new G4Material("SiO2", 2.648*g/cm3, ncomponents=2);
-  fPMTmater -> AddElement(Si, fractionmass = 1./3.);
-  fPMTmater -> AddElement(O, fractionmass = 2./3.);
-
-  fDetectorMater = 
-    new G4Material("BaSiO", density=3.8*g/cm3, ncomponents=3);
-  fDetectorMater->AddElement(Ba, natoms=1);
-  fDetectorMater->AddElement(Si, natoms=2);
-  fDetectorMater->AddElement(O , natoms=5);
-
-  G4Element* C  = new G4Element("Carbon",    "C",   6, 12.01*g/mole);
-  G4Element* H  = new G4Element("Hydrogen",  "H",   1, 1.008*g/mole);
-  fWrapMater = new G4Material("VM2000", 1.38*g/cm3, ncomponents=3);
-  fWrapMater->AddElement(C, fractionmass=10./22.);
-  fWrapMater->AddElement(H, fractionmass=8./22.);
-  fWrapMater->AddElement(O, fractionmass=4./22.);
-
-  fPMTcoverMater = new G4Material("Al_cover", 2.70*g/cm3, ncomponents=1);
-  fPMTcoverMater -> AddElement(Al, fractionmass = 1.);
-
-  fFrameMater = new G4Material("Frame", 1.55*g/cm3, ncomponents=1);
-  fFrameMater -> AddElement(C, fractionmass = 1.);
+  Materials* materials = Materials::getInstance();
+  fWorldMater = materials->getMaterial("Air");
+  fPMTmater = materials->getMaterial("SiO2");
+  fDetectorMater = materials->getMaterial("BaSi2O5");
+  fWrapMater = materials->getMaterial("C10H8O4"); // VM2000
+  fPMTcoverMater = materials->getMaterial("Aluminum");
+  fFrameMater = materials->getMaterial("Frame");
 }
 
-    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 {
@@ -639,30 +583,51 @@ void DetectorConstruction::ConstructSDandField()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-  void DetectorConstruction::PrintParameters()
-  {
-  }
+void DetectorConstruction::PrintParameters(){
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-  void DetectorConstruction::SetDetectorGap(G4double value)
-  {
-    gap = value*mm;
-    G4RunManager::GetRunManager()->ReinitializeGeometry();
-  }
-
-  void DetectorConstruction::SetCrystalSize(G4ThreeVector vector){
-    fCrystal_X = vector.getX();
-    fCrystal_Y = vector.getY();
-    fCrystal_Z = vector.getZ();
-    G4cout << "DetectorConstruction::SetCrystalSize()" << G4endl;
-    G4cout << "- setting crystal size to " << vector.getX() << "x" << vector.getY() << "x" << vector.getZ() << G4endl;
-    G4RunManager::GetRunManager()->ReinitializeGeometry(true);
-  }
-
-  G4ThreeVector* DetectorConstruction::GetCrystalSize(){
-    return new G4ThreeVector(fCrystal_X,fCrystal_Y,fCrystal_Z);
-  }
+void DetectorConstruction::SetDetectorGap(G4double value){
+  gap = value*mm;
+  G4RunManager::GetRunManager()->ReinitializeGeometry();
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4double DetectorConstruction::GetDetectorGap(){
+  return gap;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetCrystalSize(G4ThreeVector vector){
+  fCrystal_X = vector.getX();
+  fCrystal_Y = vector.getY();
+  fCrystal_Z = vector.getZ();
+  G4cout << "DetectorConstruction::SetCrystalSize()" << G4endl;
+  G4cout << "- setting crystal size to " << vector.getX() << "x" << vector.getY() << "x" << vector.getZ() << G4endl;
+  G4RunManager::GetRunManager()->ReinitializeGeometry(true);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4ThreeVector* DetectorConstruction::GetCrystalSize(){
+  return new G4ThreeVector(fCrystal_X,fCrystal_Y,fCrystal_Z);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetCrystalMaterial(const char* material){
+  Materials* materials = Materials::getInstance();
+  fDetectorMater = materials->getMaterial(material);
+  // Do we need that?
+  // G4RunManager::GetRunManager()->ReinitializeGeometry(true);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4String DetectorConstruction::GetCrystalMaterial(){
+  return fDetectorMater->GetName();
+}
 
