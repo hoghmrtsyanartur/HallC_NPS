@@ -64,7 +64,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   G4Random::showEngineStatus();
 
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
-    
+
   // Instantiate histograms
   fHistoManager->Book();
 }

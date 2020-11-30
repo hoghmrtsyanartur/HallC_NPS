@@ -31,6 +31,7 @@
 #include "RunAction.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "EventAction.hh"
+#include "OutsideWorldSteppingAction.hh"
 #include "SteppingAction.hh"
 #include "HistoManager.hh"
 
@@ -70,7 +71,7 @@ void ActionInitialization::Build() const
   PrimaryGeneratorAction* primaryGeneratorAction = new PrimaryGeneratorAction(histoManager);
   SetUserAction(primaryGeneratorAction);
 
-  // Action Events before and after beamOn
+  // Action Events before /run/initialize
   RunAction* runAction = new RunAction(histoManager);
   SetUserAction(runAction);
 
@@ -81,6 +82,9 @@ void ActionInitialization::Build() const
   // PS: Save output to file for stepping points >= 1
   SteppingAction *steppingAction = new SteppingAction(histoManager, fDetector, eventAction);
   SetUserAction(steppingAction);
+
+  OutsideWorldSteppingAction* outsideWorldSteppingAction = new OutsideWorldSteppingAction(histoManager);
+  SetUserAction(outsideWorldSteppingAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

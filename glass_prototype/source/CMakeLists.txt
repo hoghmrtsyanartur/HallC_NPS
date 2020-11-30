@@ -22,8 +22,9 @@ include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
 # Find ROOT (required package)
+# Petr Stepanov: Find ROOT with RooFit https://root.cern/manual/integrate_root_into_my_cmake_project/
 #
-find_package(ROOT REQUIRED)
+find_package(ROOT REQUIRED COMPONENTS RooFit RooFitCore)
 
 # You need to tell CMake where to find the ROOT installation. This can be done in a number of ways:
 #   - ROOT built with classic configure/make use the provided $ROOTSYS/etc/cmake/FindROOT.cmake

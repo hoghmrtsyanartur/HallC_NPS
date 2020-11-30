@@ -35,6 +35,7 @@
 #include "DetectorConstruction.hh"
 #include "DetectorMessenger.hh"
 
+#include "G4Box.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 
@@ -256,6 +257,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fMom_pos_Z = 2000*mm + 0.5*fSingle_Z;
 
   fCheckOverlaps = true;//activate checing overlaps
+
+
+
 
   G4Box* sWorld =
     new G4Box("World_sol",0.5*fWorld_X, 0.5*fWorld_Y, 0.5*fWorld_Z); //its size

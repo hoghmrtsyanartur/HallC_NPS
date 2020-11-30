@@ -8,6 +8,9 @@
 /detector/setCrystalMaterial BaSi2O5
 #/detector/setCrystalMaterial PbWO4
 
+/histoManager/setOutputFileNamePattern output_%s_%dmm_y_%dmm_z_%dmm_%.1fGeV_%devents.root
+/histoManager/writeStepPoints false
+
 #/process/optical/verbose 2
 
 # Only have scintillation
@@ -28,6 +31,16 @@
 #/process/optical/cerenkov/setMaxPhotons 3
 #/process/optical/cerenkov/setMaxBetaChange 10
 
+# Scoring Mesh
+/score/create/boxMesh boxMesh_1
+/score/mesh/boxSize 100. 100. 100. cm
+/score/mesh/nBin 30 30 30
+# Define Scoring Quantity via Scorer
+/score/quantity/energyDeposit eDep
+# Draw scoring projection
+/score/drawProjection boxMesh_1 eDep
+# Dump to file
+/score/dumpQuantityToFile boxMesh_1 nOfStepGamma eDep.txt
 
 /run/initialize
 
@@ -44,7 +57,7 @@
 /gps/source/intensity 1
 /gps/particle e-
 /gps/pos/type Point
-/gps/ene/mono 1 GeV
+/gps/ene/mono 10 GeV
 /gps/pos/centre 0.  0. -2000. mm
 
 /gps/direction 0. 0. 1.
