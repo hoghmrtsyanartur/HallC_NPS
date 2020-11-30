@@ -49,7 +49,6 @@ TPaveStats* getPaveStats(TVirtualPad* pad){
     // pad->GetListOfPrimitives()->Print();
     return pave;
   }
-
   // If not found search object by file type
   // for (TObject* object : *(pad->GetListOfPrimitives())){
   //  std::cout << object->GetName() << std::endl;
@@ -61,35 +60,42 @@ TPaveStats* getPaveStats(TVirtualPad* pad){
   return NULL;
 }
 
-void alignStats(TH1* hist, TVirtualPad* pad, Double_t statsWidth=0.6){
+void alignStats(TVirtualPad* pad, Double_t statsWidth=0.6){
   // Retrieve the stat box
   TPaveStats *stats = getPaveStats(pad);
+  if (!stats) return;
 
-  if (stats){
-    //stats->GetX2NDC() - stats->GetX1NDC();
-    Double_t statsHeight = statsLineHeight*stats->GetListOfLines()->GetSize(); // stats->GetY2NDC() - stats->GetY1NDC();
-    // Move stats horizontally
-    stats->SetX2NDC(1 - pad->GetRightMargin());
-    stats->SetX1NDC(stats->GetX2NDC() - statsWidth);
-    // Move stats vertically
-    stats->SetY2NDC(1 - pad->GetTopMargin());
-    stats->SetY1NDC(stats->GetY2NDC() - statsHeight);
+  //stats->GetX2NDC() - stats->GetX1NDC();
+  Double_t statsHeight = statsLineHeight*stats->GetListOfLines()->GetSize(); // stats->GetY2NDC() - stats->GetY1NDC();
+  // Move stats horizontally
+  stats->SetX2NDC(1 - pad->GetRightMargin());
+  stats->SetX1NDC(stats->GetX2NDC() - statsWidth);
+  // Move stats vertically
+  stats->SetY2NDC(1 - pad->GetTopMargin());
+  stats->SetY1NDC(stats->GetY2NDC() - statsHeight);
 
-    pad->Modified();
-    pad->Update();
-  }
+  pad->Modified();
+  pad->Update();
 }
 
 void addTextToStats(TVirtualPad* pad, const char* text){
   // Retrieve the stat box
   TPaveStats *stats = getPaveStats(pad);
+  if (!stats) return;
 
-  Double_t X1Stats = stats->GetX1NDC();
-  Double_t Y1Stats = stats->GetY1NDC();
-  TPaveText *pt = new TPaveText(X1Stats, Y1Stats - statsLineHeight, 0.9, Y1Stats, "NDC");
-  pt->SetBorderSize(1);
-  pt->AddText(text);
-  pt->Draw();
+  TList *listOfLines = stats->GetListOfLines();
+
+  // Note that "=" is a control character
+  TText *newLine = new TLatex(0, 0, text);
+  newLine->SetTextAlign(0);
+  newLine->SetTextFont(0);
+  newLine ->SetTextSize(0);
+  newLine->SetTextColor(0);
+  listOfLines->Add(newLine);
+
+  alignStats(pad);
+
+  pad->Modified();
 }
 
 Double_t getWeightedIntegral(TH1* hist){
@@ -160,7 +166,7 @@ int energyDeposition(const char *fileName){
   TH1D **edepHist = new TH1D*[nHists];
   for (UInt_t i = 0; i < nHists; i++){
     TString edepHistName = TString::Format("edepHist_%d", i);
-    TString edepHistTitle = TString::Format("Energy Deposition on Crystal %d", i+1);
+    TString edepHistTitle = TString::Format("Energy Deposition in Crystal %d", i+1);
     edepHist[i] = new TH1D(edepHistName.Data(), edepHistTitle.Data(), 100, 0, 8000);
     edepHist[i]->GetXaxis()->SetTitle("Deposited energy, MeV");
     edepHist[i]->GetYaxis()->SetTitle("Counts");
@@ -208,10 +214,10 @@ int energyDeposition(const char *fileName){
     TVirtualPad* pad = canvas1->cd(i+1);
     edepHist[i]->Draw();
     edepHist[i]->SetFillColor(kCyan);
-    alignStats(edepHist[i], pad);
+    alignStats(pad);
     // TString text1 = TString::Format("%.1f MeV deposited", totaledep[i]);
     Double_t percentDepositedEnergy = totalEdep[i]/totalDepositedEnergy*100.;
-    TString text2 = TString::Format("%.1f%% Energy Deposited (%.1f MeV)", percentDepositedEnergy, totalEdep[i]);
+    TString text2 = TString::Format("E deposited = %.0f MeV, %.1f %%", totalEdep[i], percentDepositedEnergy);
     addTextToStats(pad, text2.Data());
   }
 
@@ -248,7 +254,7 @@ int energyDeposition(const char *fileName){
   TH1* htemp2 = (TH1*) pad2->GetListOfPrimitives()->FindObject("htemp");
   htemp2->SetTitle("Kinetic Energy Distribution");
   htemp2->SetFillColor(kCyan);
-  alignStats(htemp2, pad2);
+  alignStats(pad2);
   Double_t escapeEnergy = 0; // getWeightedIntegral(htemp2);
   Double_t energy;
   escapeTree->SetBranchAddress("energy",&energy);
@@ -256,7 +262,7 @@ int energyDeposition(const char *fileName){
     escapeTree->GetEntry(i);
     escapeEnergy+= energy;
   }
-  TString escapeEnergyString = TString::Format("Total energy, MeV %.2f", escapeEnergy);
+  TString escapeEnergyString = TString::Format("Total E = %.0f MeV", escapeEnergy);
   addTextToStats(pad2, escapeEnergyString.Data());
   TString canvasTitle2 = TString::Format("Injected Kinetic Energy %.1f GeV (%s) in %s. Escaped Kinetic Energy %.1f GeV (%.1f %%)", totalGPSEnergy/1E3, particleName, crystalMaterial, escapeEnergy/1E3, escapeEnergy/totalGPSEnergy*100);
   escapeCanvas->SetTitle(canvasTitle2.Data());
