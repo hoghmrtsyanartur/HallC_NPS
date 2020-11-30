@@ -27,6 +27,19 @@
 
 const Double_t statsLineHeight = 0.06;
 
+TString* removeFileExtension(const char* fileNamePath){
+  TString* s = new TString(fileNamePath);
+
+  // Test here: https://regex101.com/r/7H6We8/1
+  // Don't forget to escape c++ double slashes
+  TObjArray *objArray = TPRegexp("^(.*)\\.\\w*$").MatchS(*s);
+  if (objArray->GetLast()+1 != 2){
+    return NULL;
+  }
+  const TString str = ((TObjString *)objArray->At(1))->GetString();
+  return new TString(str.Data());
+}
+
 TPaveStats* getPaveStats(TVirtualPad* pad){
   // Update Pad - in case the histogram was just drawn - need to update
   pad->Update();
@@ -129,6 +142,8 @@ void addCanvasTitle(TCanvas* canvas, const char* title){
   t->Draw();
 }
 
+
+
 int energyDeposition(const char *fileName){
   // Open input ROOT file
   std::cout << fileName << std::endl;
@@ -138,6 +153,8 @@ int energyDeposition(const char *fileName){
     std::cout << "Error opening file \"" << fileName << "\". Skipping." << std::endl;
     return 0;
   }
+
+  TString* fileNameOnly = removeFileExtension(fileName);
 
   // Test File Baskets
   // https://root-forum.cern.ch/t/error-in-tbasket-readbasketbuffers/8932/3
@@ -223,6 +240,8 @@ int energyDeposition(const char *fileName){
 
   // Write global title for first Canvas
   addCanvasTitle(canvas1, canvas1->GetTitle());
+  // Save canvas to file
+  canvas1->SaveAs((*fileNameOnly+"-edep.png").Data());
 
   // ---------------------------------
   // Plot particles escaping the world
@@ -323,6 +342,8 @@ int energyDeposition(const char *fileName){
 
   // Add title to canvas2
   addCanvasTitle(escapeCanvas, escapeCanvas->GetTitle());
+  // Save canvas
+  escapeCanvas->SaveAs((*fileNameOnly+"-eesc.png").Data());
 
   // Return success
   return 0;
