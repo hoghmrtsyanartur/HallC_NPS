@@ -25,7 +25,7 @@
 #include <TVector3.h>
 #include <TLatex.h>
 
-const Double_t statsLineHeight = 0.05;
+const Double_t statsLineHeight = 0.06;
 
 TPaveStats* getPaveStats(TVirtualPad* pad){
   // Update Pad - in case the histogram was just drawn - need to update
@@ -61,7 +61,7 @@ TPaveStats* getPaveStats(TVirtualPad* pad){
   return NULL;
 }
 
-void alignStats(TH1* hist, TVirtualPad* pad , Double_t statsWidth=0.4){
+void alignStats(TH1* hist, TVirtualPad* pad, Double_t statsWidth=0.6){
   // Retrieve the stat box
   TPaveStats *stats = getPaveStats(pad);
 
@@ -84,8 +84,9 @@ void addTextToStats(TVirtualPad* pad, const char* text){
   // Retrieve the stat box
   TPaveStats *stats = getPaveStats(pad);
 
+  Double_t X1Stats = stats->GetX1NDC();
   Double_t Y1Stats = stats->GetY1NDC();
-  TPaveText *pt = new TPaveText(.5, Y1Stats, 0.9, Y1Stats + statsLineHeight, "NDC");
+  TPaveText *pt = new TPaveText(X1Stats, Y1Stats - statsLineHeight, 0.9, Y1Stats, "NDC");
   pt->SetBorderSize(1);
   pt->AddText(text);
   pt->Draw();
@@ -97,6 +98,29 @@ Double_t getWeightedIntegral(TH1* hist){
     weightedIntegral += hist->GetBinCenter(i)*hist->GetBinContent(i);
   }
   return weightedIntegral;
+}
+
+void addCanvasTitle(TCanvas* canvas, const char* title){
+  canvas->cd();
+  Int_t headingHeightPx = 40;
+  Int_t canvasHeightPx = canvas->GetWh();
+  Double_t titleHeightNDC = (Double_t)headingHeightPx/(Double_t)canvasHeightPx;
+  // Resize child canvases to free space on to for title
+  for (Int_t i=1; canvas->GetPad(i)!=NULL; i++){
+    TVirtualPad* childPad = canvas->GetPad(i);
+    Double_t yLow = childPad->GetAbsYlowNDC();
+    Double_t xLow = childPad->GetAbsXlowNDC();
+    Double_t height = childPad->GetAbsHNDC();
+    Double_t width = childPad->GetAbsWNDC();
+    childPad->SetPad(xLow, yLow*(1-titleHeightNDC), xLow+width, (yLow+height)*(1-titleHeightNDC));
+  }
+
+  // Add title text (fixed size in px)
+  TText *t = new TText(0.5, (canvasHeightPx-headingHeightPx/2.)/canvasHeightPx, title);
+  t->SetTextFont(63);
+  t->SetTextSizePixels(16);
+  t->SetTextAlign(kHAlignCenter+kVAlignCenter);
+  t->Draw();
 }
 
 int energyDeposition(const char *fileName){
@@ -175,16 +199,13 @@ int energyDeposition(const char *fileName){
       totalGPSEnergy/1E3, particleName, (int)crystalSize->x(), (int)crystalSize->y(), (int)crystalSize->z(),
       crystalMaterial, totalDepositedEnergy/1E3,
       totalDepositedEnergy/totalGPSEnergy*100);
-  TCanvas* canvas1 = new TCanvas("canvas1", canvas1Title.Data(), 1024, 860);
-  TPad *canvas1Pad = new TPad("canvas1Pad", "", 0, 0, 1, 0.9); // New pad to leave space for title
-  canvas1Pad->Draw();
-  canvas1Pad->cd();
-  canvas1Pad->Divide(3, 3);
+  TCanvas* canvas1 = new TCanvas("canvas1", canvas1Title.Data(), 1024, 800);
+  canvas1->Divide(3,3);
 
   gStyle->SetPalette(1);
 
   for (Int_t i = 0; i < nHists; i++){
-    TVirtualPad* pad = canvas1Pad->cd(i+1);
+    TVirtualPad* pad = canvas1->cd(i+1);
     edepHist[i]->Draw();
     edepHist[i]->SetFillColor(kCyan);
     alignStats(edepHist[i], pad);
@@ -195,11 +216,7 @@ int energyDeposition(const char *fileName){
   }
 
   // Write global title for first Canvas
-  canvas1->cd();
-  TText *t = new TText(0.5, 0.95, canvas1->GetTitle());
-  t->SetTextAlign(kHAlignCenter+kVAlignCenter);
-  t->SetTextSize(0.02);
-  t->Draw();
+  addCanvasTitle(canvas1, canvas1->GetTitle());
 
   // ---------------------------------
   // Plot particles escaping the world
@@ -213,7 +230,7 @@ int energyDeposition(const char *fileName){
   std ::cout << "Number of events in the tree: " << tree->GetEntries() << std::endl;
 
   // Set Marker Style
-  TCanvas* escapeCanvas = new TCanvas("escapeCanvas", "Particles escaping the World", 1024, 320);
+  TCanvas* escapeCanvas = new TCanvas("escapeCanvas", "Particles escaping the World", 1024, 400);
   escapeCanvas->Divide(3);
 
   // PAD 1: Draw world escape locations
@@ -295,8 +312,11 @@ int energyDeposition(const char *fileName){
   legend->SetX2(.9);
   legend->SetY2(.9);
   legend->Draw();
-  pie4->SetY((1-legendBottom)*3./4.);
+  pie4->SetY((1-legendBottom)/2);
   pie4->SetTitle("Particle Types and Ratios");
+
+  // Add title to canvas2
+  addCanvasTitle(escapeCanvas, escapeCanvas->GetTitle());
 
   // Return success
   return 0;
