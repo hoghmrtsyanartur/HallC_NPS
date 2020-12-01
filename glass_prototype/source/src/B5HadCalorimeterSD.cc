@@ -78,7 +78,9 @@ void B5HadCalorimeterSD::Initialize(G4HCofThisEvent* hce)
 G4bool B5HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
   G4double edep = step->GetTotalEnergyDeposit();
-  if (edep==0.) return true;
+  if (edep==0.){
+    return true;
+  }
     
   G4TouchableHistory* touchable
     = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
@@ -94,18 +96,18 @@ G4bool B5HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
  
   G4int sc = 0;
   G4int ce = 0;
-  const std::vector<const G4Track*>* secondaries =
-    step->GetSecondaryInCurrentStep();
+  const std::vector<const G4Track*>* secondaries = step->GetSecondaryInCurrentStep();
   if (secondaries->size()>0) {
     for(unsigned int i=0; i<secondaries->size(); ++i) {
       if (secondaries->at(i)->GetParentID()>0) {
-	if(secondaries->at(i)->GetDynamicParticle()->GetParticleDefinition()
-	   == G4OpticalPhoton::OpticalPhotonDefinition()){
-	  if (secondaries->at(i)->GetCreatorProcess()->GetProcessName()
-	      == "Scintillation")sc++;
-	  else if (secondaries->at(i)->GetCreatorProcess()->GetProcessName()
-		   == "Cerenkov")ce++;
-	}
+        if(secondaries->at(i)->GetDynamicParticle()->GetParticleDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()){
+          if (secondaries->at(i)->GetCreatorProcess()->GetProcessName() == "Scintillation"){
+            sc++;
+          }
+          else if (secondaries->at(i)->GetCreatorProcess()->GetProcessName() == "Cerenkov"){
+            ce++;
+          }
+        }
       }
     }
   }

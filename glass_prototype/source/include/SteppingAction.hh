@@ -38,25 +38,25 @@
 #define SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
-
-class DetectorConstruction;
-class EventAction;
-class HistoManager;
+#include "DetectorConstruction.hh"
+#include "EventAction.hh"
+#include "HistoManager.hh"
+#include "G4Step.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class SteppingAction : public G4UserSteppingAction
 {
 public:
-  SteppingAction(DetectorConstruction*, EventAction*, HistoManager*);
+  SteppingAction(HistoManager* histoManager, DetectorConstruction* detectorConstruction, EventAction* eventAction);
   virtual ~SteppingAction();
 
   virtual void UserSteppingAction(const G4Step*);
     
 private:
+  HistoManager* fHistoManager;
   DetectorConstruction* fDetector;
   EventAction*          fEventAction;  
-  HistoManager*         fHistoManager;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

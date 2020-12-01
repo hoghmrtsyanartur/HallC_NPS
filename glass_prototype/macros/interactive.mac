@@ -1,0 +1,29 @@
+/NPS_Energy_Resolution/det/setCrystalSize 40 20 200 mm
+
+/control/verbose 2
+/run/verbose 2
+
+/run/initialize
+
+/vis/open OGL 600x600-0+0
+#/vis/open VRML2FILE
+/vis/drawVolume
+/vis/scene/add/trajectories
+#/vis/scene/add/hits
+/vis/scene/endOfEventAction accumulate 25
+
+/process/list
+
+/gps/source/intensity 1
+/gps/particle e-
+/gps/pos/type Point
+/gps/ene/mono 10 GeV
+/gps/pos/centre 0.  0. -2000. mm
+
+/gps/direction 0. 0. 1.
+
+/gps/source/multiplevertex true
+/gps/source/list
+
+/run/printProgress 1
+/run/beamOn 1

@@ -1,27 +1,27 @@
 //
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
+// ************************************************************************
+// * License and Disclaimer                                               *
+// *                                                                      *
+// * The	Geant4 software	is	copyright of the Copyright Holders	of    *
+// * the Geant4 Collaboration.	It is provided	under	the terms	and   *
+// * conditions of the Geant4 Software License,	included in the file      *
+// * LICENSE and available at	http://cern.ch/geant4/license .	These     *
+// * include a list of copyright holders.                                 *
+// *                                                                      *
+// * Neither the authors of this software system, nor their employing     *
+// * institutes,nor the agencies providing financial support for this     *
+// * work	make	any representation or	warranty, express or implied, *
+// * regarding	this	software system or assume any liability for its   *
+// * use.	Please see the license in the file	LICENSE	and URL above     *
+// * for the full disclaimer and the limitation of liability.             *
+// *                                                                      *
+// * This	code	implementation is the result of	the	scientific and    *
+// * technical work of the GEANT4 collaboration.                          *
+// * By using,	copying,	modifying or	distributing the software (or *
+// * any work based	on the software)	you	agree	to acknowledge its    *
+// * use	in	resulting	scientific	publications,	and indicate your *
+// * acceptance of all terms of the Geant4 Software license.              *
+// ************************************************************************
 //
 // The simulation is based on AnaEx02
 //
@@ -29,127 +29,125 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include "G4Timer.hh"
+#include "G4UIExecutive.hh"
+#include "Randomize.hh"
 #include "G4RunManager.hh"
-#include "G4UImanager.hh"
-#include "PhysicsList.hh"
 
 #include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "SteppingAction.hh"
-#include "HistoManager.hh"
+#include "PhysicsList.hh"
 
-#include <ctime>//to count time
-
-#ifdef G4VIS_USE
+//#include "HistoManager.hh"
+//#include "DetectorConstructionAna02.hh"
+#include "ActionInitialization.hh"
+#include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
-#endif
+#include "G4UImanager.hh"
+#include "G4ScoringManager.hh"
+//#include "G4UIExecutive.hh"
 
-#ifdef G4UI_USE
-#include "G4UIExecutive.hh"
-#endif
+//#include "G4PhysListFactory.hh"
+
+// PS: add optical photon physics
+#include "FTFP_BERT.hh"
+//#include "G4OpticalPhysics.hh"
+//#include "QGSP_BERT.hh"
+//#include "G4EmStandardPhysics_option4.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-int main(int argc,char** argv)
-{ 
-  // current date/time based on current system
-  time_t now = time(0);
+int main(int argc, char **argv) {
+	// Start Timer
+	G4Timer *timer = new G4Timer();
+	timer->Start();
+
+	// Detect interactive mode (if no arguments) and define UI session
+	G4UIExecutive *ui = nullptr;
+	if (argc == 1) {
+		ui = new G4UIExecutive(argc, argv);
+	}
 
   // Choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
 
-  G4RunManager* runManager = new G4RunManager;
-  // Set mandatory initialization classes
-  //
-  G4double crys_x = 0.;
-  G4double crys_y = 0.;
-  G4double crys_z = 0.;
+  // For some reason it only works here
 
-  G4String fileNamee;
-  G4int    index;
-  long     seed1, seed2;
+	// Create an instance of the G4RunManager class
+  // It controls the flow of the program and manages the event loop(s) within a run
+	G4RunManager *runManager = new G4RunManager();
 
-  G4cout<<"glass X size? (Unit : mm)"<<G4endl;
-  G4cin>>crys_x;
-  G4cout<<"glass Y size? (Unit : mm)"<<G4endl;
-  G4cin>>crys_y;
-  G4cout<<"glass Z size? (Unit : mm)"<<G4endl;
-  G4cin>>crys_z;
+	// Instantiate Scoring Manager
+	G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
 
-  G4cout<<"Name of the output file?"<<G4endl;
-  G4cin>>fileNamee;
+	// Contruct the detector
+	// TODO: use TextGeometry to define the detector geometry instead?
+	// PS: try using the detector construction from AnaEx02
+	DetectorConstruction *detector = new DetectorConstruction();
+	runManager->SetUserInitialization(detector);
 
-  G4cout<<"index for Rancu seed table?"<<G4endl;
-  G4cin>>index;
-  G4cout<<"seed1?"<<G4endl;
-  G4cin>>seed1;
-  G4cout<<"seed2?"<<G4endl;
-  G4cin>>seed2;
+	// PS: Instantiate local physics list and define physics
+	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/physicsDef.html?highlight=g4vuserphysicslists#how-to-specify-physics-processes
+  PhysicsList *phys = new PhysicsList();
+  runManager->SetUserInitialization(phys);
 
-  DetectorConstruction* detector = new DetectorConstruction(crys_x, crys_y, crys_z);
-  runManager->SetUserInitialization(detector);
+  // PS: 5. Replace Physics
+  // G4VModularPhysicsList* physicsList = new FTFP_BERT();
+  // runManager->SetUserInitialization(physicsList);
 
-  PhysicsList* phys = new PhysicsList;
-  runManager->SetUserInitialization(phys);          
+  // PS: Try adding optical physics (works)
+	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsProcess.html?highlight=ftfp_bert#g4opticalphysics-constructor
+  // G4VModularPhysicsList* physicsList = new QGSP_BERT();
+  // // G4VModularPhysicsList* physicsList = new FTFP_BERT();
+  // G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
+  // physicsList->RegisterPhysics(opticalPhysics);
+  // runManager-> SetUserInitialization(physicsList);
 
-  HistoManager*  histo = new HistoManager();
-      
-  PrimaryGeneratorAction* gen_action = 
-    new PrimaryGeneratorAction(histo);
-  runManager->SetUserAction(gen_action);
+  // PS: Try set up physics using factory
+	// G4PhysListFactory factory;
+	// G4VModularPhysicsList* physlist = factory.GetReferencePhysList("FTFP_BERT_EMV");
+	// physlist.SetVerboseLevel(verbose);
+	// runManager->SetUserInitialization(physlist);
 
-  RunAction* run_action = new RunAction(histo, fileNamee, index, seed1, seed2);  
-  runManager->SetUserAction(run_action);
+	// PS: Object that outputs the ROOT file
 
-  EventAction* event_action = new EventAction(histo);
-  runManager->SetUserAction(event_action);
+	// Instantiate General Particle Source (gps)
+	// Save primary particle information in Histogram Manager
 
-  SteppingAction* stepping_action =
-	  new SteppingAction(detector, event_action, histo);
-  runManager->SetUserAction(stepping_action);
-  
+  ActionInitialization* actionInitialization = new ActionInitialization(detector);
+  runManager->SetUserInitialization(actionInitialization);
+
+  // PS: why we not initialize the Run Manager here?
+  // runManager->Initialize();
+
+  // Initialize visualization
+  G4VisManager* visManager = new G4VisExecutive();
+  visManager->Initialize();
+
+  // Get the pointer to the User Interface manager (created by runManager)
+  // In order for the user to issue commands to the program
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
-  
-  if (argc!=1)   // batch mode
-    {
-      G4String command = "/control/execute ";
-      G4String fileName = argv[1];
-      UImanager->ApplyCommand(command+fileName);    
-    }
-  else
-    {  // interactive mode : define visualization and UI terminal
-#ifdef G4VIS_USE
-      G4VisManager* visManager = new G4VisExecutive;
-      visManager->Initialize();
-#endif
-#ifdef G4UI_USE
-      G4UIExecutive* ui = new G4UIExecutive(argc, argv);
-      ui->SessionStart();
-      delete ui;
-#endif
 
-#ifdef G4VIS_USE
-      delete visManager;
-#endif
-    }
+  if (!ui){
+    // batch mode
+    G4String command = "/control/execute ";
+    G4String fileName = argv[1];
+    UImanager->ApplyCommand(command+fileName);
+  }
+  else {
+    // interactive mode
+    // UImanager->ApplyCommand("/control/execute init_vis.mac");
+    ui->SessionStart();
+    delete ui;
+  }
 
-  // current date/time based on current system
-  time_t then = time(0);
-  time_t diff = then - now;
-  // convert now to string form
-  char* dt = ctime(&diff);
-  // convert now to tm struct for UTC
-  tm* gmtm = gmtime(&diff);
-  dt = asctime(gmtm);
-  G4cout << "It took :"<< dt <<"for the job to be done." << G4endl;
+	// Print CPU time
+	timer->Stop();
+	G4cout << "Elapsed time: " << timer->GetRealElapsed() << G4endl;
 
-  // Job termination
+  delete visManager;
   delete runManager;
 
-  return 0;
-
+	return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -47,7 +47,7 @@
 #include "PhysicsListMessenger.hh"
 
 // Optical Physics
-// #include "G4OpticalPhysics.hh"
+#include "G4OpticalPhysics.hh"
 
 #include "G4DecayPhysics.hh"
 #include "G4EmStandardPhysics.hh"
@@ -95,6 +95,8 @@
 #include "G4SystemOfUnits.hh"
 
 #include "StepMax.hh"
+
+#include "G4RunManager.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 PhysicsList::PhysicsList() : G4VModularPhysicsList(),
@@ -115,7 +117,7 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList(),
   fEmPhysicsList = new G4EmStandardPhysics(verboseLevel);
 
   // Optical Physics
-  // fOptPhysicsList = new G4OpticalPhysics(); 
+   fOptPhysicsList = new G4OpticalPhysics();
 
 }
 
@@ -128,7 +130,7 @@ PhysicsList::~PhysicsList()
   delete fEmPhysicsList;
 
   // Optical Physics
-  // delete fOptPhysicsList; 
+  delete fOptPhysicsList;
 
   delete fStepMaxProcess;
   for(size_t i=0; i<fHadronPhys.size(); i++) {
@@ -142,8 +144,10 @@ void PhysicsList::ConstructParticle()
 {
   fParticleList->ConstructParticle();
 
-  // Optical Physics
-  // fOptPhysicsList->ConstructParticle();
+  // PS: advanced/air_shower/src/UltraPhysicsList.cc does not call this method
+  // if (fUseOpticalPhysics){
+  //   fOptPhysicsList->ConstructParticle();
+  // }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
@@ -155,7 +159,9 @@ void PhysicsList::ConstructProcess()
   fParticleList->ConstructProcess();
 
   // Optical Physics
-  // fOptPhysicsList->ConstructProcess();
+  if (fUseOpticalPhysics){
+    fOptPhysicsList->ConstructProcess();
+  }
 
   for(size_t i=0; i<fHadronPhys.size(); i++) {
     fHadronPhys[i]->ConstructProcess();
@@ -170,6 +176,12 @@ void PhysicsList::AddPhysicsList(const G4String& name)
   if (verboseLevel>0) {
     G4cout << "PhysicsList::AddPhysicsList: <" << name << ">" << G4endl;
   }
+  // Account on optical physics
+  if (name == "optical") {
+    fUseOpticalPhysics = true;
+  }
+
+  // Electromagnetic physics
   if (name == "emstandard_opt0") {
 
     delete fEmPhysicsList;

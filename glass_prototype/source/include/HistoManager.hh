@@ -34,14 +34,24 @@
 #define HistoManager_h 1
 
 #include "globals.hh"
-
 #include "G4ThreeVector.hh"
+#include <vector>
+
+// Ignoring warning shadow messages (doiPETAnalysis.hh)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include "TFile.h"
+#include "TTree.h"
+#pragma GCC diagnostic pop
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class TFile;
-class TTree;
-class TH1D;
+// Forward Declaration of Messenger
+class HistoManagerMessenger;
+
+//class TFile;
+//class TTree;
+//class TH1D;
 
 const G4int MaxHisto = 4;
 const G4int MaxNtuple = 9;
@@ -49,27 +59,44 @@ const G4int MaxNtuple = 9;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class HistoManager
-{
+class HistoManager {
 public:
   HistoManager();
   ~HistoManager();
-   
-  void Book(G4String);
+
+  void Book();
   void FillNtuple();
   void FillNtuple_Flux();
+  void FillNtupleOutOfWorld(G4double energy, G4double x, G4double y, G4double z, G4int pdg, const char* particleName);
   void Save();
 
   void SetPrimaryParticle(G4double, G4int, G4ThreeVector, G4ThreeVector, G4double);
   void SetEnergy(G4int, G4double, G4int, G4int, G4int, G4int, G4int);
   void SetFluxEnergy(G4int, G4int , G4double, G4ThreeVector);
- 
+
   void PrintStatistic();
-        
+
+  // HistoManagerMessenger methods
+  void setFileNamePattern(G4String fileNamePattern);
+  G4String getFileNamePattern();
+  void setWriteStepPoints(G4bool value);
+  G4bool getWriteStepPoints();
+//  void BookBeginOfEventAction();
+
 private:
+  HistoManagerMessenger* fHistoManagerMessenger;
+  G4String fFileNamePattern;
+  G4bool fWriteStepPoints;
+
   TFile*   fRootFile;
   TTree*   fNtuple;
   TTree*   fNtuple_Flux;
+  TTree*   fNtupleOutOfWorld;
+
+  G4double fPrimaryTime;
+  G4int    fPrimaryPID;
+  G4double fPrimaryEnergy;
+  G4int    fEvtNb;
 
   G4double fEdep[MaxNtuple];
   G4int    fOP_sc[MaxNtuple];
@@ -78,17 +105,23 @@ private:
   G4int    fOP_frontcover[MaxNtuple];
   G4int    fOP_pmtcover[MaxNtuple];
 
-  G4double fPrimaryTime;
-  G4int    fPrimaryPID;
   G4double fPrimaryPos[3];
   G4double fPrimaryMom[3];
-  G4double fPrimaryEnergy;
 
-  G4int    fEvtNb;
   G4double fFluxEne[MaxNtuple];
   G4double fFluxPos_X[MaxNtuple];
   G4double fFluxPos_Y[MaxNtuple];
   G4double fFluxPos_Z[MaxNtuple];
+
+  G4double fOutWorldEnergy;
+  G4double fOutWorldX;
+  G4double fOutWorldY;
+  G4double fOutWorldZ;
+  G4int fPdg;
+  TMap* pdgNameMap;
+//  std::vector<int> fPdgVector;
+
+//  RooRealVar* fTotalGPSEnergy;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

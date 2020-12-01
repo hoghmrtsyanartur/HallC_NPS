@@ -38,19 +38,21 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
 
-#include "G4SystemOfUnits.hh"//to use cm
-
-class G4LogicalVolume;
-class G4Material;
-class DetectorMessenger;
-class SensitiveDetector;
+#include "G4ThreeVector.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4Material.hh"
+#include "DetectorMessenger.hh"
+//class G4LogicalVolume;
+//class G4Material;
+//class DetectorMessenger;
+//class SensitiveDetector;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
 public:
-  DetectorConstruction(G4double, G4double, G4double);
+  DetectorConstruction();
   ~DetectorConstruction();
 
 public:
@@ -59,12 +61,20 @@ public:
     
   virtual void ConstructSDandField();
 
-  void SetDetectorGap(G4double value);  
+  void SetDetectorGap(G4double value);
+  G4double GetDetectorGap();
+
+  void SetCrystalSize(G4ThreeVector vector);
+  G4ThreeVector* GetCrystalSize();
+
+  void SetCrystalMaterial(const char* material);
+  G4String GetCrystalMaterial();
+
   void PrintParameters();
  
 private:
 
-  const G4double     inch = 2.54*cm;
+  const G4double     inch = 2.54*CLHEP::cm;
   G4Material*        fVacuumMater;
   G4Material*        fDetectorMater;
   G4LogicalVolume*   fLogicDetector;

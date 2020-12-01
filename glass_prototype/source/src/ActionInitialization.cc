@@ -23,65 +23,68 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file analysis/shared/src/RunAction.cc
-/// \brief Implementation of the RunAction class
 //
-//
-// $Id: RunAction.cc 92322 2015-08-27 14:54:05Z gcosmo $
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/// \file ActionInitialization.cc
+/// \brief Implementation of the ActionInitialization class
 
+#include "ActionInitialization.hh"
 #include "RunAction.hh"
-#include "globals.hh"
-#include "Randomize.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "EventAction.hh"
+#include "OutsideWorldSteppingAction.hh"
+#include "SteppingAction.hh"
+#include "HistoManager.hh"
+
+class DetectorConstruction;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction(HistoManager* histoManager)
- : G4UserRunAction(), fHistoManager(histoManager)
+ActionInitialization::ActionInitialization(DetectorConstruction *detector)
+ : G4VUserActionInitialization(), fDetector(detector)
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::~RunAction(){}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::BeginOfRunAction(const G4Run* aRun)
-{ 
-  // PS:
-  // This method is invoked before entering the event loop (BeamOn?).
-  // A typical use of this method would be to initialize and/or book histograms for a particular run.
-
-  // PS: added automatic time-based random seeds for each run
-  long seeds[2];
-  time_t systime = time(NULL);
-  seeds[0] = (long) systime;
-  seeds[1] = (long) (systime*G4UniformRand());
-  G4Random::setTheSeeds(seeds);
-  G4Random::showEngineStatus();
-
-  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
-
-  // Instantiate histograms
-  fHistoManager->Book();
+ActionInitialization::~ActionInitialization()
+{
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void RunAction::EndOfRunAction(const G4Run* aRun)
+void ActionInitialization::BuildForMaster() const
 {
-  // PS:
-  // This method is invoked at the very end of the run processing.
-  // It is typically used for a simple analysis of the processed run.
+  // PS: this is invoked in Multi-threading mode
+  HistoManager* histoManager = new HistoManager();
+  RunAction* runAction = new RunAction(histoManager);
+  SetUserAction(runAction);
+}
 
-  G4int NbOfEvents = aRun->GetNumberOfEvent();
-  if (NbOfEvents == 0) return;
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-  // Save histograms
-  fHistoManager->Save();
+void ActionInitialization::Build() const
+{
+  // PS: this is invoked in Sequential mode
+  HistoManager* histoManager = new HistoManager();
+
+  // General Particle Source
+  PrimaryGeneratorAction* primaryGeneratorAction = new PrimaryGeneratorAction(histoManager);
+  SetUserAction(primaryGeneratorAction);
+
+  // Action Events before /run/initialize
+  RunAction* runAction = new RunAction(histoManager);
+  SetUserAction(runAction);
+
+  // Action invoked before and after every event
+  EventAction* eventAction = new EventAction(histoManager);
+  SetUserAction(eventAction);
+
+  // PS: Save output to file for stepping points >= 1
+  SteppingAction *steppingAction = new SteppingAction(histoManager, fDetector, eventAction);
+  SetUserAction(steppingAction);
+
+  OutsideWorldSteppingAction* outsideWorldSteppingAction = new OutsideWorldSteppingAction(histoManager);
+  SetUserAction(outsideWorldSteppingAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

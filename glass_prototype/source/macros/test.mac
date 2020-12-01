@@ -1,18 +1,35 @@
 /control/verbose 2
 /run/verbose 2
 
-#
-#randomization control
+# randomization control
 #/random/setSeeds 0 1
-#
-#This is from TestEm9 20171019
-#must be intiated before /run/initialize
+
+# Refer to TestEm9 20171019
+#/testhadr/ListPhysics
 /testhadr/Physics QBBC
-#
+#/testhadr/Physics optical
+
+# /detector/setCrystalSize 20 20 200 mm
+#/detector/setCrystalMaterial BaSi2O5
+/detector/setCrystalMaterial PbWO4
+/histoManager/setOutputFileNamePattern output_%s_%dmm_y_%dmm_z_%dmm_%.1fGeV_%devents.root
+/histoManager/writeStepPoints false
+
+# Scoring Mesh
+/score/create/boxMesh boxMesh_1
+/score/mesh/boxSize 100. 100. 100. cm
+/score/mesh/nBin 30 30 30
+# Define Scoring Quantity via Scorer
+/score/quantity/energyDeposit eDep
+# Draw scoring projection
+/score/drawProjection boxMesh_1 eDep
+# Dump to file
+/score/dumpQuantityToFile boxMesh_1 eDep eDep.txt
+
 /run/initialize
-#
+
 /process/list
-#
+
 #/grdm/selectVolume Target
 #/grdm/allVolumes
 #
@@ -42,4 +59,4 @@
 ################
 #
 /run/printProgress 1
-/run/beamOn 25
+/run/beamOn 20

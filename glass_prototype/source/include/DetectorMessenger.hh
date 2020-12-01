@@ -35,6 +35,7 @@
 #define DetectorMessenger_h 1
 
 #include "G4UImessenger.hh"
+#include "G4UIcmdWith3VectorAndUnit.hh"
 #include "globals.hh"
 
 class DetectorConstruction;
@@ -52,12 +53,16 @@ class DetectorMessenger: public G4UImessenger
    ~DetectorMessenger();
     
     virtual void SetNewValue(G4UIcommand*, G4String);
-    
+//    G4String GetCurrentValue(G4UIcommand* command);
+
   private:
-  
-    DetectorConstruction*      fDetector;
-    
-    G4UIcmdWithADoubleAndUnit* fDetectGapCmd;    
+    // Detector instance for
+    DetectorConstruction*      fDetectorConstruction;
+
+    G4UIdirectory* fDirectory;
+    G4UIcmdWithADoubleAndUnit* fSetGapCmd;
+    G4UIcmdWith3VectorAndUnit* fSetCrystalSizeCmd;
+    G4UIcmdWithAString* fSetCrystalMaterialCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

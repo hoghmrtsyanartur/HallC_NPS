@@ -35,26 +35,15 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PrimaryGeneratorAction.hh"
-
-#include "HistoManager.hh"
-
-#include "G4Event.hh"
-#include "G4ParticleTable.hh"
-#include "G4IonTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4Geantino.hh"
-#include "G4SystemOfUnits.hh"
+#include "globals.hh"
 #include "Randomize.hh"
-
-#include "G4GeneralParticleSource.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(HistoManager* histo)
-: G4VUserPrimaryGeneratorAction(),fParticleGun(0),
-  fHistoManager(histo)
+PrimaryGeneratorAction::PrimaryGeneratorAction(HistoManager* histoManager)
+ : G4VUserPrimaryGeneratorAction(), fHistoManager(histoManager)
 {
-  fParticleGun  = new G4GeneralParticleSource();
+  fParticleGun = new G4GeneralParticleSource();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

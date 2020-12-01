@@ -1,0 +1,80 @@
+/control/verbose 2
+/run/verbose 2
+
+/testhadr/Physics QBBC
+/testhadr/Physics optical
+
+/detector/setCrystalSize 20 20 200 mm
+/detector/setCrystalMaterial BaSi2O5
+#/detector/setCrystalMaterial PbWO4
+
+/histoManager/setOutputFileNamePattern output_%s_%dmm_y_%dmm_z_%dmm_%.1fGeV_%devents.root
+/histoManager/writeStepPoints false
+
+#/process/optical/verbose 2
+
+# Only have scintillation
+#/process/optical/processActivation Cerenkov      false
+#/process/optical/processActivation OpAbsorption  true
+#/process/optical/processActivation OpBoundary    true
+#/process/optical/processActivation Scintillation true
+#/process/optical/processActivation OpRayleigh    true
+#/process/optical/processActivation OpMieHG       true
+#/process/optical/processActivation OpWLS         true
+
+#/process/optical/scintillation/setExcitationRatio .5
+#/process/optical/scintillation/setByParticleType false
+#/process/optical/scintillation/setTrackInfo      false
+#/process/optical/scintillation/setFiniteRiseTime false
+#/process/optical/scintillation/setStackPhotons   false
+
+#/process/optical/cerenkov/setMaxPhotons 3
+#/process/optical/cerenkov/setMaxBetaChange 10
+
+# Scoring Mesh
+/score/create/boxMesh boxMesh_1
+/score/mesh/boxSize 100. 100. 100. cm
+/score/mesh/nBin 30 30 30
+# Define Scoring Quantity via Scorer
+/score/quantity/energyDeposit eDep
+# Draw scoring projection
+/score/drawProjection boxMesh_1 eDep
+# Dump to file
+/score/dumpQuantityToFile boxMesh_1 nOfStepGamma eDep.txt
+
+/run/initialize
+
+/vis/open OGL 600x600-0+0
+#/vis/open VRML2FILE
+#/vis/open HepRepFile
+/vis/drawVolume
+/vis/scene/add/trajectories
+#/vis/scene/add/hits
+/vis/scene/endOfEventAction accumulate 1
+
+/process/list
+
+/gps/source/intensity 1
+/gps/particle e-
+/gps/pos/type Point
+/gps/ene/mono 10 GeV
+/gps/pos/centre 0.  0. -2000. mm
+
+/gps/direction 0. 0. 1.
+
+/gps/source/multiplevertex true
+/gps/source/list
+
+#/run/printProgress 1
+/tracking/verbose 2
+/run/beamOn 1
+
+# https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
+/vis/viewer/set/viewpointVector -1 -1 1
+/vis/viewer/panTo 1.52 0.875 m
+/vis/viewer/zoomTo 50
+
+# Turn off visualization
+##### /vis/disable
+#/tracking/verbose 0
+#/run/beamOn 25

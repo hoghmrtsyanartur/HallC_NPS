@@ -34,22 +34,14 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "SteppingAction.hh"
-
-#include "DetectorConstruction.hh"
-#include "EventAction.hh"
-#include "HistoManager.hh"
-
 #include "G4Step.hh"
 #include "G4TouchableHistory.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SteppingAction::SteppingAction(DetectorConstruction* det,
-				 EventAction* evt,
-				 HistoManager* histo)
+SteppingAction::SteppingAction(HistoManager* histoManager, DetectorConstruction* det, EventAction* evt)
 : G4UserSteppingAction(), 
-  fDetector(det), fEventAction(evt),
-  fHistoManager(histo)                                         
+  fHistoManager(histoManager), fDetector(det), fEventAction(evt)
 { }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -75,12 +67,10 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4VPhysicalVolume* volume_pre 
     = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
 
-  if(
-     volume_pre->GetLogicalVolume()->GetName() == "Crystal_log"
-     ){
+  // Petr Stepanov: "Crystal_log" is crystals' logical volume
+  if(volume_pre->GetLogicalVolume()->GetName() == "Crystal_log"){
 
-    G4TouchableHistory* touchable
-      = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
+    G4TouchableHistory* touchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
 
     G4VPhysicalVolume* cellPhysical = touchable->GetVolume(2);
     G4int rowNo = cellPhysical->GetCopyNo();//0~2(3) in total
@@ -95,12 +85,10 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
     G4double eDep = aStep->GetTotalEnergyDeposit();
 
     G4int evtNb = fEventAction->GetEventNb();
+
     fHistoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
     fHistoManager->FillNtuple_Flux();
-
   }
-
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

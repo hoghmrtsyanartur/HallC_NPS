@@ -35,27 +35,17 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "EventAction.hh"
-
-#include "HistoManager.hh"
-
-#include "G4Event.hh"
-
 #include "B5HadCalorimeterHit.hh"
-#include "G4HCofThisEvent.hh"
-#include "G4VHitsCollection.hh"
 #include "G4SDManager.hh"
-#include "G4ios.hh"
-
 #include "CrystalCoverHit.hh"
 #include "CrystalFrontCoverHit.hh"
 #include "PMTcoverHit.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction(HistoManager* histo)
+EventAction::EventAction(HistoManager* histoManager)
   :G4UserEventAction(),
-   fHistoManager(histo),
-
+   fHistoManager(histoManager),
    fEvtNb(0),
 
    fHCHCID(-1),fHadCalEdep(),
@@ -85,6 +75,10 @@ EventAction::~EventAction()
 
 void EventAction::BeginOfEventAction(const G4Event* evt)
 {  
+  // Petr Stepanov:
+  // This method is invoked before converting the primary particles to G4Track objects.
+  // A typical use of this method would be to initialize or book histograms for a particular event.
+
   fEvtNb = evt->GetEventID();
   if (fEvtNb%fPrintModulo == 0) 
     //    G4cout << "\n---> Begin of event: " << evtNb << G4endl;
@@ -171,33 +165,33 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   }   
 
   // HCEnergy
-  for (G4int i=0;i<9;i++)
-    {
-      B5HadCalorimeterHit* hit = (*hcHC)[i];
-      G4double eDep = hit->GetEdep();//total energy deposition of each crystals
+  // HistoManager* histoManager = HistoManager::getInstance();
+  for (G4int i=0;i<9;i++) {
+    B5HadCalorimeterHit* hit = (*hcHC)[i];
+    G4double eDep = hit->GetEdep();//total energy deposition of each crystals
 
-      fHadCalEdep[i] = eDep;
+    fHadCalEdep[i] = eDep;
 
-      CrystalCoverHit* CChit = (*CrystCoverHC)[i];
-      CrystalFrontCoverHit* CFChit = (*CrystFrontCoverHC)[i];
-      PMTcoverHit* PMTChit = (*PMTcoverHC)[i];
-      G4double sc = hit->GetOPInt_sc();
-      G4double ce = hit->GetOPInt_ce();
-      fOP_sc[i] = sc;
-      fOP_ce[i] = ce;
+    CrystalCoverHit* CChit = (*CrystCoverHC)[i];
+    CrystalFrontCoverHit* CFChit = (*CrystFrontCoverHC)[i];
+    PMTcoverHit* PMTChit = (*PMTcoverHC)[i];
+    G4double sc = hit->GetOPInt_sc();
+    G4double ce = hit->GetOPInt_ce();
+    fOP_sc[i] = sc;
+    fOP_ce[i] = ce;
 
-      //No. of OP reflected at the side of the crystal wrapper.
-      G4int CrystalCoverOP = CChit->GetOPInt();  
-      fCrystCoverOP[i] = CrystalCoverOP;
-      //No. of OP reflected at the front of the crystal wrapper
-      G4int CrystalFrontCoverOP = CFChit->GetOPInt();  
-      fCrystFrontCoverOP[i] = CrystalFrontCoverOP;
-      //No. of OP arrived at the PMT cover
-      G4int PMTcoverOP = PMTChit->GetOPInt();  
-      fPMTcoverOP[i] = PMTcoverOP;
+    //No. of OP reflected at the side of the crystal wrapper.
+    G4int CrystalCoverOP = CChit->GetOPInt();
+    fCrystCoverOP[i] = CrystalCoverOP;
+    //No. of OP reflected at the front of the crystal wrapper
+    G4int CrystalFrontCoverOP = CFChit->GetOPInt();
+    fCrystFrontCoverOP[i] = CrystalFrontCoverOP;
+    //No. of OP arrived at the PMT cover
+    G4int PMTcoverOP = PMTChit->GetOPInt();
+    fPMTcoverOP[i] = PMTcoverOP;
 
-      fHistoManager->SetEnergy( i, fHadCalEdep[i], fOP_sc[i], fOP_ce[i], fCrystCoverOP[i], fCrystFrontCoverOP[i], fPMTcoverOP[i]);
-    }
+    fHistoManager->SetEnergy( i, fHadCalEdep[i], fOP_sc[i], fOP_ce[i], fCrystCoverOP[i], fCrystFrontCoverOP[i], fPMTcoverOP[i]);
+  }
   fHistoManager->FillNtuple();
 }
 

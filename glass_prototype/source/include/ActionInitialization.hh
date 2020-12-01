@@ -23,65 +23,34 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file analysis/shared/src/RunAction.cc
-/// \brief Implementation of the RunAction class
 //
-//
-// $Id: RunAction.cc 92322 2015-08-27 14:54:05Z gcosmo $
-//
+/// \file  ActionInitialization.hh
+/// \brief Definition of the  ActionInitialization class
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "RunAction.hh"
-#include "globals.hh"
-#include "Randomize.hh"
+#ifndef ActionInitialization_h
+#define ActionInitialization_h 1
+
+#include "G4VUserActionInitialization.hh"
+#include "DetectorConstruction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction(HistoManager* histoManager)
- : G4UserRunAction(), fHistoManager(histoManager)
+class  ActionInitialization : public G4VUserActionInitialization
 {
-}
+  public:
+    ActionInitialization(DetectorConstruction *detector);
+   ~ActionInitialization();
+
+    virtual void BuildForMaster() const;
+    virtual void Build() const;
+
+  private:
+    DetectorConstruction *fDetector;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::~RunAction(){}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::BeginOfRunAction(const G4Run* aRun)
-{ 
-  // PS:
-  // This method is invoked before entering the event loop (BeamOn?).
-  // A typical use of this method would be to initialize and/or book histograms for a particular run.
-
-  // PS: added automatic time-based random seeds for each run
-  long seeds[2];
-  time_t systime = time(NULL);
-  seeds[0] = (long) systime;
-  seeds[1] = (long) (systime*G4UniformRand());
-  G4Random::setTheSeeds(seeds);
-  G4Random::showEngineStatus();
-
-  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
-
-  // Instantiate histograms
-  fHistoManager->Book();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::EndOfRunAction(const G4Run* aRun)
-{
-  // PS:
-  // This method is invoked at the very end of the run processing.
-  // It is typically used for a simple analysis of the processed run.
-
-  G4int NbOfEvents = aRun->GetNumberOfEvent();
-  if (NbOfEvents == 0) return;
-
-  // Save histograms
-  fHistoManager->Save();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#endif

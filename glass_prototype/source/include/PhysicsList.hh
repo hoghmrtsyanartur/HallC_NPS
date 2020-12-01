@@ -77,6 +77,7 @@ private:
   G4VPhysicsConstructor*  fParticleList;
 
   // Optical Physics
+  G4bool fUseOpticalPhysics = false;
   G4VPhysicsConstructor*  fOptPhysicsList;
 
   std::vector<G4VPhysicsConstructor*>  fHadronPhys;
