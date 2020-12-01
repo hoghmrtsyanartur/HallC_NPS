@@ -113,9 +113,6 @@ int main(int argc, char **argv) {
 	// Instantiate General Particle Source (gps)
 	// Save primary particle information in Histogram Manager
 
-  // Batch session crashes here...
-	// PS: Do we need Action Initialization here?
-
   ActionInitialization* actionInitialization = new ActionInitialization(detector);
   runManager->SetUserInitialization(actionInitialization);
 
