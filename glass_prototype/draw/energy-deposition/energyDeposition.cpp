@@ -24,6 +24,7 @@
 #include <RooConstVar.h>
 #include <TVector3.h>
 #include <TLatex.h>
+#include <TMathBase.h>
 
 const Double_t statsLineHeight = 0.06;
 
@@ -142,41 +143,35 @@ void addCanvasTitle(TCanvas* canvas, const char* title){
   t->Draw();
 }
 
-
-
-int energyDeposition(const char *fileName){
-  // Open input ROOT file
-  std::cout << fileName << std::endl;
+TFile* openFile(const char* fileName){
   TFile *file = new TFile(fileName);
   if (file->IsZombie()){
     file->Close();
-    std::cout << "Error opening file \"" << fileName << "\". Skipping." << std::endl;
-    return 0;
+    std::cout << "Error opening file \"" << fileName << "\". Aborting." << std::endl;
+    exit(1);
   }
+  return file;
+}
 
-  TString* fileNameOnly = removeFileExtension(fileName);
 
-  // Test File Baskets
-  // https://root-forum.cern.ch/t/error-in-tbasket-readbasketbuffers/8932/3
-  // file->Map();
-
-  // Get number of events, GPS particle energy and particle name
-  Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();
-  Int_t numberOfEvents = ((RooConstVar*)file->Get("numberOfEvents"))->getVal();
-  const char* particleName = ((TObjString*)file->Get("gpsParticleName"))->GetName();
-  const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();
-  TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
-  Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
-
-  // Obtain the Tree named "T" from file
-  TTree *tree = (TTree *)file->Get("t");
+TTree* getTree(TFile* file, const char* treeName){
+  TTree *tree = (TTree *)file->Get(treeName);
   if (!tree){
-    std::cout << "Cannot find object with name \"T\". Skipping." << std::endl;
-    return 0;
+    std::cout << "Cannot find tree with name \"" << treeName << "\". Aborting." << std::endl;
+    exit(1);
   }
-  std ::cout << "Number of events in the tree: " << tree->GetEntries() << std::endl;
+  // std ::cout << "Number of events in the tree: " << tree->GetEntries() << std::endl;
+  // tree->Print();
+  return tree;
+}
 
-  tree->Print();
+
+// ----------------------------------
+// Plot energy deposition in crystals
+// ----------------------------------
+
+void plotCrystalEdep(const char *fileName){
+  TFile *file = openFile(fileName);
 
   // Instantiate histograms to be saved in ROOT file
   const Int_t nHists = 9;
@@ -189,6 +184,7 @@ int energyDeposition(const char *fileName){
     edepHist[i]->GetYaxis()->SetTitle("Counts");
   }
 
+  TTree* tree = getTree(file, "t");
   // Try opening branches
   // TBranch* branch = tree->GetBranch("edep");
   // if (!branch){
@@ -205,7 +201,7 @@ int energyDeposition(const char *fileName){
     for(Int_t j = 0 ; j < nHists ; j++){
       edepHist[j]->Fill(edep[j]);
       totalEdep[j] += edep[j];
-      // std::cout << "edep[" << j << "] = " << edep[j] << std::endl;
+      TString* fileNameOnly = removeFileExtension(fileName);   // std::cout << "edep[" << j << "] = " << edep[j] << std::endl;
     }
   }
 
@@ -216,19 +212,27 @@ int energyDeposition(const char *fileName){
     totalDepositedEnergy += totalEdep[i];
   }
 
+  // Get number of events, GPS particle energy and particle name
+  Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();
+  Int_t numberOfEvents = ((RooConstVar*)file->Get("numberOfEvents"))->getVal();
+  const char* particleName = ((TObjString*)file->Get("gpsParticleName"))->GetName();
+  const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();
+  TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
+  Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
+
   // Instantiate the Canvas
-  TString canvas1Title = TString::Format(
+  TString canvasTitle = TString::Format(
       "Injected Kinetic Energy %.1f GeV (%s) in %dx%dx%d mm %s. Deposited in Crystals %.1f GeV (%.1f %%)",
       totalGPSEnergy/1E3, particleName, (int)crystalSize->x(), (int)crystalSize->y(), (int)crystalSize->z(),
       crystalMaterial, totalDepositedEnergy/1E3,
       totalDepositedEnergy/totalGPSEnergy*100);
-  TCanvas* canvas1 = new TCanvas("canvas1", canvas1Title.Data(), 1024, 800);
-  canvas1->Divide(3,3);
+  TCanvas* canvas = new TCanvas("crystalEdepCanvas", canvasTitle.Data(), 1024, 800);
+  canvas->Divide(3,3);
 
   gStyle->SetPalette(1);
 
   for (Int_t i = 0; i < nHists; i++){
-    TVirtualPad* pad = canvas1->cd(i+1);
+    TVirtualPad* pad = canvas->cd(i+1);
     edepHist[i]->Draw();
     edepHist[i]->SetFillColor(kCyan);
     alignStats(pad);
@@ -239,67 +243,77 @@ int energyDeposition(const char *fileName){
   }
 
   // Write global title for first Canvas
-  addCanvasTitle(canvas1, canvas1->GetTitle());
+  addCanvasTitle(canvas, canvas->GetTitle());
+
   // Save canvas to file
-  canvas1->SaveAs((*fileNameOnly+"-edep.png").Data());
+  TString* fileNameOnly = removeFileExtension(fileName);
+  canvas->SaveAs((*fileNameOnly+"-edep.png").Data());
+}
 
-  // ---------------------------------
-  // Plot particles escaping the world
-  // ---------------------------------
 
-  TTree *escapeTree = (TTree *)file->Get("t_escape");
-  if (!escapeTree){
-    std::cout << "Cannot find object with name \"T\". Skipping." << std::endl;
-    return 0;
-  }
-  std ::cout << "Number of events in the tree: " << tree->GetEntries() << std::endl;
+// ---------------------------------
+// Plot particles escaping the world
+// ---------------------------------
+
+void plotEscapeParticles(const char* fileName){
+  TFile* file = openFile(fileName);
+  TTree *tree = getTree(file, "t_escape");
+
+  // Get number of events, GPS particle energy and particle name
+  Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();
+  Int_t numberOfEvents = ((RooConstVar*)file->Get("numberOfEvents"))->getVal();
+  const char* particleName = ((TObjString*)file->Get("gpsParticleName"))->GetName();
+  const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();
+  TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
+  Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
 
   // Set Marker Style
-  TCanvas* escapeCanvas = new TCanvas("escapeCanvas", "Particles escaping the World", 1024, 400);
-  escapeCanvas->Divide(3);
+  TCanvas* canvas = new TCanvas("escapeCanvas", "Particles escaping the World", 1024, 400);
+  canvas->Divide(3);
 
   // PAD 1: Draw world escape locations
-  escapeTree->SetMarkerStyle(6);
-  TVirtualPad* pad1 = escapeCanvas->cd(1);
-  escapeTree->Draw("x:y:z:energy", "", "COLZ");
+  tree->SetMarkerStyle(6);
+  TVirtualPad* pad1 = canvas->cd(1);
+  Int_t maxEntries = TMath::Min((Double_t)tree->GetEntries(), 1.E4);
+  tree->Draw("x:y:z:energy", "", "COLZ", maxEntries);
   TH1* htemp1 = (TH1*) pad1->GetListOfPrimitives()->FindObject("htemp");
   htemp1->SetTitle("Escape Locations");
 
   // PAD 2: Draw Energy distribution
-  TVirtualPad* pad2 = escapeCanvas->cd(2);
+  TVirtualPad* pad2 = canvas->cd(2);
   pad2->SetLogy();
   // gStyle->SetOptStat(1001111); // with integral https://root.cern.ch/doc/master/classTPaveStats.html
-  escapeTree->Draw("energy");
+  tree->Draw("energy");
   TH1* htemp2 = (TH1*) pad2->GetListOfPrimitives()->FindObject("htemp");
   htemp2->SetTitle("Kinetic Energy Distribution");
   htemp2->SetFillColor(kCyan);
   alignStats(pad2);
   Double_t escapeEnergy = 0; // getWeightedIntegral(htemp2);
   Double_t energy;
-  escapeTree->SetBranchAddress("energy",&energy);
-  for (Int_t i = 0; i<(Int_t)escapeTree->GetEntries(); i++) {
-    escapeTree->GetEntry(i);
+  tree->SetBranchAddress("energy",&energy);
+  for (Int_t i = 0; i<(Int_t)tree->GetEntries(); i++) {
+    tree->GetEntry(i);
     escapeEnergy+= energy;
   }
   TString escapeEnergyString = TString::Format("Total E = %.0f MeV", escapeEnergy);
   addTextToStats(pad2, escapeEnergyString.Data());
-  TString canvasTitle2 = TString::Format("Injected Kinetic Energy %.1f GeV (%s) in %s. Escaped Kinetic Energy %.1f GeV (%.1f %%)", totalGPSEnergy/1E3, particleName, crystalMaterial, escapeEnergy/1E3, escapeEnergy/totalGPSEnergy*100);
-  escapeCanvas->SetTitle(canvasTitle2.Data());
+  TString canvasTitle = TString::Format("Injected Kinetic Energy %.1f GeV (%s) in %s. Escaped Kinetic Energy %.1f GeV (%.1f %%)", totalGPSEnergy/1E3, particleName, crystalMaterial, escapeEnergy/1E3, escapeEnergy/totalGPSEnergy*100);
+  canvas->SetTitle(canvasTitle.Data());
 
   // PAD 3: Draw PDG
-  TVirtualPad* pad3 = escapeCanvas->cd(3);
+  TVirtualPad* pad3 = canvas->cd(3);
   Int_t pdgMax =  std::numeric_limits<int>::min();
   Int_t pdgMin = std::numeric_limits<int>::max();
   Int_t pdg;
-  escapeTree->SetBranchAddress("pdg",&pdg);
-  for (Int_t i = 0; i < (Int_t)escapeTree->GetEntries(); i++) {
-    escapeTree->GetEntry(i);
+  tree->SetBranchAddress("pdg",&pdg);
+  for (Int_t i = 0; i < (Int_t)tree->GetEntries(); i++) {
+    tree->GetEntry(i);
     if (pdg > pdgMax) pdgMax = pdg;
     if (pdg < pdgMin) pdgMin = pdg;
   }
   TH1* pdgHist = new TH1D("pdgHist", "Particle Type (PDG)", pdgMax - pdgMin + 1, pdgMin - 0.5, pdgMax + 0.5);
-  for (Int_t i = 0; i < (Int_t)escapeTree->GetEntries(); i++) {
-    escapeTree->GetEntry(i);
+  for (Int_t i = 0; i < (Int_t)tree->GetEntries(); i++) {
+    tree->GetEntry(i);
     pdgHist->Fill(pdg);
   }
   // Make pie chart
@@ -328,7 +342,7 @@ int energyDeposition(const char *fileName){
   TLegend* legend = new TLegend(0.5,0.5,0.9,0.9,"");
   for (Int_t i = 0; i < pie4->GetEntries(); ++i) {
     Double_t pieValue = pie4->GetSlice(i)->GetValue();
-    TString text = TString::Format("%s (%d particles, %.1f %%)", pie4->GetSlice(i)->GetTitle(), (int)pieValue, pieValue/escapeTree->GetEntries()*100);
+    TString text = TString::Format("%s (%d particles, %.1f %%)", pie4->GetSlice(i)->GetTitle(), (int)pieValue, pieValue/tree->GetEntries()*100);
     legend->AddEntry(pie4->GetSlice(i),text.Data(),"f");
   }
   legend->SetX1(0.1);
@@ -341,9 +355,76 @@ int energyDeposition(const char *fileName){
   pie4->SetTitle("Particle Types and Ratios");
 
   // Add title to canvas2
-  addCanvasTitle(escapeCanvas, escapeCanvas->GetTitle());
+  addCanvasTitle(canvas, canvas->GetTitle());
+
   // Save canvas
-  escapeCanvas->SaveAs((*fileNameOnly+"-eesc.png").Data());
+  TString* fileNameOnly = removeFileExtension(fileName);
+  canvas->SaveAs((*fileNameOnly+"-eesc.png").Data());
+}
+
+
+// ---------------------------------
+// Plot energy resolution
+// ---------------------------------
+
+void plotEnergyResolution(const char* fileName){
+  TFile* file = openFile(fileName);
+  TTree *tree = getTree(file, "t");
+
+  // Get number of events, GPS particle energy and particle name
+  Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();
+  Int_t numberOfEvents = ((RooConstVar*)file->Get("numberOfEvents"))->getVal();
+  const char* particleName = ((TObjString*)file->Get("gpsParticleName"))->GetName();
+  const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();
+  TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
+  Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
+
+  // Estimate energy histogram upper range
+  Int_t nCrystals = 9;
+  Double_t edep[nCrystals];
+  Double_t maxEnergy = 0;
+  tree->SetBranchAddress("edep", edep);
+  tree->GetEntry(0);      // Get first entry
+  Double_t firstEdep = 0;
+  for(Int_t j = 0 ; j < nCrystals ; j++){
+    // Calculate the total energy deposited in all crystals in 1st event
+    firstEdep += edep[j];
+  }
+
+  // Instantiate histogram for total energy deposition
+  TH1D* edepHist = new TH1D("totalEdepHist", "Total Energy Deposition in all Crystals", 100, 0, firstEdep*2);
+  edepHist->GetYaxis()->SetTitle("Counts");
+  edepHist->GetXaxis()->SetTitle("Total deposited energy, MeV");
+
+  // Fill histogram from the tree
+//  tree->Reset();
+  for (Int_t i = 0; i < (Int_t)tree->GetEntries(); i++){
+    // Get tree entry
+    tree->GetEntry(i);
+    // Each event we calculate the total energy deposited in all crystals
+    Double_t totalEdep = 0;
+    for(Int_t j = 0 ; j < nCrystals ; j++){
+      totalEdep += edep[j];
+    }
+    edepHist->Fill(totalEdep);
+  }
+
+  TString canvasTitle = TString::Format("Energy resolution of %s crystal assembly, %.0f GeV.", crystalMaterial, particleEnergy/1E3);
+  TCanvas* canvas = new TCanvas("eResCanvas", canvasTitle.Data());
+  edepHist->Draw();
+  edepHist->SetFillColor(kCyan);
+  alignStats(canvas, 0.3);
+}
+
+
+// ---------------------------------
+// Main function
+// ---------------------------------
+
+int energyDeposition(const char *fileName){
+  plotCrystalEdep(fileName);
+  plotEscapeParticles(fileName);
+  plotEnergyResolution(fileName);
 
   // Return success
   return 0;

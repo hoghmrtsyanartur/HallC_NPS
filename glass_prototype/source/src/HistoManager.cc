@@ -181,12 +181,20 @@ void HistoManager::Book()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void HistoManager::FillNtupleOutOfWorld(G4double energy, G4double x, G4double y, G4double z, G4int pdg, const char* particleName){
+  // Only book 40 events maximum
+  // G4int eventNumber = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+  // if (eventNumber > 40) return;
+
+  // Book maximum 10000 events for the escape partic
+  // if (fNtupleOutOfWorld->GetEntries() < 1E4) return;
+
   fOutWorldEnergy = energy;
   fOutWorldX = x;
   fOutWorldY = y;
   fOutWorldZ = z;
   fPdg = pdg;
 //  fPdgVector.push_back(pdg); // Save pdg to vector
+
   fNtupleOutOfWorld->Fill();
 
   // Save pair of particle pdg and name
