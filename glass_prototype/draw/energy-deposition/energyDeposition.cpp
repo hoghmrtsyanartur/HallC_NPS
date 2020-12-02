@@ -25,6 +25,7 @@
 #include <TVector3.h>
 #include <TLatex.h>
 #include <TMathBase.h>
+#include <TF1.h>
 
 const Double_t statsLineHeight = 0.06;
 
@@ -392,7 +393,8 @@ void plotEnergyResolution(const char* fileName){
   }
 
   // Instantiate histogram for total energy deposition
-  TH1D* edepHist = new TH1D("totalEdepHist", "Total Energy Deposition in all Crystals", 100, 0, firstEdep*2);
+  TString title = TString::Format("Energy resolution of %s crystal assembly, %.0f GeV.", crystalMaterial, particleEnergy/1E3);
+  TH1D* edepHist = new TH1D("totalEdepHist", title.Data(), 100, 0, firstEdep*3);
   edepHist->GetYaxis()->SetTitle("Counts");
   edepHist->GetXaxis()->SetTitle("Total deposited energy, MeV");
 
@@ -409,11 +411,31 @@ void plotEnergyResolution(const char* fileName){
     edepHist->Fill(totalEdep);
   }
 
-  TString canvasTitle = TString::Format("Energy resolution of %s crystal assembly, %.0f GeV.", crystalMaterial, particleEnergy/1E3);
-  TCanvas* canvas = new TCanvas("eResCanvas", canvasTitle.Data());
+  TCanvas* canvas = new TCanvas("eResCanvas", title.Data());
+
+  // Fit energy spectrum, obtain resolution
+  edepHist->Fit("gaus");
+  Double_t m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
+  Double_t Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
+  Double_t s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
+  Double_t Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
+  Double_t r = s/m*100;  // Resolution
+  Double_t Dr = 100*TMath::Sqrt(TMath::Power(1/m*Ds,2)+TMath::Power(s/m/m*Dm,2)); // Indirect error
+
+  // Plot histogram and fit
   edepHist->Draw();
   edepHist->SetFillColor(kCyan);
-  alignStats(canvas, 0.3);
+  TString meanString = TString::Format("Gaus mean, MeV = %.1f #pm %.1f", m, Dm);
+  addTextToStats(canvas, meanString.Data());
+  TString sigmaString = TString::Format("Gaus sigma, MeV = %.1f #pm %.1f", s, Ds);
+  addTextToStats(canvas, sigmaString.Data());
+  TString resolutionString = TString::Format("Resolution, %% = %.1f #pm %.1f", r, Dr);
+  addTextToStats(canvas, resolutionString.Data());
+  alignStats(canvas, 0.35);
+
+  // Save canvas
+  TString* fileNameOnly = removeFileExtension(fileName);
+  canvas->SaveAs((*fileNameOnly+"-eres.png").Data());
 }
 
 
