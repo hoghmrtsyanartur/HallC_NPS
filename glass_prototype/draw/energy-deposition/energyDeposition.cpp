@@ -337,7 +337,7 @@ int energyDeposition(const char *fileName){
   legend->SetX2(.9);
   legend->SetY2(.9);
   legend->Draw();
-  pie4->SetY((1-legendBottom)/2);
+  pie4->SetY((1-legendBottom)*3/4);
   pie4->SetTitle("Particle Types and Ratios");
 
   // Add title to canvas2

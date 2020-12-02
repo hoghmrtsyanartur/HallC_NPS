@@ -1,8 +1,14 @@
-# Custom message: set crystals' size
-/NPS_Energy_Resolution/det/setCrystalSize 20 20 400 mm
-
+# Macro file for the initialization phase of "exampleN03.cc"
+# when running in interactive mode
+#
+# Sets some default verbose
+#
+/control/verbose 2
+#/run/verbose 2
+#
+#turn off the initialization when in batch mode
 /run/initialize
-
+#
 # Use this open statement to create an OpenGL view:
 /vis/open OGL 600x600-0+0
 #
