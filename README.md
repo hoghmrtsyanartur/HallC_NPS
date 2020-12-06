@@ -59,19 +59,24 @@ cd HallC_NPS/glass_prototype/source/
 ln -s ~/Source/geant4.10.06.p02/source ./geant4_source
 ```
 The name of the stmbolic link `geant4_source` is excluded from the version control. Therefore the Geant4 source files will not be checked in the Git tree. folder name is excluded in the `.gitignore`
-Now create a directory for the Eclipse project. For demonstration purposes we will create to store the Eclipse project
+
+Next we need to set up an Eclipse project. Thankfully, CMake has an automated way of generating the Eclipse project. This saves quite a time for application developers. The general CMake command is `cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug ../project/source`, where the `../project/source` path must be relative or absolute path of the project source folder that contains Cmake cache file `CMakeLists.txt`.  Generally speaking there are two options:
+1. **In-source build**. Eclipse project folder files are located the source program folder next to the `CMakeLists.txt` file. It is not favorable because project files will interfere with the Git tree and multiple excludes in `.gitignore` will be required. Also I've experienced Eclipse indexer issued using this method.
+2. **Out-of-source build**. Eclipse project is located outside of the Git repository. This option is preferrable because the project, build and executable files are separated trom the Git project tree. However, in this option I ran into a problem, namely the Makefile targets were not generated automatically.
+
+However it turned out that the out-of-source project build located inside the Git tree works without any issues. Also the project folder can be simply excluded in `.gitignore` with one line. We will follow this option now and create a directory for the Eclipse project.
 ```
-cd ~/Development
-mkdir geant4-prototype-eclipse && cd geant4-prototype-eclipse
+cd ~/Development/HallC_NPS/glass_prototype/
+mkdir eclipse && cd eclipse
 ```
-Thankfully, CMake has a straightforward way of generating the Eclipse project. This saves quite a time for application developers. The general CMake command is `cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug ../project/source`, where Above the ‘../project/source’ path must be relative or absolute path of the folder that contains Cmake cache file `CMakeLists.txt`. In our case it is:
+The out-of-source project generator build is initiated via following command:
 ```
-cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE ../HallC_NPS/glass_prototype/source
+cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug ../source
 ```
-At this point the project folder is ready to be imported in Eclipse. Open Eclipse and go to File → Makefile Project with Existing Code... Specify the project location in the modal dialog by clicking the "Browse" button. Locate the `~/Development/geant4-prototype-eclipse` project folder.
+At this point the project folder is ready to be imported in Eclipse. Open Eclipse and go to File → Open Projects from File System... Specify the project location in the modal dialog by clicking the "Directory..." button. Locate the `~/Development/HallC_NPS/glass_prototype/eclipse` project folder. Click "Finish".
 Eclipse will import the project and start indexing source files and headers. This process may take up to 15 minutes.
 
-P.S.: for some reason when the Eclipse project folder is built outside of the Git tree, the Makefile targets are not imported successfully. Therefore they will need a manual configuration. This might be a bug that will be fixed in new versions of CMake and Eclipse.
+More information regarding the CMake Eclipse generator can be found: [on Mantid project page](https://www.mantidproject.org/Setting_up_Eclipse_projects_with_CMake), [on Javier V. Gómez website](https://jvgomez.github.io/pages/how-to-configure-a-cc-project-with-eclipse-and-cmake.html), [on Cmake Wiki](https://gitlab.kitware.com/cmake/community/-/wikis/home), [again on Cmake Wiki](https://gitlab.kitware.com/cmake/community/-/wikis/doc/editors/Eclipse-CDT4-Generator) and [again on Cmake Wiki](https://gitlab.kitware.com/cmake/community/-/wikis/doc/editors/Eclipse-UNIX-Tutorial).
 
 ## User notes
 
