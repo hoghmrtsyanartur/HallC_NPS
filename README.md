@@ -89,9 +89,9 @@ The output of the above command will provide the avalable versions of the softwa
 ```
 source /site/12gev_phys/softenv.csh 2.4
 ```
-The shortcut to source always the latest possible environment is following:
+The shortcut to source always the latest possible environment is following (grep's regexp lookahead):
 ```
-source /site/12gev_phys/softenv.csh `grep -oP "\d\.\d(?= \(production)" /site/12gev_phys/softenv.csh`
+source /site/12gev_phys/softenv.csh `grep -oP "\d\.\d(?= \(prod" /site/12gev_phys/softenv.csh`
 ```
 
 ## Notes from the former developers
