@@ -40,10 +40,15 @@ Finally the Geant4 code is compiled. Now we install in `~/Applications` folder:
 ```
 make install
 ```
+After the installation is completed it is necesary to source the Geant4 environment variables. In order to do it automatically with the start of the user session, source the Geant4 script in your `~/.bashrc`:
+```
+echo ‘source $HOME/Applications/geant4/bin/geant4.sh’ >> ~/.bashrc
+```
+Now that the setup of the Geant4 with debug symbols is complete, restart your session (logout and login back) and proceed with the Eclipse project setup.
 
 ### Setup the Glass Prototype Project in Eclipse
 
-Install Eclipse IDE. Check out the repository into the desired location on your computer:
+First, install Eclipse IDE. This is documented in the (Chapter 6 of my dissertation).Check out the repository into the desired location on your computer:
 
 ```
 git clone https://github.com/petrstepanov/HallC_NPS && cd HallC_NPS
@@ -53,7 +58,19 @@ Thankfully CMake has a straightforward way of generating the Eclipse project. Th
 
 ## User notes
 
-This section is designed for the end users and describes the process of running the simulation and obtaining the experimental results on the Computational Farm.
+This section is designed for the end users and describes the process of running the simulation and obtaining the experimental results on the Computating Farm.
+There is no need to install the Geant4 toolkit on the farm. It comes preinstalled. Howefer, after user logs in to the Computing Farm it is necessary to source the latest environment. In order to see the available versions of the environment run the following command:
+```
+csh /site/12gev_phys/softenv.csh
+```
+The output of the above command will provide the avalable versions of the software environments. It is recommended to use the latest environment unless the software requires some specific version of it. Currently (Dec 5, 2020) the latest version of the environment is `2.4`. Therefore one will execute:
+```
+source /site/12gev_phys/softenv.csh 2.4
+```
+The shortcut to source always the latest possible environment is following:
+```
+source /site/12gev_phys/softenv.csh `grep -oP "\d\.\d(?= \(production)" /site/12gev_phys/softenv.csh`
+```
 
 ## Notes from the former developers
 
