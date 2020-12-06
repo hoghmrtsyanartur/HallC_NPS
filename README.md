@@ -64,12 +64,12 @@ Next we need to set up an Eclipse project. Thankfully, CMake has an automated wa
 1. **In-source build**. Eclipse project folder files are located the source program folder next to the `CMakeLists.txt` file. It is not favorable because project files will interfere with the Git tree and multiple excludes in `.gitignore` will be required. Also I've experienced Eclipse indexer issued using this method.
 2. **Out-of-source build**. Eclipse project is located outside of the Git repository. This option is preferrable because the project, build and executable files are separated trom the Git project tree. However, in this option I ran into a problem, namely the Makefile targets were not generated automatically.
 
-However it turned out that the out-of-source project build located inside the Git tree works without any issues. Also the project folder can be simply excluded in `.gitignore` with one line. We will follow this option now and create a directory for the Eclipse project.
+So, there seem to be problems with each type of build. However, it turned out that the out-of-source project build _located inside the Git tree_ works without any issues. Also the project folder can be simply excluded in `.gitignore` with one line. We will follow this option now and create a directory for the Eclipse project.
 ```
 cd ~/Development/HallC_NPS/glass_prototype/
 mkdir eclipse && cd eclipse
 ```
-The out-of-source project generator build is initiated via following command:
+Note, `eclipse` folder is already added to the `.gitignore`. The out-of-source project generator build is initiated via following command:
 ```
 cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug ../source
 ```
