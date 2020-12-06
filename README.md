@@ -48,18 +48,35 @@ Now that the setup of the Geant4 with debug symbols is complete, restart your se
 
 ### Setup the Glass Prototype Project in Eclipse
 
-First, install Eclipse IDE. This is documented in the (Chapter 6 of my dissertation).Check out the repository into the desired location on your computer:
+First, install Eclipse IDE. This process is documented in the [Chapter 6 of my dissertation](https://petrstepanov.com/static/petr-stepanov-dissertation-latest.pdf). Next, check out the Git repository into the desired location on your computer. I usually keep most of the Git repositories in `~/Development` folder.
+```
+mkdir -p ~/Development && cd ~/Development
+git clone https://github.com/petrstepanov/HallC_NPS
+```
+In order to access the Geant4 source and header files in Eclipse we need to create a symlink to the Geant4 source code in the Glass Prototype source folder:
+```
+cd HallC_NPS/glass_prototype/source/
+ln -s ~/Source/geant4.10.06.p02/source ./geant4_source
+```
+The name of the stmbolic link `geant4_source` is excluded from the version control. Therefore the Geant4 source files will not be checked in the Git tree. folder name is excluded in the `.gitignore`
+Now create a directory for the Eclipse project. For demonstration purposes we will create to store the Eclipse project
+```
+cd ~/Development
+mkdir geant4-prototype-eclipse && cd geant4-prototype-eclipse
+```
+Thankfully, CMake has a straightforward way of generating the Eclipse project. This saves quite a time for application developers. The general CMake command is `cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug ../project/source`, where Above the ‘../project/source’ path must be relative or absolute path of the folder that contains Cmake cache file `CMakeLists.txt`. In our case it is:
+```
+cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE ../HallC_NPS/glass_prototype/source
+```
+At this point the project folder is ready to be imported in Eclipse. Open Eclipse and go to File → Makefile Project with Existing Code... Specify the project location in the modal dialog by clicking the "Browse" button. Locate the `~/Development/geant4-prototype-eclipse` project folder.
+Eclipse will import the project and start indexing source files and headers. This process may take up to 15 minutes.
 
-```
-git clone https://github.com/petrstepanov/HallC_NPS && cd HallC_NPS
-```
-Create a directory for the Eclipse project. For demonstration purposes we willto store the Eclipse project
-Thankfully CMake has a straightforward way of generating the Eclipse project. This saves quite a time for application developers.
+P.S.: for some reason when the Eclipse project folder is built outside of the Git tree, the Makefile targets are not imported successfully. Therefore they will need a manual configuration. This might be a bug that will be fixed in new versions of CMake and Eclipse.
 
 ## User notes
 
 This section is designed for the end users and describes the process of running the simulation and obtaining the experimental results on the Computating Farm.
-There is no need to install the Geant4 toolkit on the farm. It comes preinstalled. Howefer, after user logs in to the Computing Farm it is necessary to source the latest environment. In order to see the available versions of the environment run the following command:
+There is no need to install the Geant4 toolkit on the farm. It comes preinstalled. However, after user logs in to the Computing Farm it is necessary to source the latest environment. In order to see the available versions of the environment run the following command:
 ```
 csh /site/12gev_phys/softenv.csh
 ```
