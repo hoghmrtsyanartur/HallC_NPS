@@ -54,7 +54,6 @@ class HistoManagerMessenger;
 //class TH1D;
 
 const G4int MaxHisto = 4;
-const G4int MaxNtuple = 9;
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -65,32 +64,40 @@ public:
   ~HistoManager();
 
   void Book();
-  void FillNtuple();
-  void FillNtuple_Flux();
+//  void FillNtuple();
+//  void FillNtuple_Flux();
+  void FillNtupleEnergyDep(G4double* energy);
   void FillNtupleOutOfWorld(G4double energy, G4double x, G4double y, G4double z, G4int pdg, const char* particleName);
   void Save();
 
-  void SetPrimaryParticle(G4double, G4int, G4ThreeVector, G4ThreeVector, G4double);
-  void SetEnergy(G4int, G4double, G4int, G4int, G4int, G4int, G4int);
-  void SetFluxEnergy(G4int, G4int , G4double, G4ThreeVector);
+  // void SetPrimaryParticle(G4double, G4int, G4ThreeVector, G4ThreeVector, G4double);
+  // void SetEnergy(G4int, G4double, G4int, G4int, G4int, G4int, G4int);
+  // void SetFluxEnergy(G4int, G4int , G4double, G4ThreeVector);
 
   void PrintStatistic();
 
   // HistoManagerMessenger methods
   void setFileNamePattern(G4String fileNamePattern);
   G4String getFileNamePattern();
+
   void setWriteStepPoints(G4bool value);
+  void setWriteWorldEscape(G4bool value);
+
   G4bool getWriteStepPoints();
-//  void BookBeginOfEventAction();
+  G4bool getWriteWorldEscape();
+  //  void BookBeginOfEventAction();
 
 private:
   HistoManagerMessenger* fHistoManagerMessenger;
   G4String fFileNamePattern;
+
   G4bool fWriteStepPoints;
+  G4bool fWriteWorldEscape;
 
   TFile*   fRootFile;
-  TTree*   fNtuple;
-  TTree*   fNtuple_Flux;
+  TTree*   fNtupleCrystals;
+  TTree*   fNtuplePMT;
+//  TTree*   fNtuple_Flux;
   TTree*   fNtupleOutOfWorld;
 
   G4double fPrimaryTime;
@@ -98,21 +105,24 @@ private:
   G4double fPrimaryEnergy;
   G4int    fEvtNb;
 
-  G4double fEdep[MaxNtuple];
-  G4int    fOP_sc[MaxNtuple];
-  G4int    fOP_ce[MaxNtuple];
-  G4int    fOP_cover[MaxNtuple];
-  G4int    fOP_frontcover[MaxNtuple];
-  G4int    fOP_pmtcover[MaxNtuple];
+  G4double* fEdep;
+  G4double fEdepTotal;
 
-  G4double fPrimaryPos[3];
-  G4double fPrimaryMom[3];
+  //  G4int    fOP_sc[MaxNtuple];
+//  G4int    fOP_ce[MaxNtuple];
+//  G4int    fOP_cover[MaxNtuple];
+//  G4int    fOP_frontcover[MaxNtuple];
+//  G4int    fOP_pmtcover[MaxNtuple];
 
-  G4double fFluxEne[MaxNtuple];
-  G4double fFluxPos_X[MaxNtuple];
-  G4double fFluxPos_Y[MaxNtuple];
-  G4double fFluxPos_Z[MaxNtuple];
+//  G4double fPrimaryPos[3];
+//  G4double fPrimaryMom[3];
 
+//  G4double fFluxEne[MaxNtuple];
+//  G4double fFluxPos_X[MaxNtuple];
+//  G4double fFluxPos_Y[MaxNtuple];
+//  G4double fFluxPos_Z[MaxNtuple];
+
+  G4double fTotalOutWorldEnergy;
   G4double fOutWorldEnergy;
   G4double fOutWorldX;
   G4double fOutWorldY;

@@ -23,27 +23,23 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file analysis/shared/include/EventAction.hh
+//
+/// \file EventAction.hh
 /// \brief Definition of the EventAction class
-//
-//
-// $Id: EventAction.hh 67226 2013-02-08 12:07:18Z ihrivnac $
-//
-// 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #ifndef EventAction_h
 #define EventAction_h 1
 
 #include "G4UserEventAction.hh"
-#include "globals.hh"
-#include <vector>
-#include "HistoManager.hh"
-#include "G4Event.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "G4THitsMap.hh"
+#include "globals.hh"
+#include "HistoManager.hh"
+/// Event action class
+///
+/// In EndOfEventAction(), it prints the accumulated quantities of the energy
+/// deposit and track lengths of charged particles in Absober and Gap layers
+/// stored in the hits collections.
 
 class EventAction : public G4UserEventAction
 {
@@ -54,31 +50,18 @@ public:
   virtual void  BeginOfEventAction(const G4Event* event);
   virtual void    EndOfEventAction(const G4Event* event);
 
-  G4int GetEventNb();
+  G4int GetEventNumber();
     
 private:
+  G4int fEventNumber;               // Number of current event
+  G4int  fCrystalEdepHCID;          // Hits collection ID
   HistoManager* fHistoManager;
-  G4int fEvtNb;
 
-  G4int fHCHCID;
-  std::vector<G4double> fHadCalEdep;
-  std::vector<G4int> fPID;
+  G4double GetSum(G4THitsMap<G4double>* hitsMap) const;
 
-  std::vector<G4int> fOP_sc;//scintillated photon
-  std::vector<G4int> fOP_ce;//cerenkov photon
-
-  G4int fCrystCoverHCID;//optical photon in crystal side cover.
-  std::vector<G4int> fCrystCoverOP;
-  G4int fCrystFrontCoverHCID;//optical photon in crystal front cover.
-  std::vector<G4int> fCrystFrontCoverOP;
-  G4int fPMTcoverHCID;
-  std::vector<G4int> fPMTcoverOP;
-
-  G4int     fPrintModulo;
+  // data members
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
-    

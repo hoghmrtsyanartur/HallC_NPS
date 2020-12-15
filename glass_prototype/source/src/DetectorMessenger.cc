@@ -37,6 +37,7 @@
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,11 +59,18 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* Det) : G4UImessenger(
 	fSetCrystalSizeCmd->SetDefaultUnit("mm");
 	fSetCrystalSizeCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
 
-
   // Instantiate command for setting crystal Material
   fSetCrystalMaterialCmd = new G4UIcmdWithAString("/detector/setCrystalMaterial", this);
   fSetCrystalMaterialCmd->SetGuidance("Set crystal material type, \"BaSi2O5\" (default) or \"PbWO4\"");
   fSetCrystalMaterialCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
+
+  // Instantiate commands for setting number of crystals
+  fSetCrystalNumberXCmd = new G4UIcmdWithAnInteger("/detector/setCrystalNumberX", this);
+  fSetCrystalNumberXCmd->SetGuidance("Number of crystals along X axis");
+  fSetCrystalNumberXCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
+  fSetCrystalNumberYCmd = new G4UIcmdWithAnInteger("/detector/setCrystalNumberY", this);
+  fSetCrystalNumberYCmd->SetGuidance("Number of crystals along Y axis");
+  fSetCrystalNumberYCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -83,6 +91,10 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
 	  fDetectorConstruction->SetCrystalSize(fSetCrystalSizeCmd->GetNew3VectorValue(newValue));
   } else if (command==fSetCrystalMaterialCmd){
     fDetectorConstruction->SetCrystalMaterial(newValue.c_str());
+  } else if (command==fSetCrystalNumberXCmd){
+    fDetectorConstruction->SetCrystalNumberX(fSetCrystalNumberXCmd->GetNewIntValue(newValue));
+  } else if (command==fSetCrystalNumberYCmd){
+    fDetectorConstruction->SetCrystalNumberY(fSetCrystalNumberYCmd->GetNewIntValue(newValue));
   }
 }
 

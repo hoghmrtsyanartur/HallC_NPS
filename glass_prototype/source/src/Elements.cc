@@ -9,16 +9,10 @@
 // #include "G4SIunits.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
+#include "G4NistManager.hh"
 #include <stdlib.h>
 
-Elements::Elements() : fElementsList{}{
-  // Nitrogen
-  G4Element* N = new G4Element("Nitrogen", "N", 7, 14.01*g/mole);
-  fElementsList.push_back(N);
-  // Oxygen
-  G4Element* O = new G4Element("Oxygen", "O", 8, 16.00*g/mole);
-  fElementsList.push_back(O);
-
+Elements::Elements() : fElementsList{} {
   // Lead
   G4Isotope* Pb204 = new G4Isotope("204Pb", 82, 204, 203.97*g/mole);
   G4Isotope* Pb206 = new G4Isotope("204Pb", 82, 206, 205.97*g/mole);
@@ -45,25 +39,55 @@ Elements::Elements() : fElementsList{}{
   W->AddIsotope(W186, 28.430*perCent);
   fElementsList.push_back(W);
 
+  // Trying to use the NIST database
+
+  // Nitrogen
+  G4Element* elN = G4NistManager::Instance()->FindOrBuildElement("N");
+  fElementsList.push_back(elN);
+
+  // Oxygen
+  G4Element* elO = G4NistManager::Instance()->FindOrBuildElement("O");
+  fElementsList.push_back(elO);
+
   // Aluminum
-  G4Element* Al = new G4Element("Aluminium", "Al", 13, 26.98*g/mole);
-  fElementsList.push_back(Al);
-
-  // Silicon
-  G4Element* Si = new G4Element("Silicon", "Si", 14, 28.09*g/mole);
-  fElementsList.push_back(Si);
-
-  // Barium
-  G4Element* Ba = new G4Element("Barium", "Ba", 56, 137.33*g/mole);
-  fElementsList.push_back(Ba);
+  G4Element* elAl = G4NistManager::Instance()->FindOrBuildElement("Al");
+  fElementsList.push_back(elAl);
 
   // Carbon
-  G4Element* C  = new G4Element("Carbon", "C", 6, 12.01*g/mole);
-  fElementsList.push_back(C);
+  G4Element* elC = G4NistManager::Instance()->FindOrBuildElement("C");
+  fElementsList.push_back(elC);
 
   // Hydrogen
-  G4Element* H  = new G4Element("Hydrogen", "H", 1, 1.008*g/mole);
-  fElementsList.push_back(H);
+  G4Element* elH = G4NistManager::Instance()->FindOrBuildElement("H");
+  fElementsList.push_back(elH);
+
+  // Nickel
+  G4Element* elNi = G4NistManager::Instance()->FindOrBuildElement("Ni");
+  fElementsList.push_back(elNi);
+
+  // Iron
+  G4Element* elFe = G4NistManager::Instance()->FindOrBuildElement("Fe");
+  fElementsList.push_back(elFe);
+
+  // Copper
+  G4Element* elCu = G4NistManager::Instance()->FindOrBuildElement("Cu");
+  fElementsList.push_back(elCu);
+
+  // Chromium
+  G4Element* elCr = G4NistManager::Instance()->FindOrBuildElement("Cr");
+  fElementsList.push_back(elCr);
+
+  // Barium
+  G4Element* elBa = G4NistManager::Instance()->FindOrBuildElement("Ba");
+  fElementsList.push_back(elBa);
+
+  // Gadolinium
+  G4Element* elGd = G4NistManager::Instance()->FindOrBuildElement("Gd");
+  fElementsList.push_back(elGd);
+
+  // Silicon
+  G4Element* elSi = G4NistManager::Instance()->FindOrBuildElement("Si");
+  fElementsList.push_back(elSi);
 }
 
 Elements::~Elements() {

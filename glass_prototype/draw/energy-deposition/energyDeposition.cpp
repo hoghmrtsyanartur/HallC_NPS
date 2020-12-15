@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <RooConstVar.h>
+#include <TVector2.h>
 #include <TVector3.h>
 #include <TLatex.h>
 #include <TMathBase.h>
@@ -159,7 +160,7 @@ TTree* getTree(TFile* file, const char* treeName){
   TTree *tree = (TTree *)file->Get(treeName);
   if (!tree){
     std::cout << "Cannot find tree with name \"" << treeName << "\". Aborting." << std::endl;
-    exit(1);
+    return NULL;
   }
   // std ::cout << "Number of events in the tree: " << tree->GetEntries() << std::endl;
   // tree->Print();
@@ -174,8 +175,12 @@ TTree* getTree(TFile* file, const char* treeName){
 void plotCrystalEdep(const char *fileName){
   TFile *file = openFile(fileName);
 
+  // Obtain number of crystals from file
+  TVector2* nCrystals = (TVector2*) file->Get("crystalsNumber");
+  const Int_t nHists = nCrystals->X() * nCrystals->Y();
+  std::cout << "Crystal assembly size: " <<  nCrystals->X() << "x" << nCrystals->Y() << std::endl;
+
   // Instantiate histograms to be saved in ROOT file
-  const Int_t nHists = 9;
   TH1D **edepHist = new TH1D*[nHists];
   for (UInt_t i = 0; i < nHists; i++){
     TString edepHistName = TString::Format("edepHist_%d", i);
@@ -185,7 +190,7 @@ void plotCrystalEdep(const char *fileName){
     edepHist[i]->GetYaxis()->SetTitle("Counts");
   }
 
-  TTree* tree = getTree(file, "t");
+  TTree* tree = getTree(file, "tree_crystals");
   // Try opening branches
   // TBranch* branch = tree->GetBranch("edep");
   // if (!branch){
@@ -194,10 +199,15 @@ void plotCrystalEdep(const char *fileName){
   // }
 
   // Every branch contains an array with values for each PMT event
-  Double_t edep[nHists];
-  Double_t totalEdep[nHists] = {0};
+  Double_t* edep = new Double_t[nHists];
+  Double_t* totalEdep = new Double_t[nHists];
+
   tree->SetBranchAddress("edep", edep);
   for (Int_t i = 0; i < (Int_t)tree->GetEntries(); i++){
+    for(Int_t j = 0 ; j < nHists ; j++){
+      edep[j]=0;
+    }
+
     tree->GetEntry(i);
     for(Int_t j = 0 ; j < nHists ; j++){
       edepHist[j]->Fill(edep[j]);
@@ -228,7 +238,7 @@ void plotCrystalEdep(const char *fileName){
       crystalMaterial, totalDepositedEnergy/1E3,
       totalDepositedEnergy/totalGPSEnergy*100);
   TCanvas* canvas = new TCanvas("crystalEdepCanvas", canvasTitle.Data(), 1024, 800);
-  canvas->Divide(3,3);
+  canvas->Divide(nCrystals->X(),nCrystals->Y());
 
   gStyle->SetPalette(1);
 
@@ -258,7 +268,8 @@ void plotCrystalEdep(const char *fileName){
 
 void plotEscapeParticles(const char* fileName){
   TFile* file = openFile(fileName);
-  TTree *tree = getTree(file, "t_escape");
+  TTree *tree = getTree(file, "tree_escape");
+  if (tree == NULL) return;
 
   // Get number of events, GPS particle energy and particle name
   Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();
@@ -370,7 +381,8 @@ void plotEscapeParticles(const char* fileName){
 
 void plotEnergyResolution(const char* fileName){
   TFile* file = openFile(fileName);
-  TTree *tree = getTree(file, "t");
+  TTree *tree = getTree(file, "tree_crystals");
+  if (tree == NULL) return;
 
   // Get number of events, GPS particle energy and particle name
   Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();

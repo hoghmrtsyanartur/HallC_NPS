@@ -35,12 +35,20 @@ Materials::Materials() : fMaterialsList{}{
   SiO2->AddElement(elements->getElement("O"), 2);
   fMaterialsList.push_back(SiO2);
 
-  // Scintillation material
-  G4Material* BaSi2O5= new G4Material("BaSi2O5", 3.8*g/cm3, 3);
+  // Scintillation material BaSi2O5
+  G4Material* BaSi2O5 = new G4Material("BaSi2O5", 3.8*g/cm3, 3);
   BaSi2O5->AddElement(elements->getElement("Ba"), 1);
   BaSi2O5->AddElement(elements->getElement("Si"), 2);
   BaSi2O5->AddElement(elements->getElement("O"), 5);
   fMaterialsList.push_back(BaSi2O5);
+
+  // Scintillation material BaGdSiO
+  G4Material* BaGdSiO = new G4Material("BaGdSiO", 4.22*g/cm3, 4);
+  BaGdSiO->AddElement(elements->getElement("Ba"), 0.3875);
+  BaGdSiO->AddElement(elements->getElement("Gd"), 0.2146);
+  BaGdSiO->AddElement(elements->getElement("Si"), 0.1369);
+  BaGdSiO->AddElement(elements->getElement("O"),  0.2610);
+  fMaterialsList.push_back(BaGdSiO);
 
   // VM2000
   G4Material* C10H8O4 = new G4Material("C10H8O4", 1.38*g/cm3, 3);
@@ -59,6 +67,16 @@ Materials::Materials() : fMaterialsList{}{
   G4Material* Frame = new G4Material("Frame", 1.55*g/cm3, 1);
   Frame->AddElement(elements->getElement("C"), 1);
   fMaterialsList.push_back(Frame);
+
+  // Mu-metal
+  // Wikipedia: composition is approximately 77% nickel, 16% iron, 5% copper, and 2% chromium or molybdenum
+  // http://www.mu-metal.com/technical-data.html
+  G4Material* MuMetal = new G4Material("MuMetal", 8.7 * g/cm3, 4);
+  MuMetal->AddElement(elements->getElement("Ni"), 77 * perCent);
+  MuMetal->AddElement(elements->getElement("Fe"), 16 * perCent);
+  MuMetal->AddElement(elements->getElement("Cu"), 5 * perCent);
+  MuMetal->AddElement(elements->getElement("Cr"), 2 * perCent);
+  fMaterialsList.push_back(MuMetal);
 }
 
 Materials::~Materials() {

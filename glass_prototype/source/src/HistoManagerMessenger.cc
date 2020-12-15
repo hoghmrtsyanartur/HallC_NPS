@@ -19,10 +19,15 @@ HistoManagerMessenger::HistoManagerMessenger(HistoManager* histoManager) : G4UIm
   fileNameCommand->SetGuidance("Set output file name pattern.");
   fileNameCommand->AvailableForStates(G4ApplicationState::G4State_PreInit);
 
-  // Instantiate command that controls output of the
+  // Instantiate command that controls output of the Step Points
   writeStepPointsCommand = new G4UIcmdWithAString("/histoManager/writeStepPoints",this);
   writeStepPointsCommand->SetGuidance("Control output of data related to Step Points.");
   writeStepPointsCommand->AvailableForStates(G4ApplicationState::G4State_PreInit);
+
+  // Instantiate command that controls output of the
+  writeWorldEscapeCommand = new G4UIcmdWithAString("/histoManager/writeWorldEscape",this);
+  writeWorldEscapeCommand->SetGuidance("Control output of the particles escaping the World.");
+  writeWorldEscapeCommand->AvailableForStates(G4ApplicationState::G4State_PreInit);
 }
 
 HistoManagerMessenger::~HistoManagerMessenger() {
@@ -33,6 +38,8 @@ void HistoManagerMessenger::SetNewValue(G4UIcommand * command, G4String newValue
     fHistoManager->setFileNamePattern(newValues);
   } else if(command == writeStepPointsCommand){
     fHistoManager->setWriteStepPoints(writeStepPointsCommand->ConvertToBool(newValues));
+  } else if(command == writeWorldEscapeCommand){
+    fHistoManager->setWriteWorldEscape(writeWorldEscapeCommand->ConvertToBool(newValues));
   }
 }
 

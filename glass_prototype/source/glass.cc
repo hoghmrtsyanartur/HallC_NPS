@@ -43,7 +43,6 @@
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4UImanager.hh"
-#include "G4ScoringManager.hh"
 //#include "G4UIExecutive.hh"
 
 //#include "G4PhysListFactory.hh"
@@ -75,9 +74,6 @@ int main(int argc, char **argv) {
 	// Create an instance of the G4RunManager class
   // It controls the flow of the program and manages the event loop(s) within a run
 	G4RunManager *runManager = new G4RunManager();
-
-	// Instantiate Scoring Manager
-	G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
 
 	// Contruct the detector
 	// TODO: use TextGeometry to define the detector geometry instead?

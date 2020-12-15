@@ -35,6 +35,8 @@
 #include "RunAction.hh"
 #include "globals.hh"
 #include "Randomize.hh"
+#include "G4ScoringManager.hh"
+#include "G4VScoringMesh.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -79,6 +81,17 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 
   G4int NbOfEvents = aRun->GetNumberOfEvent();
   if (NbOfEvents == 0) return;
+
+  // Equalize scoring mesh color maps for Crystals and PMTs
+  // G4ScoringManager *scoringManager = G4ScoringManager::GetScoringManager();
+
+  // scoringManager->ListScoreColorMaps();
+//  scoringManager->DrawMesh(meshName,psName,colorMapName,axflg);
+//  scoringManager->GetScoreColorMap(mapName)
+//  G4VScoringMesh *crystalsMesh = scoringManager->FindMesh("crystalsMesh");
+//  G4VScoringMesh crystalscrystalsMesh->GetScoreMap()
+//
+
 
   // Save histograms
   fHistoManager->Save();

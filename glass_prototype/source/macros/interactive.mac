@@ -4,11 +4,15 @@
 /testhadr/Physics QBBC
 #/testhadr/Physics optical
 
-#/detector/setCrystalSize 20 20 200 mm
+/detector/setCrystalSize 18.450 18.238 196.286 mm
+/detector/setCrystalMaterial BaGdSiO
 #/detector/setCrystalMaterial BaSi2O5
-/detector/setCrystalMaterial PbWO4
-/histoManager/setOutputFileNamePattern output_%s_%dmm_y_%dmm_z_%dmm_%.1fGeV_%devents.root
-/histoManager/writeStepPoints false
+#/detector/setCrystalMaterial PbWO4
+/detector/setCrystalNumberX 5
+/detector/setCrystalNumberY 5
+
+/histoManager/setOutputFileNamePattern output-%s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
+/histoManager/writeWorldEscape true
 
 #/process/optical/verbose 2
 
@@ -30,55 +34,64 @@
 #/process/optical/cerenkov/setMaxPhotons 3
 #/process/optical/cerenkov/setMaxBetaChange 10
 
-########################################
-#
-/score/create/boxMesh boxMesh_1
-/score/mesh/boxSize 31. 31. 100. mm
-/score/mesh/nBin 30 30 100
-/score/mesh/translate/xyz 0. 0. 2100. mm
-/score/quantity/energyDeposit eDep
-/score/close
-#
-########################################
-
 /run/initialize
+
+/geometry/test/run
 
 /process/list
 
 /gps/source/intensity 1
 /gps/particle e-
 /gps/pos/type Point
-/gps/ene/mono 10 GeV
-/gps/pos/centre 0.  0. -2000. mm
+/gps/ene/mono 5.2 GeV
+/gps/pos/centre 0.  0. -400. mm
 /gps/direction 0. 0. 1.
 /gps/source/multiplevertex true
 /gps/source/list
 
-/vis/open OGL
+# /vis/list
+# OpenGLStoredQt (OGLSQt, OGL, OGLS) - cannot have trajectories and mesh, legend disappears when move
+#/vis/open OGL
+# OpenGLImmediateQt (OGLIQt, OGLI) - cannot draw mesh after trajectories
+#/vis/open OGLIQt
+# OpenGLImmediateXm (OGLIXm, OGLIQt_FALLBACK) - separate window, freezes
+#/vis/open OGLIXm
+# OpenGLStoredXm (OGLSXm, OGLSQt_FALLBACK) - separate window, freezes
+#/vis/open OGLSXm
+# OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK, OGLIXm_FALLBACK) - separate window, everything works!
+/vis/open OGLIX
+# OpenGLStoredX (OGLSX, OGLSQt_FALLBACK, OGLSXm_FALLBACK)
+#/vis/open OGLIX
+
+
 /vis/ogl/set/displayListLimit 500000
 #/vis/open VRML2FILE
 #/vis/open HepRepFile
 /vis/drawVolume
-#/vis/scene/add/trajectories
-/vis/scene/add/axes 0 0 0 1 m
+/vis/scene/add/trajectories
+#/vis/scene/add/axes 0 0 0 10 cm
+#/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 1
+/run/beamOn 10
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 
 # Camera pivot point
-/vis/viewer/set/targetPoint 0 0 2145 mm
+/vis/viewer/set/targetPoint 0 0 145 mm
 # Direction from target to camera
 /vis/viewer/set/viewpointVector -1 1 -1
 # Zoom level
-/vis/viewer/zoomTo 50
+#/vis/viewer/zoomTo 50
 
 # Set light to camera
-/vis/viewer/set/lightsMove with-camera
-/score/drawProjection boxMesh_1 eDep
+#/vis/viewer/set/lightsMove with-camera
+
+#/score/drawProjection crystalsMesh eneDepCrystal
+#/score/drawProjection pmtsMesh eneDepPMT
 #/vis/ogl/set/printFilename ./scorer.png
 #/vis/ogl/export
 
-/score/dumpAllQuantitiesToFile boxMesh_1 boxMesh_1.txt
+/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
+/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
 
 # You can create two viewers and copy camera position. Search examples for: /vis/viewer/copyViewFrom viewer-0

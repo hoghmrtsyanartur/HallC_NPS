@@ -26,6 +26,12 @@ public:
   static G4double getCrystalX();
   static G4double getCrystalY();
   static G4double getCrystalZ();
+
+  static G4int getNCrystalsX();
+  static G4int getNCrystalsY();
+  static G4int getNCrystals();
+
+  static G4double getTotalQuantityFromMesh(const char *meshName, const char *psName);
 };
 
 #endif /* SRC_G4UTILS_HH_ */

@@ -40,7 +40,6 @@
 #include "G4NistManager.hh"
 
 #include "G4SDManager.hh"
-#include "B5HadCalorimeterSD.hh"
 #include "G4AutoDelete.hh"
 
 #include "G4Tubs.hh"
@@ -64,13 +63,18 @@
 
 #include "G4SubtractionSolid.hh"
 
-#include "CrystalCoverSD.hh"
-#include "CrystalFrontCoverSD.hh"
-#include "PMTcoverSD.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4OpticalSurface.hh"
 
+#include "G4MultiFunctionalDetector.hh"
+#include "G4PSEnergyDeposit.hh"
+#include "G4PSEnergyDeposit3D.hh"
+
 #include "Materials.hh"
+
+#include "G4ScoringManager.hh"
+#include "G4VScoringMesh.hh"
+#include "G4ScoringBox.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
@@ -80,44 +84,33 @@ DetectorConstruction::DetectorConstruction()
    fLogicCrystal(0),
    fLogicPMT(0), fLogicWrap(0), fLogicPMTcover(0), fLogicWrapFront(0),
    fPMTmater(0), fWrapMater(0), fPMTcoverMater(0), 
-   fFrameMater(0),
-   fWorldMater(0), fPhysiWorld(0)
+   fMom_X(0), fMom_Y(0),
+   fWorldMater(0), fPhysiWorld(0), fEDepScorerCrystal(0)
 {
-  //Initialized here. Some of the values change later on.
-  fWorld_X = 4.5*m;
-  fWorld_Y = 4.5*m;
-  fWorld_Z = 10*m;
+  // World size
+  fWorld_X = 0.5*meter; // 4.5*m;
+  fWorld_Y = 0.5*meter; // 4.5*m;
+  fWorld_Z = 1.5*meter;   // 10*m;
 
-  gap = 0.5*mm;
-  fFrame_length = 20.*mm;
-
-  // Size of crystals (can be overrided in DetectorMessenger)
+  // Default size of crystals (can be overrided in DetectorMessenger)
   fCrystal_X = 20*mm;
   fCrystal_Y = 20*mm;
   fCrystal_Z = 200*mm;
-  fCrystal_pos_X = 0*mm;//In case there will be PMT someday, 
-  fCrystal_pos_Y = 0*mm;
-  fCrystal_pos_Z = 0*mm;//initialize first, defined later.
 
-  fWrapThickness = 65*1e-3*mm;
-  fPMTcoverThickness = 65*1e-3*mm;//same with wrapthickness, just for the simplicity
+  // Default number of crystals in the assembly
+  fCrystalNumX = 3;
+  fCrystalNumY = 3;
 
-  fMom_X = 2575*mm;//mother volume, containes Temperature control box.
-  fMom_Y = 2988*mm;//The crystals are inside the temperature control box.
-  fMom_Z = 794*mm;// The size is not realistic. Just big enough to contain 9 crystals.
-  fMom_pos_X = 0*mm;
-  fMom_pos_Y = 0*mm;
-  fMom_pos_Z = 0*mm;
+  // Thickness of the wrap materials
+  fWrapThickness = 65*micrometer; // 10*mm;
 
-  fTemp_X = 1555*mm;//Temperature control box(mother volume#2)(contains crystals)
-  fTemp_Y = 1573*mm;//this is inside the mother volume
-  fTemp_Z = 418*mm;
-  fTemp_pos_X = 0*m;//temp control box position inside mother volume
-  fTemp_pos_Y = 0*m;
-  fTemp_pos_Z = 0*m;
+  // Gap between crystals
+  fGap = 0.5*mm;
+  fFrame_length = 20*mm; // ? need
 
-  fPMT_radius = 18.6*0.5*mm;
-  fPMT_length = 88.*mm;
+  // PMT tube dimensions
+  fPMT_radius = 18/2*mm;
+  fPMT_length = 88*mm;
 
   DefineMaterials();
 
@@ -128,13 +121,17 @@ DetectorConstruction::DetectorConstruction()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::~DetectorConstruction()
-{ delete fDetectorMessenger;}
+{
+  delete fDetectorMessenger;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
   return ConstructVolumes();
+
+  InitVisScoringManager();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -149,8 +146,7 @@ void DetectorConstruction::DefineMaterials()
   fPMTmater = materials->getMaterial("SiO2");
   fDetectorMater = materials->getMaterial("BaSi2O5");
   fWrapMater = materials->getMaterial("C10H8O4"); // VM2000
-  fPMTcoverMater = materials->getMaterial("Aluminum");
-  fFrameMater = materials->getMaterial("Frame");
+  fPMTcoverMater = materials->getMaterial("MuMetal");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -161,10 +157,11 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   // 
   G4double hc = 1.23984193;
   
+  // Petr Stepanov: question what is this 8 value?
   const G4int n = 8;
   G4double OpticalPhotonWavelength[n] = //in micro meters
     { 0.400, 0.440, 0.480, 0.520, 0.560, 0.600, 0.640, 0.680};
-  G4double OpticalPhotonEnergy[n] = {0.}; 
+  G4double OpticalPhotonEnergy[n] = {0.};
   for (G4int i = 0 ; i < n ; i++){
     OpticalPhotonEnergy[i] = (hc/OpticalPhotonWavelength[i])*eV;
   }
@@ -235,188 +232,136 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   G4LogicalVolumeStore::GetInstance()->Clean();
   G4SolidStore::GetInstance()->Clean();
   
-  //controlling the sizes  
-  fSingle_X = fCrystal_X + 2*fWrapThickness + gap;
-  fSingle_Y = fCrystal_Y + 2*fWrapThickness + gap;
-  fSingle_Z = fCrystal_Z + fPMT_length + fPMTcoverThickness + fWrapThickness;
+  // START DEFINING THE GEOMETRY
+  fCheckOverlaps = true; // activate checking overlaps
 
-  fTemp_X = 3*fSingle_X;
-  fTemp_Y = 3*fSingle_Y;
-  fTemp_Z = fSingle_Z;
-  fMom_X = fTemp_X;
-  fMom_Y = fTemp_Y;
-  fMom_Z = fTemp_Z;
+  // GEOMETRY: World volume
+  G4Box* sWorld = new G4Box("World_sol",0.5*fWorld_X, 0.5*fWorld_Y, 0.5*fWorld_Z); //its size
+  G4LogicalVolume* lWorld = new G4LogicalVolume(sWorld,       // its solid
+                                                fWorldMater,  // its material
+                                                "World_log"); //its name
+  fPhysiWorld = new G4PVPlacement(0,                     // no rotation
+                                  G4ThreeVector(),       // at (0,0,0)
+                                  lWorld,                // its logical volume
+                                  "World_pos",           // its name
+                                  0,                     // its mother  volume
+                                  false,                 // no boolean operation
+                                  0,                     // copy number
+                                  fCheckOverlaps);       // checking overlaps
 
-  fCrystal_pos_X = 0*mm;
-  fCrystal_pos_Y = 0*mm;
-  fCrystal_pos_Z = -(0.5*fSingle_Z - (0.5*fCrystal_Z + fWrapThickness));
-  fPMT_pos_X = 0*mm;//position of the PMT inside volume(called Single)
-  fPMT_pos_Y = 0*mm;
-  fPMT_pos_Z = 0.5*fSingle_Z - (0.5*fPMT_length + fPMTcoverThickness);
+  // GEOMETRY: World volume -> Mother volume
+  // Refer to picture
+  G4double single_X = fCrystal_X + 2*fWrapThickness + fGap;
+  G4double single_Y = fCrystal_Y + 2*fWrapThickness + fGap;
+  G4double single_Z = fWrapThickness + fCrystal_Z + fPMT_length;
 
-  fMom_pos_Z = 2000*mm + 0.5*fSingle_Z;
+  fMom_X = fCrystalNumX*single_X;  // Petr Stepanov: added variable crystal number
+  fMom_Y = fCrystalNumY*single_Y;  // Petr Stepanov: added variable crystal number
+  G4double mom_Z = single_Z;
 
-  fCheckOverlaps = true;//activate checing overlaps
+  G4double mom_pos_Z = 0.5*single_Z;
 
+  G4Box* sMother = new G4Box("Mother_sol", 0.5*fMom_X, 0.5*fMom_Y, 0.5*mom_Z);
+  G4LogicalVolume* lMother = new G4LogicalVolume(sMother,       // solid
+                                                 fWorldMater,   // material
+                                                 "Mother_log"); // name
+  /*G4VPhysicalVolume* pMother =*/ new G4PVPlacement(0,                // no rotation
+                               G4ThreeVector(0, 0, mom_pos_Z),     // translation position (world center)
+                               lMother,                            // its logical volume
+                               "Mother_pos",                       // its name
+                               lWorld,                             // its mother logical volume
+                               false,                              // no boolean operation
+                               0,                                  // copy number
+                               fCheckOverlaps);                    // checking overlaps
 
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box
+  G4Box* sTemp = new G4Box("Temp_sol", 0.5*fMom_X, 0.5*fMom_Y, 0.5*mom_Z);
+  G4LogicalVolume* lTemp = new G4LogicalVolume(sTemp,       // solid
+                                               fWorldMater, // material
+                                               "Temp_log"); // name
+  /*G4VPhysicalVolume* pTemp =*/ new G4PVPlacement(0,                  // no rotation
+                                               G4ThreeVector(),    // same as Mother volume
+                                               lTemp,              // its logical volume
+                                               "Temp_pos",         // its name
+                                               lMother,            // its mother  volume
+                                               false,              // no boolean operation
+                                               0,                  // copy number
+                                               fCheckOverlaps);    // checking overlaps
 
-
-  G4Box* sWorld =
-    new G4Box("World_sol",0.5*fWorld_X, 0.5*fWorld_Y, 0.5*fWorld_Z); //its size
- 			   
-  G4LogicalVolume* lWorld =                         
-    new G4LogicalVolume(sWorld,          //its solid
-			fWorldMater,         //its material(air)
-			"World_log");            //its name
-                                   
-  fPhysiWorld = 
-    new G4PVPlacement(0,                     //no rotation
-  		      G4ThreeVector(),       //at (0,0,0)
-  		      lWorld,            //its logical volume
-  		      "World_pos",               //its name
-  		      0,                     //its mother  volume
-  		      false,                 //no boolean operation
-  		      0,                     //copy number
-  		      fCheckOverlaps);       // checking overlaps 
-
-  // Detector
-  //
-
-  //Mother volume. Containes Temperature Control Box which contains 9 Singles(Crystal box)
-  G4Box*
-    sMother = new G4Box("Mother_sol", 0.5*fMom_X, 0.5*fMom_Y, 0.5*fMom_Z);
-
-  G4LogicalVolume* lMother = new G4LogicalVolume(sMother,
-						 fWorldMater,//air
-						 "Mother_log");
-
-  new G4PVPlacement(0,                     //no rotation
-		    G4ThreeVector(fMom_pos_X, fMom_pos_Y, fMom_pos_Z),
-		    lMother,            //its logical volume
-		    "Mother_pos",               //its name
-		    lWorld,                     //its mother  volume
-		    false,                 //no boolean operation
-		    0,                     //copy number
-		    fCheckOverlaps);       // checking overlaps 
- 
-  //Temp Control Box
-  G4Box*
-    sTemp = new G4Box("Temp_sol", 0.5*fTemp_X, 0.5*fTemp_Y, 0.5*fTemp_Z);
-
-  G4LogicalVolume* lTemp = new G4LogicalVolume(sTemp,
-					       fWorldMater,//air
-					       "Temp_log");
-
-  new G4PVPlacement(0,                     //no rotation
-		    G4ThreeVector(fTemp_pos_X, fTemp_pos_Y, fTemp_pos_Z),//position inside the Mother volume
-		    lTemp,            //its logical volume
-		    "Temp_pos",               //its name
-		    lMother,                     //its mother  volume
-		    false,                 //no boolean operation
-		    0,                     //copy number
-		    fCheckOverlaps);       // checking overlaps 
-
-  ////////////////////////////////////////////////////////////////////////
-
-  // Each Crystals Logical Volume
-  G4Box*
-    sCrystal = new G4Box("Crystal_sol", 0.5*fCrystal_X, 0.5*fCrystal_Y, 0.5*fCrystal_Z);
-
-  fLogicCrystal = new G4LogicalVolume(sCrystal,
-				      fDetectorMater,//detectormater = crystmater
-				      "Crystal_log");
-  
-  //Each Detectors(Crysital + PMT + gap) Logical Volume Inside temperature control box
-  G4Box*
-    sSingle = new G4Box("Single_sol", 0.5*fSingle_X, 0.5*fSingle_Y, 0.5*fSingle_Z);
-
-  G4LogicalVolume* lSingle = new G4LogicalVolume(sSingle,
-						 fWorldMater,//air
-						 "Single_log");
-
-  for(G4int ly = 0 ; ly < 3 ; ly++){
-    for(G4int lx = 0 ; lx < 3 ; lx++){
-      new G4PVPlacement(0,
-			G4ThreeVector((3. - 1.)*0.5*fSingle_X - ly*fSingle_X, -(3. - 1.)*0.5*fSingle_Y + lx*fSingle_Y,0),
-			lSingle,
-			"Single",
-			lTemp,//place the each Singles(which will be containing the cyrstal) inside the Temp control box
-			false,
-			lx + ly*3,
-			fCheckOverlaps);
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume
+  G4Box* sSingle = new G4Box("Single_sol", 0.5*single_X, 0.5*single_Y, 0.5*single_Z);
+  G4LogicalVolume* lSingle = new G4LogicalVolume(sSingle,       // solid
+                                                 fWorldMater,   // material
+                                                 "Single_log"); // name
+  G4double totalLengthX = fCrystalNumX*single_X;
+  G4double minX = -totalLengthX/2 + single_X/2;
+  G4double totalLengthY = fCrystalNumY*single_Y;
+  G4double minY = -totalLengthY/2 + single_Y/2;
+  G4int replicaNumber = 0;
+  std::cout << "Single physical volume replicas:" << std::endl;
+  for(G4int ly = 0 ; ly < fCrystalNumY ; ly++){
+    for(G4int lx = 0 ; lx < fCrystalNumX ; lx++){
+      // Physical volumes of same type can share a logical volume
+      G4VPhysicalVolume* pSingle =
+          new G4PVPlacement(0,                                  // no rotation
+                            G4ThreeVector(minX + lx*single_X,   // translation position
+                                          minY + ly*single_Y,
+                                          0),
+                            lSingle,                            // translation position
+                            "Single",
+                            lTemp, //place the each Singles(which will be containing the cyrstal) inside the Temp control box
+                            false,
+                            replicaNumber,
+                            fCheckOverlaps);
+      replicaNumber++;
+      std::cout << "  Y: " << ly + 1 << ", X " << lx + 1 << ": " << pSingle << std::endl;
+      std::cout << "  copy number: " << pSingle->GetCopyNo() << std::endl;
     }
   }
-  
 
-  //Now, position the Crystals inside each Singles
-  G4PVPlacement* fCrystalPos = new G4PVPlacement(0,                     //no rotation
-						 G4ThreeVector(fCrystal_pos_X, fCrystal_pos_Y, fCrystal_pos_Z),       //at (0,0,0)
-						 fLogicCrystal,            //its logical volume
-						 "Crystal",               //its name
-						 lSingle,                     //its mother  volume
-						 false,                 //no boolean operation
-						 0,                     //copy number
-						 fCheckOverlaps);       // checking overlaps 
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume ->
+  //           Crystal Volume
+  G4Box* sCrystal = new G4Box("Crystal_sol", 0.5*fCrystal_X, 0.5*fCrystal_Y, 0.5*fCrystal_Z);
+  fLogicCrystal = new G4LogicalVolume(sCrystal,       // its solid
+                                      fDetectorMater, // its material
+                                      "Crystal_log"); // its name
+  // Float crystals to the face of the Single container
+  G4double crystal_pos_Z = -(0.5*single_Z - 0.5*fCrystal_Z - fWrapThickness);
+  G4VPhysicalVolume* crystalPos = new G4PVPlacement(0,   //no rotation
+                                                    G4ThreeVector(0, 0, crystal_pos_Z), // translation
+                                                    fLogicCrystal,           // its logical volume
+                                                    "Crystal",               // its name
+                                                    lSingle,                 // its parent volume
+                                                    false,                   // no boolean operation
+                                                    0,                       // copy number
+                                                    fCheckOverlaps);         // checking overlaps
 
-  //
-  //crystal wrapper
-  //
-  G4Box*
-    sWrap = new G4Box("Wrap_sol", 0.5*fCrystal_X + fWrapThickness, 0.5*fCrystal_Y + fWrapThickness, 0.5*fCrystal_Z + fWrapThickness);
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> Crystal wrap
+  // https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/Detector/Geometry/geomSolids.html?highlight=g4subtractionsolid#solids-made-by-boolean-operations
+  G4Box* sWrapOuter = new G4Box("Wrap_outer", 0.5*(fCrystal_X + 2*fWrapThickness), 0.5*(fCrystal_Y + 2*fWrapThickness), 0.5*(fCrystal_Z + fWrapThickness));
+  G4Box* sWrapInner = new G4Box("Wrap_inner", 0.5*fCrystal_X, 0.5*fCrystal_Y, 0.5*(fCrystal_Z + fWrapThickness));
+  G4RotationMatrix* wrapRot = new G4RotationMatrix();
+  G4ThreeVector wrapTrans(0, 0, fWrapThickness);
+  // sWrap_end_sol = sWrap - sWrap_end
+  G4SubtractionSolid* sWrap = new G4SubtractionSolid("Wrap_sol", sWrapOuter, sWrapInner, wrapRot, wrapTrans);
+  fLogicWrap = new G4LogicalVolume(sWrap, fWrapMater, "Wrap_log");
+  G4double wrap_pos_Z = -(0.5*single_Z - 0.5*(fCrystal_Z + fWrapThickness));
+  G4VPhysicalVolume* fWrapPos = new G4PVPlacement(0,
+                                G4ThreeVector(0, 0, wrap_pos_Z),
+                fLogicWrap,
+                "Wrap_pos",
+                lSingle,
+                false,
+                0,
+                fCheckOverlaps);
 
-  G4RotationMatrix* Rot = new G4RotationMatrix;
-  G4ThreeVector trans(0., 0., 0.5*(fCrystal_Z + fWrapThickness));
-  G4Box*
-    sWrap_end = new G4Box("Wrap_end_sol", 0.5*(fCrystal_X + 2*fWrapThickness), 0.5*(fCrystal_Y + 2*fWrapThickness), 0.5*fWrapThickness);
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT
+  G4Tubs* sPMT = new G4Tubs("PMT_sol", 0, fPMT_radius, fPMT_length/2, 0, twopi);
 
-  G4SubtractionSolid* sWrap_end_sol = new G4SubtractionSolid("Wrap_sub_sol_1", sWrap, sWrap_end, Rot, trans);
-
-  G4Box*
-    sWrap_inside = new G4Box("Wrap_inside_sol", 0.5*fCrystal_X, 0.5*fCrystal_Y, 0.5*fCrystal_Z);//to hollow out the crystal wrapper         
-  G4SubtractionSolid* sWrap_inside_sol = new G4SubtractionSolid("Wrap_sub_sol", sWrap_end_sol, sWrap_inside);
-  G4Box*
-    sWrap_front = new G4Box("Wrap_front_sol", 0.5*(fCrystal_X + 2*fWrapThickness), 0.5*(fCrystal_Y + 2*fWrapThickness), 0.5*fWrapThickness);
-
-  G4ThreeVector trans_front(0., 0., -0.5*(fCrystal_Z + fWrapThickness));
-  G4SubtractionSolid* sWrap_front_sol = new G4SubtractionSolid("Wrap_sub_sol_1", sWrap_inside_sol, sWrap_front, Rot, trans_front);
-
-  fLogicWrap = new G4LogicalVolume(sWrap_front_sol,
-				   fWrapMater,
-				   "Wrap_log");
-
-  G4PVPlacement* fWrapPos = new G4PVPlacement(0,
-					      G4ThreeVector(fCrystal_pos_X, fCrystal_pos_Y, fCrystal_pos_Z),
-					      fLogicWrap,
-					      "Wrap_pos",
-					      lSingle,
-					      false,
-					      0,
-					      fCheckOverlaps);
-
-  fLogicWrapFront = new G4LogicalVolume(sWrap_front,
-					fWrapMater,
-					"WrapFront_log");
-
-  G4PVPlacement* fWrapFrontPos = new G4PVPlacement(0,
-						   G4ThreeVector(fCrystal_pos_X, fCrystal_pos_Y, fCrystal_pos_Z) + trans_front,
-						   fLogicWrapFront,
-						   "WrapFront_pos",
-						   lSingle,
-						   false,
-						   0,
-						   fCheckOverlaps);
-
-  //
-  //PMT
-  //
-  G4Tubs*
-    sPMT = new G4Tubs("PMT_sol", 0.*mm, fPMT_radius, 0.5*fPMT_length, 0, twopi);
-
-  fLogicPMT = new G4LogicalVolume(sPMT,
-                                  fPMTmater,
-                                  "PMT_log");
-  G4PVPlacement* fPMTpos = new G4PVPlacement(0,
-                                             G4ThreeVector(fPMT_pos_X, fPMT_pos_Y, fPMT_pos_Z),
+  fLogicPMT = new G4LogicalVolume(sPMT, fPMTmater, "PMT_log");
+  G4double PMT_pos_Z = 0.5*single_Z - 0.5*fPMT_length;
+  G4VPhysicalVolume* fPMTpos = new G4PVPlacement(0,
+                                             G4ThreeVector(0, 0, PMT_pos_Z),
                                              fLogicPMT,
                                              "PMT_pos",
                                              lSingle,
@@ -424,60 +369,52 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                              0,
                                              fCheckOverlaps);
 
-  //
-  //PMTcover
-  //
-  G4ThreeVector trans2(0., 0., -0.5*(fPMT_length + fPMTcoverThickness)); 
-  G4Tubs*
-    sPMTcover = new G4Tubs("PMTcover_sol", 0.*mm, fPMT_radius + fPMTcoverThickness, 0.5*(fPMT_length + 2*fPMTcoverThickness), 0, twopi);
-  G4Tubs*
-    sPMTcover_front = new G4Tubs("PMTcover_front_sol", 0.*mm, fPMT_radius + fPMTcoverThickness, 0.5*fPMTcoverThickness, 0, twopi);  //to get rid of the cover at the front side of the crystal
-  G4SubtractionSolid* sPMTcover_sol_1 = new G4SubtractionSolid("PMTcover_sub_sol_1", sPMTcover, sPMTcover_front, Rot, trans2);
-  G4Tubs*
-    sPMTcover_inside = new G4Tubs("PMTcover_inside_sol", 0.*mm, fPMT_radius, 0.5*fPMT_length, 0, twopi);
-  G4SubtractionSolid* sPMTcover_sol = new G4SubtractionSolid("Wrap_sub_sol", sPMTcover_sol_1, sPMTcover_inside);
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT Cover
+  G4Box* sPMTcoverOuter = new G4Box("PMTcover_outer", 0.5*(single_X), 0.5*(single_Y), 0.5*(fPMT_length));
+  G4Tubs* sPMTcoverInner = new G4Tubs("PMTcover_inner", 0, fPMT_radius, fPMT_length/2 + 1, 0, twopi); // + 1 just in case for better subtraction
 
-  fLogicPMTcover = new G4LogicalVolume(sPMTcover_sol,
-				       fPMTcoverMater,
-				       "PMTcover_log");
+  G4RotationMatrix* coverRot = new G4RotationMatrix();
+  G4ThreeVector coverTrans(0, 0, 0);
+  G4SubtractionSolid* sPMTcover = new G4SubtractionSolid("PMTcover_sol", sPMTcoverOuter, sPMTcoverInner, coverRot, coverTrans);
 
+  fLogicPMTcover = new G4LogicalVolume(sPMTcover, fPMTcoverMater, "PMTcover_log");
 
+  G4VPhysicalVolume* fPMTcoverPos = new G4PVPlacement(0,
+                                                      G4ThreeVector(0, 0, PMT_pos_Z),
+                                                      fLogicPMTcover,
+                                                      "PMTcover_pos",
+                                                      lSingle,
+                                                      false,
+                                                      0,
+                                                      fCheckOverlaps);
 
-  G4PVPlacement* fPMTcoverPos = new G4PVPlacement(0,
-						  G4ThreeVector(fPMT_pos_X, fPMT_pos_Y, fPMT_pos_Z),
-						  fLogicPMTcover,
-						  "PMTcover_pos",
-						  lSingle,
-						  false,
-						  0,
-						  fCheckOverlaps);
-
-  G4Box* sFrame_outer = new G4Box("Frame_outer_sol", 0.5*fSingle_X, 0.5*fSingle_Y, 0.5*fFrame_length);
-  G4Box* sFrame_inner = new G4Box("Frame_inner_sol", 0.5*(fSingle_X - gap), 0.5*(fSingle_Y - gap), 0.5*fFrame_length);
+/*
+  G4Box* sFrame_outer = new G4Box("Frame_outer_sol", 0.5*single_X, 0.5*single_Y, 0.5*fFrame_length);
+  G4Box* sFrame_inner = new G4Box("Frame_inner_sol", 0.5*(single_X - fGap), 0.5*(single_Y - fGap), 0.5*fFrame_length);
   G4SubtractionSolid* sFrame = new G4SubtractionSolid("Frame_sol", sFrame_outer, sFrame_inner);
 
   G4LogicalVolume* lFrame = new G4LogicalVolume(sFrame,
-						fFrameMater,
-						"Frame_log");
+            fFrameMater,
+            "Frame_log");
 
   new G4PVPlacement(0,
-		    G4ThreeVector(0., 0., -(0.5*fSingle_Z - (0.5*fFrame_length + fWrapThickness))),
-		    lFrame,					       
-		    "Frame_pos1",
-		    lSingle,
-		    false,
-		    0,
-		    fCheckOverlaps);
+        G4ThreeVector(0., 0., -(0.5*single_Z - (0.5*fFrame_length + fWrapThickness))),
+        lFrame,
+        "Frame_pos1",
+        lSingle,
+        false,
+        0,
+        fCheckOverlaps);
 
   new G4PVPlacement(0,
-		    G4ThreeVector(0., 0., 0.5*fSingle_Z - (0.5*fFrame_length + fPMTcoverThickness + fPMT_length)),
-		    lFrame,					       
-		    "Frame_pos2",
-		    lSingle,
-		    false,
-		    0,
-		    fCheckOverlaps);
-
+        G4ThreeVector(0., 0., 0.5*single_Z - (0.5*fFrame_length + fPMTcoverThickness + fPMT_length)),
+        lFrame,
+        "Frame_pos2",
+        lSingle,
+        false,
+        0,
+        fCheckOverlaps);
+*/
 
   //
   //opticalsurface
@@ -486,28 +423,25 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   opWrapperSurface->SetType(dielectric_LUT);
   opWrapperSurface->SetFinish(polishedvm2000air);
   opWrapperSurface->SetModel(LUT);
-  new G4LogicalBorderSurface("WrapperSurface",
-			     fCrystalPos,fWrapPos,opWrapperSurface);
+  new G4LogicalBorderSurface("WrapperSurface", crystalPos,fWrapPos,opWrapperSurface);
   G4MaterialPropertiesTable* opWS = new G4MaterialPropertiesTable();
   opWS->DumpTable();
   opWrapperSurface->SetMaterialPropertiesTable(opWS);
 
-  G4OpticalSurface* opWrapperFrontSurface = new G4OpticalSurface("WrapperFrontSurface");
-  opWrapperFrontSurface->SetType(dielectric_LUT);
-  opWrapperFrontSurface->SetFinish(polishedvm2000air);
-  opWrapperFrontSurface->SetModel(LUT);
-  new G4LogicalBorderSurface("WrapperFrontSurface",
-			     fCrystalPos,fWrapFrontPos,opWrapperFrontSurface);
-  G4MaterialPropertiesTable* opWFS = new G4MaterialPropertiesTable();
-  opWFS->DumpTable();
-  opWrapperFrontSurface->SetMaterialPropertiesTable(opWFS);
+//  G4OpticalSurface* opWrapperFrontSurface = new G4OpticalSurface("WrapperFrontSurface");
+//  opWrapperFrontSurface->SetType(dielectric_LUT);
+//  opWrapperFrontSurface->SetFinish(polishedvm2000air);
+//  opWrapperFrontSurface->SetModel(LUT);
+//  new G4LogicalBorderSurface("WrapperFrontSurface", crystalPos, fWrapFrontPos, opWrapperFrontSurface);
+//  G4MaterialPropertiesTable* opWFS = new G4MaterialPropertiesTable();
+//  opWFS->DumpTable();
+//  opWrapperFrontSurface->SetMaterialPropertiesTable(opWFS);
 
   G4OpticalSurface* opPMTSurface = new G4OpticalSurface("PMTSurface");
   opPMTSurface->SetType(dielectric_dielectric);
   opPMTSurface->SetFinish(polished);
   opPMTSurface->SetModel(unified);
-  new G4LogicalBorderSurface("PMTSurface",
-			     fCrystalPos,fPMTpos,opPMTSurface);
+  new G4LogicalBorderSurface("PMTSurface", crystalPos,fPMTpos,opPMTSurface);
   G4MaterialPropertiesTable* opPS = new G4MaterialPropertiesTable();
   opPS->DumpTable();
   opPMTSurface->SetMaterialPropertiesTable(opPS);
@@ -520,87 +454,80 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   G4double PhotonEnergyPMTcover[nEntriesPMTcover] = { 2.30*eV, 3.26*eV}; 
   G4double reflectivityPMTcover[nEntriesPMTcover] = {0., 0.};
   G4double efficiencyPMTcover[nEntriesPMTcover] = {1., 1.};
-  new G4LogicalBorderSurface("PMTcoverSurface",
-			     fPMTpos,fPMTcoverPos,opPMTcoverSurface);
+  new G4LogicalBorderSurface("PMTcoverSurface", fPMTpos,fPMTcoverPos,opPMTcoverSurface);
   G4MaterialPropertiesTable* opPcS = new G4MaterialPropertiesTable();
   opPcS -> AddProperty("REFLECTIVITY",PhotonEnergyPMTcover,reflectivityPMTcover,nEntriesPMTcover);
   opPcS -> AddProperty("EFFICIENCY",PhotonEnergyPMTcover,efficiencyPMTcover,nEntriesPMTcover);  
   opPcS->DumpTable();
   opPMTcoverSurface->SetMaterialPropertiesTable(opPcS);
 
-  //Coloring
-  G4VisAttributes* CrystalVisAtt = new G4VisAttributes(G4Colour(1.,1.,0.));//yellow
+  // COLORS
+  G4VisAttributes* invisible = new G4VisAttributes(false);
+  lWorld->SetVisAttributes(invisible);
+  lMother->SetVisAttributes(invisible);
+  lTemp->SetVisAttributes(invisible);
+  lSingle->SetVisAttributes(invisible);
+
+  G4VisAttributes* CrystalVisAtt = new G4VisAttributes(G4Colour::Cyan());
   fLogicCrystal->SetVisAttributes(CrystalVisAtt);
 
-  G4VisAttributes* WrapVisAtt = new G4VisAttributes(G4Colour(0.,1.,1.));//cyan
+  G4VisAttributes* WrapVisAtt = new G4VisAttributes(G4Colour::White());
   fLogicWrap->SetVisAttributes(WrapVisAtt);
 
-  G4VisAttributes* WrapFrontVisAtt = new G4VisAttributes(G4Colour(1.,0.,0.));//red
-  fLogicWrapFront->SetVisAttributes(WrapFrontVisAtt);
-
-  G4VisAttributes* PMTVisAtt = new G4VisAttributes(G4Colour(0.,1.,0.));//green
+  G4VisAttributes* PMTVisAtt = new G4VisAttributes(G4Colour::Blue());
   fLogicPMT->SetVisAttributes(PMTVisAtt);
-  G4VisAttributes* PMTcoverVisAtt = new G4VisAttributes(G4Colour(0.,0.,1.));//blue
+
+  G4VisAttributes* PMTcoverVisAtt = new G4VisAttributes(G4Colour::Green());
   fLogicPMTcover->SetVisAttributes(PMTcoverVisAtt);
 
-  G4VisAttributes* TempVisAtt = new G4VisAttributes(G4Colour(0.,1.,0.));//green
-  lTemp->SetVisAttributes(TempVisAtt);
-  G4VisAttributes* MomVisAtt = new G4VisAttributes(G4Colour(0.,0.,1.));//blue
-  lMother->SetVisAttributes(MomVisAtt);
-
-  G4VisAttributes* FrameVisAtt = new G4VisAttributes(G4Colour(1.,0.,1.));//magenta
-  lFrame->SetVisAttributes(FrameVisAtt);
-
-  PrintParameters();
+  // Initialize the scoring mesh for visualization
+  InitVisScoringManager();
 
   //always return the root volume
-  //
   return fPhysiWorld;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void DetectorConstruction::ConstructSDandField()
 {
-  // sensitive detectors -----------------------------------------------------
-  G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  G4String SDname;
-  G4VSensitiveDetector* PbWO4 
-    = new B5HadCalorimeterSD(SDname="/HadCalorimeter");
-  SDman->AddNewDetector(PbWO4);
-  fLogicCrystal->SetSensitiveDetector(PbWO4);
+//  // sensitive detectors -----------------------------------------------------
+//  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+//  G4VSensitiveDetector* PbWO4 = new MyB5HadCalorimeterSD("/HadCalorimeter");
+//  SDman->AddNewDetector(PbWO4);
+//  fLogicCrystal->SetSensitiveDetector(PbWO4);
 
-  G4VSensitiveDetector* CrystalCover
-    = new CrystalCoverSD(SDname="/CrystalCover");
-  SDman->AddNewDetector(CrystalCover);
-  fLogicWrap->SetSensitiveDetector(CrystalCover);
+//  G4VSensitiveDetector* CrystalCover = new CrystalCoverSD("/CrystalCover");
+//  SDman->AddNewDetector(CrystalCover);
+//  fLogicWrap->SetSensitiveDetector(CrystalCover);
 
-  G4VSensitiveDetector* CrystalFrontCover
-    = new CrystalFrontCoverSD(SDname="/CrystalFrontCover");
-  SDman->AddNewDetector(CrystalFrontCover);
-  fLogicWrapFront->SetSensitiveDetector(CrystalFrontCover);
+//  G4VSensitiveDetector* CrystalFrontCover
+//    = new CrystalFrontCoverSD(SDname="/CrystalFrontCover");
+//  SDman->AddNewDetector(CrystalFrontCover);
+//  fLogicWrapFront->SetSensitiveDetector(CrystalFrontCover);
+//
+//  G4VSensitiveDetector* PMTcover = new PMTcoverSD("/PMTcover");
+//  SDman->AddNewDetector(PMTcover);
+//  fLogicPMTcover->SetSensitiveDetector(PMTcover);
 
-  G4VSensitiveDetector* PMTcover
-    = new PMTcoverSD(SDname="/PMTcover");
-  SDman->AddNewDetector(PMTcover);
-  fLogicPMTcover->SetSensitiveDetector(PMTcover);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::PrintParameters(){
+  // Primitive Scorer for Crystal
+  G4MultiFunctionalDetector* detectorCrystal = new G4MultiFunctionalDetector("crystal");
+  fEDepScorerCrystal = new G4PSEnergyDeposit("edep", 1);
+  detectorCrystal->RegisterPrimitive(fEDepScorerCrystal);
+  fLogicCrystal->SetSensitiveDetector(detectorCrystal);
+  G4SDManager::GetSDMpointer()->AddNewDetector(detectorCrystal);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::SetDetectorGap(G4double value){
-  gap = value*mm;
+  fGap = value*mm;
   G4RunManager::GetRunManager()->ReinitializeGeometry();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4double DetectorConstruction::GetDetectorGap(){
-  return gap;
+  return fGap;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -609,8 +536,8 @@ void DetectorConstruction::SetCrystalSize(G4ThreeVector vector){
   fCrystal_X = vector.getX();
   fCrystal_Y = vector.getY();
   fCrystal_Z = vector.getZ();
-  G4cout << "DetectorConstruction::SetCrystalSize()" << G4endl;
-  G4cout << "- setting crystal size to " << vector.getX() << "x" << vector.getY() << "x" << vector.getZ() << G4endl;
+  std::cout << "DetectorConstruction::SetCrystalSize()" << std::endl;
+  std::cout << "- setting crystal size to " << vector.getX() << "x" << vector.getY() << "x" << vector.getZ() << std::endl;
   G4RunManager::GetRunManager()->ReinitializeGeometry(true);
 }
 
@@ -635,3 +562,122 @@ G4String DetectorConstruction::GetCrystalMaterial(){
   return fDetectorMater->GetName();
 }
 
+void DetectorConstruction::SetCrystalNumberX(G4int num){
+  fCrystalNumX = num;
+  G4cout << "DetectorConstruction::SetCrystalNumberX()" << G4endl;
+  G4cout << "- setting crystal number along X axis to " << num << G4endl;
+  G4RunManager::GetRunManager()->ReinitializeGeometry(true);
+}
+
+G4int DetectorConstruction::GetCrystalNumberX(){
+  return fCrystalNumX;
+}
+
+void DetectorConstruction::SetCrystalNumberY(G4int num){
+  fCrystalNumY = num;
+  G4cout << "DetectorConstruction::SetCrystalNumberY()" << G4endl;
+  G4cout << "- setting crystal number along Y axis to " << num << G4endl;
+  G4RunManager::GetRunManager()->ReinitializeGeometry(true);
+}
+
+G4int DetectorConstruction::GetCrystalNumberY(){
+  return fCrystalNumY;
+}
+
+G4VPrimitiveScorer* DetectorConstruction::GetEdepScorer(){
+  return fEDepScorerCrystal;
+}
+
+//G4TwoVector* DetectorConstruction::GetMomXY(){
+//  return new G4TwoVector(fMom_X, fMom_Y);
+//}
+//
+//G4double DetectorConstruction::GetWrapThickness(){
+//  return fWrapThickness;
+//}
+
+// Petr Stepanov: initialize scoring manager for Interactive visualization
+//                of the energy deposition in the crystal and PMT assembly
+
+void DetectorConstruction::InitVisScoringManager(){
+  // Instantiate Scoring Manager for visualization
+  G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
+
+
+  // CRYSTALS MESH
+
+  // Define the box Mesh with name "crystalsMesh": /score/create/boxMesh crystalsMesh
+  G4VScoringMesh* mesh = scoringManager->FindMesh("crystalsMesh");
+  if (!mesh ){
+    mesh = new G4ScoringBox("crystalsMesh");
+    scoringManager->RegisterScoringMesh(mesh);
+  }
+
+  // Set mesh size to wrap around all crystal volumes (and wrap) in XY plane and have length of a crystal in Z
+  // Example in macro file: /score/mesh/boxSize 31. 31. 100. mm
+  G4double size[3];
+  size[0] = (fCrystalNumX*(fCrystal_X + 2*fWrapThickness) + (fCrystalNumX-1)*fGap)/2;
+  size[1] = (fCrystalNumY*(fCrystal_Y + 2*fWrapThickness) + (fCrystalNumY-1)*fGap)/2;
+  size[2] = (fCrystal_Z + fWrapThickness)/2;
+  mesh->SetSize(size);
+
+  // Set number of bins in the Mesh: /score/mesh/nBin 30 30 100
+  G4double segmentWidth = 3.6; // mm
+  G4int segments[3];
+  segments[0] = fCrystalNumX*((fCrystal_X + 2*fWrapThickness + fGap)/segmentWidth);
+  segments[1] = fCrystalNumY*((fCrystal_Y + 2*fWrapThickness + fGap)/segmentWidth);
+  segments[2] = (fCrystal_Z+fWrapThickness)/segmentWidth;
+  mesh->SetNumberOfSegments(segments);
+
+  // Set Mesh position: /score/mesh/translate/xyz 0. 0. 2100. mm
+  G4double centerPosition[3];
+  centerPosition[0] = 0;
+  centerPosition[1] = 0;
+  centerPosition[2] = (fWrapThickness + fCrystal_Z)/2;
+  mesh->SetCenterPosition(centerPosition);
+
+  // Set Mesh primitive scorer: /score/quantity/energyDeposit eneDep
+  G4PSEnergyDeposit* edepScorer = new G4PSEnergyDeposit3D("eneDepCrystal");
+  mesh->SetPrimitiveScorer(edepScorer);
+
+  // Close the Mesh: /score/close
+  scoringManager->CloseCurrentMesh();
+
+
+  // PMT MESH
+
+  // Define the box Mesh with name "pmtMesh"
+  mesh = scoringManager->FindMesh("pmtsMesh");
+  if (!mesh ){
+    mesh = new G4ScoringBox("pmtsMesh");
+    scoringManager->RegisterScoringMesh(mesh);
+  }
+
+  // Set mesh size to wrap around all single volumes in XY plane and have length of a PMT in Z
+  G4double size2[3];
+  size2[0] = fMom_X/2;
+  size2[1] = fMom_Y/2;
+  size2[2] = fPMT_length/2;
+  mesh->SetSize(size2);
+
+  // Set number of bins in the Mesh: /score/mesh/nBin 30 30 100
+  G4int segments2[3];
+  segments2[0] = fMom_X/segmentWidth;
+  segments2[1] = fMom_Y/segmentWidth;
+  segments2[2] = fPMT_length/segmentWidth;
+  mesh->SetNumberOfSegments(segments2);
+
+  // Set Mesh position: /score/mesh/translate/xyz 0. 0. 2100. mm
+  G4double centerPosition2[3];
+  centerPosition2[0] = 0;
+  centerPosition2[1] = 0;
+  centerPosition2[2] = fWrapThickness + fCrystal_Z + fPMT_length/2;
+  mesh->SetCenterPosition(centerPosition2);
+
+  // Set Mesh primitive scorer: /score/quantity/energyDeposit eneDep
+  G4PSEnergyDeposit* pmtEdepScorer = new G4PSEnergyDeposit3D("eneDepPMT");
+  mesh->SetPrimitiveScorer(pmtEdepScorer);
+
+  // Close the Mesh: /score/close
+  scoringManager->CloseCurrentMesh();
+}

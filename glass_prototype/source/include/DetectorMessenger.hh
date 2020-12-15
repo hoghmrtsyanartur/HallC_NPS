@@ -42,6 +42,7 @@ class DetectorConstruction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithAnInteger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -63,6 +64,8 @@ class DetectorMessenger: public G4UImessenger
     G4UIcmdWithADoubleAndUnit* fSetGapCmd;
     G4UIcmdWith3VectorAndUnit* fSetCrystalSizeCmd;
     G4UIcmdWithAString* fSetCrystalMaterialCmd;
+    G4UIcmdWithAnInteger* fSetCrystalNumberXCmd;
+    G4UIcmdWithAnInteger* fSetCrystalNumberYCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

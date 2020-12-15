@@ -1,64 +1,26 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file analysis/shared/include/SteppingAction.hh
-/// \brief Definition of the SteppingAction class
-//
-//
-// $Id: SteppingAction.hh 67226 2013-02-08 12:07:18Z ihrivnac $
-//
-// 
+/*
+ * SteppingAction.h
+ *
+ *  Created on: Nov 24, 2020
+ *      Author: petrstepanov
+ */
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#ifndef SRC_SteppingAction_H_
+#define SRC_SteppingAction_H_
 
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
-
-#include "G4UserSteppingAction.hh"
-#include "DetectorConstruction.hh"
-#include "EventAction.hh"
+#include <G4UserSteppingAction.hh>
 #include "HistoManager.hh"
-#include "G4Step.hh"
+#include <G4Step.hh>
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class SteppingAction : public G4UserSteppingAction
-{
+class SteppingAction: public G4UserSteppingAction {
 public:
-  SteppingAction(HistoManager* histoManager, DetectorConstruction* detectorConstruction, EventAction* eventAction);
+  SteppingAction(HistoManager* histoManager);
   virtual ~SteppingAction();
 
-  virtual void UserSteppingAction(const G4Step*);
-    
+  void UserSteppingAction(const G4Step* aStep);
+
 private:
   HistoManager* fHistoManager;
-  DetectorConstruction* fDetector;
-  EventAction*          fEventAction;  
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#endif
+#endif /* SRC_SteppingAction_H_ */

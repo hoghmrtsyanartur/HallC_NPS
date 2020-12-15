@@ -27,11 +27,10 @@
 /// \file ActionInitialization.cc
 /// \brief Implementation of the ActionInitialization class
 
+#include <EventAction.hh>
 #include "ActionInitialization.hh"
 #include "RunAction.hh"
 #include "PrimaryGeneratorAction.hh"
-#include "EventAction.hh"
-#include "OutsideWorldSteppingAction.hh"
 #include "SteppingAction.hh"
 #include "HistoManager.hh"
 
@@ -67,23 +66,21 @@ void ActionInitialization::Build() const
   // PS: this is invoked in Sequential mode
   HistoManager* histoManager = new HistoManager();
 
-  // General Particle Source
+  // Instantiate General Particle Source (GPS)
   PrimaryGeneratorAction* primaryGeneratorAction = new PrimaryGeneratorAction(histoManager);
   SetUserAction(primaryGeneratorAction);
 
-  // Action Events before /run/initialize
+  // Initialize Histogram Manager before runs and save ROOT file after run is complete
   RunAction* runAction = new RunAction(histoManager);
   SetUserAction(runAction);
 
   // Action invoked before and after every event
+  // Extract deposited energy in every crystal and save in Histogram Manager
   EventAction* eventAction = new EventAction(histoManager);
   SetUserAction(eventAction);
 
-  // PS: Save output to file for stepping points >= 1
-  SteppingAction *steppingAction = new SteppingAction(histoManager, fDetector, eventAction);
-  SetUserAction(steppingAction);
-
-  OutsideWorldSteppingAction* outsideWorldSteppingAction = new OutsideWorldSteppingAction(histoManager);
+  // Stepping action detects and records particles that are leaving the World volume
+  SteppingAction* outsideWorldSteppingAction = new SteppingAction(histoManager);
   SetUserAction(outsideWorldSteppingAction);
 }
 

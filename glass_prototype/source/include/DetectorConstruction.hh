@@ -42,6 +42,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Material.hh"
 #include "DetectorMessenger.hh"
+#include "G4VPrimitiveScorer.hh"
+#include "G4TwoVector.hh"
 //class G4LogicalVolume;
 //class G4Material;
 //class DetectorMessenger;
@@ -70,79 +72,69 @@ public:
   void SetCrystalMaterial(const char* material);
   G4String GetCrystalMaterial();
 
-  void PrintParameters();
+  void SetCrystalNumberX(G4int num);
+  G4int GetCrystalNumberX();
+
+  void SetCrystalNumberY(G4int num);
+  G4int GetCrystalNumberY();
  
+  G4VPrimitiveScorer* GetEdepScorer();
+
+//  G4TwoVector* GetMomXY();
+//
+//  G4double GetWrapThickness();
+
 private:
 
   const G4double     inch = 2.54*CLHEP::cm;
-  G4Material*        fVacuumMater;
-  G4Material*        fDetectorMater;
-  G4LogicalVolume*   fLogicDetector;
+  G4Material*          fVacuumMater;
+  G4Material*          fDetectorMater;
+  G4LogicalVolume*     fLogicDetector;
 
-  G4LogicalVolume*   fLogicCrystal;//in order to call from ConstructSDandField
+  G4LogicalVolume*     fLogicCrystal; //in order to call from ConstructSDandField
 
-  G4LogicalVolume*   fLogicPMT;
-  G4LogicalVolume*   fLogicWrap;
-  G4LogicalVolume*   fLogicPMTcover;
-  G4LogicalVolume*   fLogicWrapFront;
-  G4Material*        fPMTmater;
-  G4Material*        fWrapMater;
-  G4Material*        fPMTcoverMater;
+  G4LogicalVolume*     fLogicPMT;
+  G4LogicalVolume*     fLogicWrap;
+  G4LogicalVolume*     fLogicPMTcover;
+  G4LogicalVolume*     fLogicWrapFront;
+  G4Material*          fPMTmater;
+  G4Material*          fWrapMater;
+  G4Material*          fPMTcoverMater;
 
-  G4Material* fFrameMater;
+  G4double             fWorld_X;
+  G4double             fWorld_Y;
+  G4double             fWorld_Z;
 
-  G4double           fWorld_X;
-  G4double           fWorld_Y;
-  G4double           fWorld_Z;
-
-  G4double             fMom_X;//mother volume(contains temperature control box)
-  G4double             fMom_Y;
-  G4double             fMom_Z;
-  G4double             fMom_pos_X;//mother volume position(in World volume)
-  G4double             fMom_pos_Y;
-  G4double             fMom_pos_Z;
-
-  G4double             fTemp_X;//temp control box(contains Single)
-  G4double             fTemp_Y;
-  G4double             fTemp_Z;
-  G4double             fTemp_pos_X;//temp control box position inside mother volume
-  G4double             fTemp_pos_Y;
-  G4double             fTemp_pos_Z;
-
-  G4double             fSingle_X;
-  G4double             fSingle_Y;
-  G4double             fSingle_Z;
-
-  G4double             gap;
+  G4double             fGap;
 
   G4double             fFrame_length;
 
-  G4double             fCrystal_X;//PbWO4
-  G4double             fCrystal_Y;//PbWO4
-  G4double             fCrystal_Z;//PbWO4
-  G4double             fCrystal_pos_X;//In case there will be PMT someday, 
-  G4double             fCrystal_pos_Y;//In case there will be PMT someday, 
-  G4double             fCrystal_pos_Z;//In case there will be PMT someday, 
+  G4double             fCrystal_X;
+  G4double             fCrystal_Y;
+  G4double             fCrystal_Z;
+
+  G4double             fMom_X;
+  G4double             fMom_Y;
+
+  G4int                fCrystalNumX;
+  G4int                fCrystalNumY;
 
   G4double             fWrapThickness;
-  G4double             fPMTcoverThickness;
 
   G4double             fPMT_radius;
   G4double             fPMT_length;
-  G4double             fPMT_pos_X;
-  G4double             fPMT_pos_Y;
-  G4double             fPMT_pos_Z;
 
   G4Material*          fWorldMater;     
   G4VPhysicalVolume*   fPhysiWorld;
                 
   DetectorMessenger*   fDetectorMessenger;
-
+  G4VPrimitiveScorer*  fEDepScorerCrystal;
 
 private:
     
   void               DefineMaterials();
   G4VPhysicalVolume* ConstructVolumes();     
+  void               InitVisScoringManager();
   G4bool fCheckOverlaps;
 
 };

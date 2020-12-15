@@ -1,94 +1,42 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file analysis/shared/src/SteppingAction.cc
-/// \brief Implementation of the SteppingAction class
-//
-//
-// $Id: SteppingAction.cc 67226 2013-02-08 12:07:18Z ihrivnac $
-//
-// 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/*
+ * SteppingAction.cpp
+ *
+ *  Created on: Nov 24, 2020
+ *      Author: petrstepanov
+ */
 
-#include "SteppingAction.hh"
-#include "G4Step.hh"
-#include "G4TouchableHistory.hh"
+#include <SteppingAction.hh>
+// #include "G4VPhysicalVolume.hh"
+// #include "G4LogicalVolume.hh"
+// #include <G4StepPoint.hh>
+#include "G4SystemOfUnits.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-SteppingAction::SteppingAction(HistoManager* histoManager, DetectorConstruction* det, EventAction* evt)
-: G4UserSteppingAction(), 
-  fHistoManager(histoManager), fDetector(det), fEventAction(evt)
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-SteppingAction::~SteppingAction()
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void SteppingAction::UserSteppingAction(const G4Step* aStep)
-{
-  // // get volume of the current step
-  // G4VPhysicalVolume* volume 
-  // = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
-  
-  // // collect energy and track length step by step
-  // G4double edep = aStep->GetTotalEnergyDeposit();
-  
-  // G4double stepl = 0.;
-  // if (aStep->GetTrack()->GetDefinition()->GetPDGCharge() != 0.)
-  //   stepl = aStep->GetStepLength();
-
-  G4VPhysicalVolume* volume_pre 
-    = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
-
-  // Petr Stepanov: "Crystal_log" is crystals' logical volume
-  if(volume_pre->GetLogicalVolume()->GetName() == "Crystal_log"){
-
-    G4TouchableHistory* touchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
-
-    G4VPhysicalVolume* cellPhysical = touchable->GetVolume(2);
-    G4int rowNo = cellPhysical->GetCopyNo();//0~2(3) in total
-    G4VPhysicalVolume* columnPhysical = touchable->GetVolume(1);
-    G4int columnNo = columnPhysical->GetCopyNo();//0~2(3) in total
-    G4int hitID = columnNo+3*rowNo;//0~8(9)
-    G4Track* track = aStep->GetTrack();
-    G4ThreeVector position = track->GetPosition();
-    const G4AffineTransform transformation = aStep->GetPreStepPoint()->GetTouchable()->GetHistory()->GetTopTransform();
-    G4ThreeVector localPosition = transformation.TransformPoint(position);
-
-    G4double eDep = aStep->GetTotalEnergyDeposit();
-
-    G4int evtNb = fEventAction->GetEventNb();
-
-    fHistoManager->SetFluxEnergy(evtNb, hitID, eDep, localPosition);
-    fHistoManager->FillNtuple_Flux();
-  }
+SteppingAction::SteppingAction(HistoManager* histoManager) : G4UserSteppingAction(), fHistoManager(histoManager) {
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+SteppingAction::~SteppingAction() {
+}
+
+void SteppingAction::UserSteppingAction(const G4Step* step)
+{
+//  G4VPhysicalVolume* prePhysicalVolume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
+//  G4VPhysicalVolume* postPhysicalVolume = step->GetPostStepPoint()->GetTouchableHandle()->GetVolume();
+//  if (prePhysicalVolume != NULL && postPhysicalVolume == NULL){
+//    G4double x = step->GetPreStepPoint()->GetPosition().x()/m;
+//    G4double y = step->GetPreStepPoint()->GetPosition().y()/m;
+//    G4double z = step->GetPreStepPoint()->GetPosition().z()/m;
+//    G4double energy = step->GetPreStepPoint()->GetKineticEnergy()/MeV;
+//    fHistoManager->FillNtupleOutOfWorld(energy, x, y, z);
+//  }
+
+  if (step->GetPostStepPoint()->GetStepStatus() == fWorldBoundary){
+    G4ThreeVector worldPosition = step->GetPostStepPoint()->GetPosition();
+    // G4ThreeVector localPosition = theTouchable->GetHistory()->GetTopTransform().TransformPoint(worldPosition);
+    // G4double energy1 = step->GetPreStepPoint()->GetKineticEnergy()/MeV;   // save as below
+    // G4double energy2 = step->GetPostStepPoint()->GetKineticEnergy()/MeV;  // save as below
+    G4double kinEnergy = step->GetTrack()->GetKineticEnergy(); // MeV
+    G4int pdg = step->GetTrack()->GetDefinition()->GetPDGEncoding(); // Particle ID
+    const char* particleName = step->GetTrack()->GetDefinition()->GetParticleName().c_str(); // Particle Name
+    fHistoManager->FillNtupleOutOfWorld(kinEnergy, worldPosition.x(), worldPosition.y(), worldPosition.z(), pdg, particleName);
+  }
+}

@@ -26,6 +26,7 @@ private:
   G4UIdirectory* fDirectory;
   G4UIcmdWithAString* fileNameCommand;
   G4UIcmdWithAString* writeStepPointsCommand;
+  G4UIcmdWithAString* writeWorldEscapeCommand;
 };
 
 #endif /* SRC_HISTOMANAGERMESSENGER_HH_ */

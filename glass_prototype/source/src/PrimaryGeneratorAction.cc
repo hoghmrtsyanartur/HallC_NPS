@@ -59,13 +59,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   fParticleGun->GeneratePrimaryVertex(anEvent);
 
-  G4double t = fParticleGun->GetParticleTime();
-  G4int PID = fParticleGun->GetParticleDefinition()->GetPDGEncoding();
-  G4ThreeVector xyz = fParticleGun->GetParticlePosition();
-  G4ThreeVector Pxyz = fParticleGun->GetParticleMomentumDirection();
-  G4double E = fParticleGun->GetParticleEnergy();
+  // G4double t = fParticleGun->GetParticleTime();
+  // G4int PID = fParticleGun->GetParticleDefinition()->GetPDGEncoding();
+  // G4ThreeVector xyz = fParticleGun->GetParticlePosition();
+  // G4ThreeVector Pxyz = fParticleGun->GetParticleMomentumDirection();
+  // G4double E = fParticleGun->GetParticleEnergy();
 
-  fHistoManager->SetPrimaryParticle(t, PID, xyz, Pxyz, E);
+  // fHistoManager->SetPrimaryParticle(t, PID, xyz, Pxyz, E);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
