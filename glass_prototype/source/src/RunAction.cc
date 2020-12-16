@@ -37,6 +37,9 @@
 #include "Randomize.hh"
 #include "G4ScoringManager.hh"
 #include "G4VScoringMesh.hh"
+#include "G4Utils.hh"
+#include "G4VScoreColorMap.hh"
+#include "G4DefaultLinearColorMap.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -82,19 +85,32 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   G4int NbOfEvents = aRun->GetNumberOfEvent();
   if (NbOfEvents == 0) return;
 
-  // Equalize scoring mesh color maps for Crystals and PMTs
-  // G4ScoringManager *scoringManager = G4ScoringManager::GetScoringManager();
+  // Equalize scoring mesh color maps for Crystals and PMTs (just for visualization)
+  // Obtain maximum value of the crystals mesh
+  Double_t maxCrystalMeshValue = G4Utils::getProjectionZMaximumQuantityFromMesh("crystalsMesh", "eneDepCrystal");
+  Double_t maxPMTMeshValue = G4Utils::getProjectionZMaximumQuantityFromMesh("pmtsMesh", "eneDepPMT");
 
-  // scoringManager->ListScoreColorMaps();
-//  scoringManager->DrawMesh(meshName,psName,colorMapName,axflg);
-//  scoringManager->GetScoreColorMap(mapName)
-//  G4VScoringMesh *crystalsMesh = scoringManager->FindMesh("crystalsMesh");
-//  G4VScoringMesh crystalscrystalsMesh->GetScoreMap()
-//
+  // Assign this value to the 1st bin of the PMT mesh
+  G4VScoreColorMap* myColorMap = new G4DefaultLinearColorMap("myColorMap");
+  myColorMap->SetMinMax(0, std::max(maxCrystalMeshValue, maxPMTMeshValue));
+  myColorMap->SetFloatingMinMax(0);
+
+  G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
+  scoringManager->RegisterScoreColorMap(myColorMap);
+  scoringManager->ListScoreColorMaps();
 
 
   // Save histograms
   fHistoManager->Save();
+
+//  if (maxCrystalMeshValue > maxPMTMeshValue){
+//    G4Utils::setMaximumMeshQuantity("pmtsMesh", "eneEdepPMT", maxCrystalMeshValue);
+//  } else {
+//    G4Utils::setMaximumMeshQuantity("crystalsMesh", "eneDepCrystal", maxPMTMeshValue);
+//  }
+//
+//  G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
+//  scoringManager->DrawMesh(meshName, psName, colorMapName, axflg)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

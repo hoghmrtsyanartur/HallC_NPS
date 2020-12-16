@@ -32,6 +32,9 @@ public:
   static G4int getNCrystals();
 
   static G4double getTotalQuantityFromMesh(const char *meshName, const char *psName);
+  static G4double getMaximumQuantityFromMesh(const char *meshName, const char *psName);
+  static G4double getProjectionZMaximumQuantityFromMesh(const char *meshName, const char *psName);
+  static void setMaximumMeshQuantity(const char *meshName, const char *psName, G4double val);
 };
 
 #endif /* SRC_G4UTILS_HH_ */

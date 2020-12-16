@@ -161,3 +161,152 @@ G4double G4Utils::getTotalQuantityFromMesh(const char *meshName, const char *psN
   }
   return grandTotal;
 }
+
+// Petr Stepanov: Obtain total energy deposited in the Mesh
+//                code copied from G4VScoreWriter.cc
+G4double G4Utils::getProjectionZMaximumQuantityFromMesh(const char *meshName, const char *psName) {
+  G4ScoringManager *scoringManager = G4ScoringManager::GetScoringManager();
+  G4VScoringMesh *fScoringMesh = scoringManager->FindMesh(meshName);
+
+  using MeshScoreMap = G4VScoringMesh::MeshScoreMap;
+
+  // retrieve the map
+  MeshScoreMap fSMap = fScoringMesh->GetScoreMap();
+
+  MeshScoreMap::const_iterator msMapItr = fSMap.find(psName);
+  if (msMapItr == fSMap.end()) {
+    G4cerr << "ERROR : DumpToFile : Unknown quantity, \"" << psName << "\"." << G4endl;
+    return 0;
+  }
+
+  std::map<G4int, G4StatDouble*> *score = msMapItr->second->GetMap();
+
+  G4double unitValue = fScoringMesh->GetPSUnitValue(psName);
+  G4String unit = fScoringMesh->GetPSUnit(psName);
+  G4String divisionAxisNames[3];
+  fScoringMesh->GetDivisionAxisNames(divisionAxisNames);
+
+  // Get number of the mesh segments
+  G4int fNMeshSegments[3] = { 0 }; // number of segments of the mesh
+  fScoringMesh->GetNumberOfSegments(fNMeshSegments);
+
+  G4double fact = 1;
+  G4double total = 0;
+  G4double grandMax = 0;
+  // G4double totalVal2 = 0;
+  // G4double entry = 0;
+
+  // XY projection Maximum
+  Double_t xy[fNMeshSegments[0]][fNMeshSegments[1]];
+  for (int x = 0; x < fNMeshSegments[0]; x++) {
+    for (int y = 0; y < fNMeshSegments[1]; y++) {
+      xy[x][y] = 0;
+      for (int z = 0; z < fNMeshSegments[2]; z++) {
+        G4int idx = x*fNMeshSegments[1]*fNMeshSegments[2] +y*fNMeshSegments[2]+z;
+        std::map<G4int, G4StatDouble*>::iterator value = score->find(idx);
+
+        if (value == score->end()) {
+          total = 0;
+        } else {
+          total = (value->second->sum_wx())/unitValue*fact;
+        }
+
+        xy[x][y] += total;
+      }
+    }
+  }
+  Double_t xyMax = 0;
+  for (int x = 0; x < fNMeshSegments[0]; x++) {
+    for (int y = 0; y < fNMeshSegments[1]; y++) {
+      if (xy[x][y] > xyMax) xyMax = xy[x][y];
+    }
+  }
+  std::cout << "xyMax = " << xyMax << std::endl;
+
+  // YZ projection Maximum
+  Double_t yz[fNMeshSegments[1]][fNMeshSegments[2]];
+  for (int y = 0; y < fNMeshSegments[1]; y++) {
+    for (int z = 0; z < fNMeshSegments[2]; z++) {
+      yz[y][z] = 0;
+      for (int x = 0; x < fNMeshSegments[0]; x++) {
+        G4int idx = x*fNMeshSegments[1]*fNMeshSegments[2] +y*fNMeshSegments[2]+z;
+        std::map<G4int, G4StatDouble*>::iterator value = score->find(idx);
+
+        if (value == score->end()) {
+          total = 0;
+        } else {
+          total = (value->second->sum_wx())/unitValue*fact;
+        }
+
+        yz[y][z] += total;
+      }
+    }
+  }
+  Double_t yzMax = 0;
+  for (int y = 0; y < fNMeshSegments[1]; y++) {
+    for (int z = 0; z < fNMeshSegments[2]; z++) {
+      if (yz[y][z] > yzMax) yzMax = yz[y][z];
+    }
+  }
+  std::cout << "yzMax = " << yzMax << std::endl;
+
+  // XZ projection Maximum
+  Double_t xz[fNMeshSegments[0]][fNMeshSegments[2]];
+  for (int x = 0; x < fNMeshSegments[0]; x++) {
+    for (int z = 0; z < fNMeshSegments[2]; z++) {
+      xz[x][z] = 0;
+      for (int y = 0; y < fNMeshSegments[1]; y++) {
+        G4int idx = x*fNMeshSegments[1]*fNMeshSegments[2] +y*fNMeshSegments[2]+z;
+        std::map<G4int, G4StatDouble*>::iterator value = score->find(idx);
+
+        if (value == score->end()) {
+          total = 0;
+        } else {
+          total = (value->second->sum_wx())/unitValue*fact;
+        }
+
+        xz[x][z] += total;
+      }
+    }
+  }
+  Double_t xzMax = 0;
+  for (int x = 0; x < fNMeshSegments[0]; x++) {
+    for (int z = 0; z < fNMeshSegments[2]; z++) {
+      if (xz[x][z] > xzMax) xzMax = xz[x][z];
+    }
+  }
+  std::cout << "zzMax = " << xzMax << std::endl;
+
+  return std::max(xzMax, yzMax);
+}
+
+G4double G4Utils::getMaximumQuantityFromMesh(const char *meshName, const char *psName) {
+  G4ScoringManager *scoringManager = G4ScoringManager::GetScoringManager();
+  G4VScoringMesh *fScoringMesh = scoringManager->FindMesh(meshName);
+
+  using MeshScoreMap = G4VScoringMesh::MeshScoreMap;
+
+  // retrieve the map
+  MeshScoreMap fSMap = fScoringMesh->GetScoreMap();
+
+  MeshScoreMap::const_iterator msMapItr = fSMap.find(psName);
+  if (msMapItr == fSMap.end()) {
+    G4cerr << "ERROR : DumpToFile : Unknown quantity, \"" << psName << "\"." << G4endl;
+    return 0;
+  }
+
+  G4double unitValue = fScoringMesh->GetPSUnitValue(psName);
+  Double_t fact = 1;
+  std::map<G4int, G4StatDouble*> *score = msMapItr->second->GetMap();
+
+
+  G4double max = 0;
+  std::map<G4int, G4StatDouble*>::iterator it;
+
+  for (it = score->begin(); it != score->end(); it++){
+    Double_t total = (it->second->sum_wx())/unitValue; //*fact;
+    if (total > max) max = total;
+  }
+
+  return max;
+}

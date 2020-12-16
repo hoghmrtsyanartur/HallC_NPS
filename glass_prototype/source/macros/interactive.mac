@@ -4,12 +4,12 @@
 /testhadr/Physics QBBC
 #/testhadr/Physics optical
 
-/detector/setCrystalSize 18.450 18.238 196.286 mm
+/detector/setCrystalSize 20 20 200 mm
 /detector/setCrystalMaterial BaGdSiO
 #/detector/setCrystalMaterial BaSi2O5
 #/detector/setCrystalMaterial PbWO4
-/detector/setCrystalNumberX 5
-/detector/setCrystalNumberY 5
+/detector/setCrystalNumberX 1
+/detector/setCrystalNumberY 1
 
 /histoManager/setOutputFileNamePattern output-%s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape true
@@ -86,8 +86,8 @@
 # Set light to camera
 #/vis/viewer/set/lightsMove with-camera
 
-#/score/drawProjection crystalsMesh eneDepCrystal
-#/score/drawProjection pmtsMesh eneDepPMT
+/score/drawProjection crystalsMesh eneDepCrystal myColorMap
+/score/drawProjection pmtsMesh eneDepPMT myColorMap
 #/vis/ogl/set/printFilename ./scorer.png
 #/vis/ogl/export
 
