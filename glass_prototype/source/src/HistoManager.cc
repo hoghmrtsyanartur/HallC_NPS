@@ -262,30 +262,33 @@ void HistoManager::Save()
   RooConstVar* numberOfEvents = new RooConstVar("numberOfEvents", "Number of events", G4Utils::getNumberOfEvents());
   numberOfEvents->Write();
 
+  std::cout << std::fixed;
+
   // Write total energy from GPS
-  std::cout << "Total energy from GPS, MeV: " << G4Utils::getGPSMonoEnergy()*G4Utils::getNumberOfEvents() << std::endl;
-  RooConstVar* energyTotalGPS = new RooConstVar("energyGPSTotal", "Total energy from GPS, MeV", G4Utils::getGPSMonoEnergy()*G4Utils::getNumberOfEvents());
+  G4double energyTotalGPSDouble = G4Utils::getGPSMonoEnergy()*G4Utils::getNumberOfEvents();
+  std::cout << "Total GPS energy, GeV: " << std::setprecision(0) << energyTotalGPSDouble/1000 << std::endl;
+  RooConstVar* energyTotalGPS = new RooConstVar("energyGPSTotal", "Total energy from GPS, MeV", energyTotalGPSDouble);
   energyTotalGPS->Write();
 
   // Write total energy in crystals from scorer
-  std::cout << "Total energy in crystals from scorer, MeV: " << fEdepTotal << std::endl;
+  // std::cout << "Total energy in crystals from scorer, GeV: " << std::setprecision(1) << fEdepTotal/1000 << std::endl;
   RooConstVar* energyTotalCrystalsScorer = new RooConstVar("energyTotalCrystalsScorer", "Total energy in crystals from scorer, MeV", fEdepTotal);
   energyTotalCrystalsScorer->Write();
 
   // Write total energy in crystals from mesh
   G4double energyTotalCrystalsMeshDouble = G4Utils::getTotalQuantityFromMesh("crystalsMesh", "eneDepCrystal");
-  std::cout << "Total energy in crystals from mesh, MeV: " << energyTotalCrystalsMeshDouble << std::endl;
+  std::cout << "In crystals, GeV: " << std::setprecision(1) << energyTotalCrystalsMeshDouble/1000 << " (" << std::setprecision(0) << energyTotalCrystalsMeshDouble/energyTotalGPSDouble*100 << " %)" << std::endl;
   RooConstVar* energyTotalCrystalsMesh = new RooConstVar("energyTotalCrystalsMesh", "Total energy in crystals from mesh, MeV", energyTotalCrystalsMeshDouble);
   energyTotalCrystalsMesh->Write();
 
   // Write total energy in crystals from mesh
   G4double energyTotalPMTMeshDouble = G4Utils::getTotalQuantityFromMesh("pmtsMesh", "eneDepPMT");
-  std::cout << "Total energy in PMTs from mesh, MeV: " << energyTotalPMTMeshDouble << std::endl;
+  std::cout << "In PMTs, GeV: " << std::setprecision(1) << energyTotalPMTMeshDouble/1000 << " (" << std::setprecision(0) << energyTotalPMTMeshDouble/energyTotalGPSDouble*100 << " %)" << std::endl;
   RooConstVar* energyTotalPMTsMesh = new RooConstVar("energyTotalPMTsMesh", "Total energy in PMTs from mesh, MeV", energyTotalPMTMeshDouble);
   energyTotalPMTsMesh->Write();
 
   // Write total energy escaped the world
-  std::cout << "Total energy escaped the world, MeV: " << fTotalOutWorldEnergy << std::endl;
+  std::cout << "Escaped the world, GeV: " << std::setprecision(1) << fTotalOutWorldEnergy/1000 << " (" << std::setprecision(0) << fTotalOutWorldEnergy/energyTotalGPSDouble*100 << " %)" << std::endl;
   RooConstVar* energyTotalOutWorld = new RooConstVar("energyTotalOutWorld", "Total energy escaped the world, MeV", fTotalOutWorldEnergy);
   energyTotalOutWorld->Write();
 

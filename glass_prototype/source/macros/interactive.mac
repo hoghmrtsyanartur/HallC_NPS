@@ -4,7 +4,7 @@
 /testhadr/Physics QBBC
 #/testhadr/Physics optical
 
-/detector/setCrystalSize 20 20 200 mm
+/detector/setCrystalSize 20 20 400 mm
 /detector/setCrystalMaterial BaGdSiO
 #/detector/setCrystalMaterial BaSi2O5
 #/detector/setCrystalMaterial PbWO4
@@ -72,7 +72,7 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 10
+/run/beamOn 15
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 
@@ -91,7 +91,7 @@
 #/vis/ogl/set/printFilename ./scorer.png
 #/vis/ogl/export
 
-/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
-/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
+#/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
+#/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
 
 # You can create two viewers and copy camera position. Search examples for: /vis/viewer/copyViewFrom viewer-0

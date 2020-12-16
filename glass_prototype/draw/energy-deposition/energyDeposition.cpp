@@ -286,8 +286,9 @@ void plotEscapeParticles(const char* fileName){
   // PAD 1: Draw world escape locations
   tree->SetMarkerStyle(6);
   TVirtualPad* pad1 = canvas->cd(1);
-  Int_t maxEntries = TMath::Min((Double_t)tree->GetEntries(), 1.E4);
-  tree->Draw("x:y:z:energy", "", "COLZ", maxEntries);
+  // Int_t maxEntries = TMath::Min((Double_t)tree->GetEntries(), 1.E4);
+  // tree->Draw("x:y:z:energy", "", "COLZ", maxEntries);
+  tree->Draw("x:y:z:energy", "", "COLZ");
   TH1* htemp1 = (TH1*) pad1->GetListOfPrimitives()->FindObject("htemp");
   htemp1->SetTitle("Escape Locations");
 
