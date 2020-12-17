@@ -8,8 +8,8 @@
 /detector/setCrystalMaterial BaGdSiO
 #/detector/setCrystalMaterial BaSi2O5
 #/detector/setCrystalMaterial PbWO4
-/detector/setCrystalNumberX 1
-/detector/setCrystalNumberY 1
+/detector/setCrystalNumberX 6
+/detector/setCrystalNumberY 6
 
 /histoManager/setOutputFileNamePattern output-%s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape true
@@ -43,7 +43,7 @@
 /gps/source/intensity 1
 /gps/particle e-
 /gps/pos/type Point
-/gps/ene/mono 5.2 GeV
+/gps/ene/mono 10 GeV
 /gps/pos/centre 0.  0. -400. mm
 /gps/direction 0. 0. 1.
 /gps/source/multiplevertex true
