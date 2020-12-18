@@ -2,14 +2,14 @@
 
 Repository containing the code for simulation of the energy deposition profiles and energy resolution in the Glass Prototype NPS experiment. Table of contents:
 
-- (Developer notes)[#developer-notes]
-    - (Installing the Geant4 on your computer)[#installing-the-geant4-on-your-computer]
-    - (Setting up the Glass Prototype Project in Eclipse)[#setting-up-the-glass-prototype-project-in-eclipse]
-- (User notes)[#user-notes]
-    - (Logging to the Computing Farm)[#logging-to-the-computing-farm]
-    - (Compilation of the Executable Program)[#compilation-of-the-executable-program]
-    - (Running the Simulation)[#running-the-simulation]
-    - (Plotting the output results)[#analysis-of-the-output-file]
+- [Developer notes](#developer-notes)
+    - [Installing the Geant4 on your computer](#installing-the-geant4-on-your-computer)
+    - [Setting up the Glass Prototype Project in Eclipse](#setting-up-the-glass-prototype-project-in-eclipse)
+- [User notes](#user-notes)
+    - [Logging to the Computing Farm](#logging-to-the-computing-farm)
+    - [Compilation of the Executable Program](#compilation-of-the-executable-program)
+    - [Running the Simulation](#running-the-simulation)
+    - [Plotting the output results](#analysis-of-the-output-file)
 
 ## Developer notes
 
@@ -96,7 +96,7 @@ This section is designed for the end users and describes the process of running 
 Program code supports the running the executable in the Interactive simulation mode. However in order to forward the graphical output from the Computing Farm via the ssh protocol, it is necessary to pass the `-Y` parameter to the `ssh` command:
 ```
 ssh -Y <your-username>@login.jalb.org
-ssh -Y ifarm
+ssh ifarm
 ```
 After user logs in to the Computing Farm it is necessary to source the latest environment or the Geant4 and ROOT toolkits. In order to see the available versions of the environment run the following command:
 ```
@@ -116,6 +116,7 @@ source /site/12gev_phys/softenv.csh `grep -oP "\d\.\d(?= \(prod)" /site/12gev_ph
 Next we check out this GitHub repository under the `Downloads` folder:
 ```
 mkdir -p ~/Downloads && cd ~/Downloads/
+rm -rf ./HallC_NPS
 git clone https://github.com/petrstepanov/HallC_NPS
 ```
 In order to not interfere with the original program code we will create a dedicated build directory outside of the Git repository tree.
@@ -129,7 +130,7 @@ make -j`nproc`
 
 Now the program is compiled and ready to launch. However, we need to specify the detector geometry, incident particle properties and other minor in the macro file.
 ```
-nano ./macros/interactive/
+nano ./macros/farm.mac
 ```
 Adjust values of the following macro commands, that correspond to a variety of simulation properties:
 ```
@@ -156,7 +157,7 @@ Adjust values of the following macro commands, that correspond to a variety of s
 /score/drawProjection crystalsMesh eneDepCrystal myColorMap
 /score/drawProjection pmtsMesh eneDepPMT myColorMap
 ```
-Once the above parameter values are set, the program can be launched via following command:
+Once the above parameter values are set, hit `CTRL+X` to close nano editor and save the macro file. Program can be launched via following command:
 ```
 glass
 ```
