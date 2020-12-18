@@ -72,7 +72,7 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 3
+/run/beamOn 5
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 

@@ -1,12 +1,21 @@
 # HallC_NPS
 
-Hall_C NPS Geant4 Simulation 
+Repository containing the code for simulation of the energy deposition profiles and energy resolution in the Glass Prototype NPS experiment. Table of contents:
+
+- (Developer notes)[#developer-notes]
+    - (Installing the Geant4 on your computer)[#installing-the-geant4-on-your-computer]
+    - (Setting up the Glass Prototype Project in Eclipse)[#setting-up-the-glass-prototype-project-in-eclipse]
+- (User notes)[#user-notes]
+    - (Logging to the Computing Farm)[#logging-to-the-computing-farm]
+    - (Compilation of the Executable Program)[#compilation-of-the-executable-program]
+    - (Running the Simulation)[#running-the-simulation]
+    - (Plotting the output results)[#analysis-of-the-output-file]
 
 ## Developer notes
 
 In this section we document useful information for application developers, namely: how to install the Geant4 on local computer and how to setup the project in IDE.
 
-### Install the Geant4 on your computer
+### Installing the Geant4 on your computer
 
 Before installing Geant make sure following prerequisites are satisfied: `build essentials`, `Qt5`, `libX11`, `libXmu`, `Motif` libraries. On Fedora linux prerequisities can be installed via following commands:
 ```
@@ -46,7 +55,7 @@ echo ‘source $HOME/Applications/geant4/bin/geant4.sh’ >> ~/.bashrc
 ```
 Now that the setup of the Geant4 with debug symbols is complete, restart your session (logout and login back) and proceed with the Eclipse project setup.
 
-### Setup the Glass Prototype Project in Eclipse
+### Setting up the Glass Prototype Project in Eclipse
 
 First, install Eclipse IDE. This process is documented in the [Chapter 6 of my dissertation](https://petrstepanov.com/static/petr-stepanov-dissertation-latest.pdf). Next, check out the Git repository into the desired location on your computer. I usually keep most of the Git repositories in `~/Development` folder.
 ```
@@ -80,8 +89,16 @@ More information regarding the CMake Eclipse generator can be found: [on Mantid 
 
 ## User notes
 
-This section is designed for the end users and describes the process of running the simulation and obtaining the experimental results on the Computating Farm.
-There is no need to install the Geant4 toolkit on the farm. It comes preinstalled. However, after user logs in to the Computing Farm it is necessary to source the latest environment. In order to see the available versions of the environment run the following command:
+This section is designed for the end users and describes the process of running the simulation and obtaining the experimental results on the Computing Farm. There is no need to install the Geant4 toolkit on the farm. It comes preinstalled. 
+
+### Logging to the Computing Farm
+
+Program code supports the running the executable in the Interactive simulation mode. However in order to forward the graphical output from the Computing Farm via the ssh protocol, it is necessary to pass the `-Y` parameter to the `ssh` command:
+```
+ssh -Y <your-username>@login.jalb.org
+ssh -Y ifarm
+```
+After user logs in to the Computing Farm it is necessary to source the latest environment or the Geant4 and ROOT toolkits. In order to see the available versions of the environment run the following command:
 ```
 csh /site/12gev_phys/softenv.csh
 ```
@@ -93,6 +110,9 @@ The shortcut to source always the latest possible environment is following (grep
 ```
 source /site/12gev_phys/softenv.csh `grep -oP "\d\.\d(?= \(prod)" /site/12gev_phys/softenv.csh`
 ```
+
+### Compilation of the Executable Program
+
 Next we check out this GitHub repository under the `Downloads` folder:
 ```
 mkdir -p ~/Downloads && cd ~/Downloads/
@@ -104,10 +124,47 @@ mkdir -p ./HallC_NPS_glass_bulid && cd ./HallC_NPS_glass_bulid
 cmake -DGeant4_DIR=$G4LIB/Geant4-$G4DATA_VERSION/ ./../HallC_NPS/glass_prototype/source/
 make -j`nproc`
 ```
-Now the program is compiled and ready to launch. However, we need to specify the detector geometry, incident particle properties and other minor in the macro file:
+
+### Running the Simulation
+
+Now the program is compiled and ready to launch. However, we need to specify the detector geometry, incident particle properties and other minor in the macro file.
 ```
 nano ./macros/interactive/
 ```
+Adjust values of the following macro commands, that correspond to a variety of simulation properties:
+```
+# Crystal size along X, Y and Z axis
+/detector/setCrystalSize 20 20 200 mm
+# Crystal material - currently supported values are BaGdSiO, BaSi2O5, PbWO4
+/detector/setCrystalMaterial BaGdSiO
+# Number of crystals in the assembly along X and Y axis
+/detector/setCrystalNumberX 3
+/detector/setCrystalNumberY 3
+
+# Output of the locations, energies and particle types that escape the World boundary
+# turn this setting off when performing a simulation with number of events > 100
+/histoManager/writeWorldEscape true
+
+# Incident particle type and energy
+/gps/particle e-
+/gps/ene/mono 5.2 GeV
+
+# Number of the events (particle shot in the detector)
+/run/beamOn 20
+
+# Uncomment lines below in order to draw the energy deposition projections for crystals and PMTs
+/score/drawProjection crystalsMesh eneDepCrystal myColorMap
+/score/drawProjection pmtsMesh eneDepPMT myColorMap
+```
+Once the above parameter values are set, the program can be launched via following command:
+```
+glass
+```
+The Geant4 user interface window is presented to the user. Click on the "Open" bitton on the toolbar and locate the `./macros/interactive.mac` macro file containing the above commands that control the simulation. After the program run finishes the visualization window will be demonstarted to the user. Visualization accumulates particle trajectories from a single event. However, the energy profiles correspond to the total number of the events specified in the macro file.
+
+
+### Analysis of the Output File
+
 ## Notes from the former developers
 
 For Hall C DVCS (DVCS_evt_gen/), see https://wiki.jlab.org/cuawiki/images/f/fa/User_Guide.pdf for a short description on how to run on JLab/ifarm

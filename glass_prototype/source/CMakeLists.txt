@@ -60,7 +60,7 @@ target_link_libraries(glass ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} )
 # relies on these scripts being in the current working directory.
 #
 set(glass_SCRIPTS
-    /macros/vis.mac /macros/test.mac /macros/interactive.mac /macros/batch.mac 
+    /macros/farm.mac /macros/vis.mac /macros/test.mac /macros/interactive.mac /macros/batch.mac 
   )
 
 foreach(_script ${glass_SCRIPTS})
