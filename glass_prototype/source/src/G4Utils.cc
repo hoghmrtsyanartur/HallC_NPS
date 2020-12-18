@@ -20,9 +20,6 @@
 #include "G4ThreeVector.hh"
 #include <regex>
 
-using CLHEP::Hep3Vector;
-
-#include "../geant4_source/externals/clhep/include/CLHEP/Vector/ThreeVector.h"
 G4Utils::G4Utils() {
   // TODO Auto-generated constructor stub
 
