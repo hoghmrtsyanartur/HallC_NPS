@@ -93,7 +93,21 @@ The shortcut to source always the latest possible environment is following (grep
 ```
 source /site/12gev_phys/softenv.csh `grep -oP "\d\.\d(?= \(prod)" /site/12gev_phys/softenv.csh`
 ```
-
+Next we check out this GitHub repository under the `Downloads` folder:
+```
+mkdir -p ~/Downloads && cd ~/Downloads/
+git clone https://github.com/petrstepanov/HallC_NPS
+```
+In order to not interfere with the original program code we will create a dedicated build directory outside of the Git repository tree.
+```
+mkdir -p ./HallC_NPS_glass_bulid && cd ./HallC_NPS_glass_bulid
+cmake -DGeant4_DIR=$G4LIB/Geant4-$G4DATA_VERSION/ ./../HallC_NPS/glass_prototype/source/
+make -j`nproc`
+```
+Now the program is compiled and ready to launch. However, we need to specify the detector geometry, incident particle properties and other minor in the macro file:
+```
+nano ./macros/interactive/
+```
 ## Notes from the former developers
 
 For Hall C DVCS (DVCS_evt_gen/), see https://wiki.jlab.org/cuawiki/images/f/fa/User_Guide.pdf for a short description on how to run on JLab/ifarm

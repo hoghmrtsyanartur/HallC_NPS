@@ -59,6 +59,9 @@
 #include "RooConstVar.h"
 #include "TVector2.h"
 #include "TVector3.h"
+
+#include "TSystem.h"
+
 #pragma GCC diagnostic pop
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -134,6 +137,9 @@ HistoManager::~HistoManager()
 
 void HistoManager::Book()
 {
+  // Create output directory
+  gSystem->MakeDirectory("./output");
+
   // Construct filename
   TString fileName = getFileName();
 
@@ -378,7 +384,8 @@ G4String HistoManager::getFileName(){
   G4double gunEnergy = G4Utils::getGPSMonoEnergy();
   G4int numberOfEvents = G4Utils::getNumberOfEvents();
   TString fileName = TString::Format(fFileNamePattern.c_str(), crystalMaterial.c_str(), numX, numY, x, y, z, gunEnergy/1E3, numberOfEvents);
-  G4String fileNameString = G4String(fileName.Data());
+  TString outputFileNamePath = "./output/" + fileName;
+  G4String fileNameString = G4String(outputFileNamePath.Data());
   return fileNameString;
 }
 

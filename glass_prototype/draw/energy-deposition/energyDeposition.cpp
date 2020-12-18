@@ -27,6 +27,7 @@
 #include <TLatex.h>
 #include <TMathBase.h>
 #include <TF1.h>
+#include <TGFileDialog.h>
 
 const Double_t statsLineHeight = 0.06;
 
@@ -465,3 +466,18 @@ int energyDeposition(const char *fileName){
   return 0;
 }
 
+int energyDeposition(){
+  const char *filetypes[] = { "All files",     "*",
+                              "ROOT files",    "*.root",
+                              0,               0 };
+  static TString dir(".");
+  TGFileInfo fi;
+  fi.fFileTypes = filetypes;
+  fi.SetIniDir(dir);
+  printf("fIniDir = %s\n", fi.fIniDir);
+  new TGFileDialog(gClient->GetRoot(), 0, kFDOpen, &fi);
+  printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
+  dir = fi.fIniDir;
+
+  return energyDeposition(fi.fFilename);
+}
