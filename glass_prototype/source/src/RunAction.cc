@@ -32,6 +32,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include <CLHEP/Vector/ThreeVector.h>
 #include "RunAction.hh"
 #include "globals.hh"
 #include "Randomize.hh"
@@ -40,6 +41,8 @@
 #include "G4Utils.hh"
 #include "G4VScoreColorMap.hh"
 #include "G4DefaultLinearColorMap.hh"
+
+using CLHEP::Hep3Vector;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -103,7 +106,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   // Save histograms
   fHistoManager->Save();
 
-//  if (maxCrystalMeshValue > maxPMTMeshValue){
+ //  if (maxCrystalMeshValue > maxPMTMeshValue){
 //    G4Utils::setMaximumMeshQuantity("pmtsMesh", "eneEdepPMT", maxCrystalMeshValue);
 //  } else {
 //    G4Utils::setMaximumMeshQuantity("crystalsMesh", "eneDepCrystal", maxPMTMeshValue);
@@ -112,5 +115,3 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 //  G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
 //  scoringManager->DrawMesh(meshName, psName, colorMapName, axflg)
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

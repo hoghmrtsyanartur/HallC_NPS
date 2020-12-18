@@ -87,11 +87,6 @@ DetectorConstruction::DetectorConstruction()
    fMom_X(0), fMom_Y(0),
    fWorldMater(0), fPhysiWorld(0), fEDepScorerCrystal(0)
 {
-  // World size
-  fWorld_X = 0.5*meter; // 4.5*m;
-  fWorld_Y = 0.5*meter; // 4.5*m;
-  fWorld_Z = 1.5*meter;   // 10*m;
-
   // Default size of crystals (can be overrided in DetectorMessenger)
   fCrystal_X = 20*mm;
   fCrystal_Y = 20*mm;
@@ -111,6 +106,12 @@ DetectorConstruction::DetectorConstruction()
   // PMT tube dimensions
   fPMT_radius = 18/2*mm;
   fPMT_length = 88*mm;
+
+  // World size - length depends on the crystal length and PMT length
+  fWorld_X = 0.75*meter; // 4.5*m;
+  fWorld_Y = fCrystal_Z + fPMT_length + 100*mm; // 4.5*m;
+  fWorld_Z = 1.5*meter;   // 10*m;
+
 
   DefineMaterials();
 
@@ -680,4 +681,8 @@ void DetectorConstruction::InitVisScoringManager(){
 
   // Close the Mesh: /score/close
   scoringManager->CloseCurrentMesh();
+}
+
+G4double DetectorConstruction::GetPMTLength() {
+  return fPMT_length;
 }

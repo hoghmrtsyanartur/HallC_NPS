@@ -54,7 +54,7 @@ ActionInitialization::~ActionInitialization()
 void ActionInitialization::BuildForMaster() const
 {
   // PS: this is invoked in Multi-threading mode
-  HistoManager* histoManager = new HistoManager();
+  HistoManager* histoManager = HistoManager::getInstance();
   RunAction* runAction = new RunAction(histoManager);
   SetUserAction(runAction);
 }
@@ -64,7 +64,7 @@ void ActionInitialization::BuildForMaster() const
 void ActionInitialization::Build() const
 {
   // PS: this is invoked in Sequential mode
-  HistoManager* histoManager = new HistoManager();
+  HistoManager* histoManager = HistoManager::getInstance();
 
   // Instantiate General Particle Source (GPS)
   PrimaryGeneratorAction* primaryGeneratorAction = new PrimaryGeneratorAction(histoManager);

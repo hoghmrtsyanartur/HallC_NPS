@@ -60,7 +60,7 @@ const G4int MaxHisto = 4;
 
 class HistoManager {
 public:
-  HistoManager();
+  static HistoManager* getInstance();
   ~HistoManager();
 
   void Book();
@@ -79,6 +79,7 @@ public:
   // HistoManagerMessenger methods
   void setFileNamePattern(G4String fileNamePattern);
   G4String getFileNamePattern();
+  G4String getFileName();
 
   void setWriteStepPoints(G4bool value);
   void setWriteWorldEscape(G4bool value);
@@ -88,6 +89,9 @@ public:
   //  void BookBeginOfEventAction();
 
 private:
+  HistoManager();
+  static HistoManager* instance;
+
   HistoManagerMessenger* fHistoManagerMessenger;
   G4String fFileNamePattern;
 

@@ -8,8 +8,8 @@
 /detector/setCrystalMaterial BaGdSiO
 #/detector/setCrystalMaterial BaSi2O5
 #/detector/setCrystalMaterial PbWO4
-/detector/setCrystalNumberX 6
-/detector/setCrystalNumberY 6
+/detector/setCrystalNumberX 5
+/detector/setCrystalNumberY 5
 
 /histoManager/setOutputFileNamePattern output-%s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape true
@@ -51,7 +51,7 @@
 
 # /vis/list
 # OpenGLStoredQt (OGLSQt, OGL, OGLS) - cannot have trajectories and mesh, legend disappears when move
-#/vis/open OGL
+# /vis/open OGL
 # OpenGLImmediateQt (OGLIQt, OGLI) - cannot draw mesh after trajectories
 #/vis/open OGLIQt
 # OpenGLImmediateXm (OGLIXm, OGLIQt_FALLBACK) - separate window, freezes
@@ -60,8 +60,8 @@
 #/vis/open OGLSXm
 # OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK, OGLIXm_FALLBACK) - separate window, everything works!
 /vis/open OGLIX
-# OpenGLStoredX (OGLSX, OGLSQt_FALLBACK, OGLSXm_FALLBACK)
-#/vis/open OGLIX
+# OpenGLStoredX (OGLSX, OGLSQt_FALLBACK, OGLSXm_FALLBACK) - no trajectories with scorer
+# /vis/open OGLSX
 
 
 /vis/ogl/set/displayListLimit 500000
@@ -72,26 +72,34 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 15
+/run/beamOn 3
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 
+
 # Camera pivot point
-/vis/viewer/set/targetPoint 0 0 145 mm
+# /vis/viewer/set/targetPoint 0 0 145 mm
 # Direction from target to camera
-/vis/viewer/set/viewpointVector -1 1 -1
+# /vis/viewer/set/viewpointVector -1 1 -1
 # Zoom level
 #/vis/viewer/zoomTo 50
 
 # Set light to camera
 #/vis/viewer/set/lightsMove with-camera
 
+# Center camera on the crystal and PMT assembly
+/vis/viewer/set/centerOnCrystals
+
+# Draw energy deposition projections 
 /score/drawProjection crystalsMesh eneDepCrystal myColorMap
 /score/drawProjection pmtsMesh eneDepPMT myColorMap
+
 #/vis/ogl/set/printFilename ./scorer.png
 #/vis/ogl/export
 
-#/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
-#/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
+#/misc/saveImage
+
+/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
+/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
 
 # You can create two viewers and copy camera position. Search examples for: /vis/viewer/copyViewFrom viewer-0

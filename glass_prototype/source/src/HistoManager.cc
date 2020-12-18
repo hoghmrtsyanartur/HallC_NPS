@@ -104,6 +104,15 @@ HistoManager::HistoManager()
 //  fPdgVector.clear();
 }
 
+HistoManager* HistoManager::instance = NULL;
+
+HistoManager* HistoManager::getInstance(){
+    if (!instance){
+        instance = new HistoManager;
+    }
+    return instance;
+}
+
 HistoManager::~HistoManager()
 {
 //  if (fRootFile !=0 ){
@@ -126,15 +135,7 @@ HistoManager::~HistoManager()
 void HistoManager::Book()
 {
   // Construct filename
-  G4String crystalMaterial = G4Utils::getCrystalMaterial();
-  G4int numX = G4Utils::getNCrystalsX();
-  G4int numY = G4Utils::getNCrystalsY();
-  G4double x = G4Utils::getCrystalX();
-  G4double y = G4Utils::getCrystalY();
-  G4double z = G4Utils::getCrystalZ();
-  G4double gunEnergy = G4Utils::getGPSMonoEnergy();
-  G4int numberOfEvents = G4Utils::getNumberOfEvents();
-  TString fileName = TString::Format(fFileNamePattern.c_str(), crystalMaterial.c_str(), numX, numY, x, y, z, gunEnergy/1E3, numberOfEvents);
+  TString fileName = getFileName();
 
   fRootFile = new TFile(fileName.Data(), "RECREATE");
   if (!fRootFile) {
@@ -362,6 +363,23 @@ void HistoManager::setFileNamePattern(G4String fileNamePattern){
 
 G4String HistoManager::getFileNamePattern(){
   return fFileNamePattern;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4String HistoManager::getFileName(){
+  // Construct filename
+  G4String crystalMaterial = G4Utils::getCrystalMaterial();
+  G4int numX = G4Utils::getNCrystalsX();
+  G4int numY = G4Utils::getNCrystalsY();
+  G4double x = G4Utils::getCrystalX();
+  G4double y = G4Utils::getCrystalY();
+  G4double z = G4Utils::getCrystalZ();
+  G4double gunEnergy = G4Utils::getGPSMonoEnergy();
+  G4int numberOfEvents = G4Utils::getNumberOfEvents();
+  TString fileName = TString::Format(fFileNamePattern.c_str(), crystalMaterial.c_str(), numX, numY, x, y, z, gunEnergy/1E3, numberOfEvents);
+  G4String fileNameString = G4String(fileName.Data());
+  return fileNameString;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

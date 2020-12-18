@@ -53,6 +53,8 @@
 //#include "QGSP_BERT.hh"
 //#include "G4EmStandardPhysics_option4.hh"
 
+#include "MyVisMessenger.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 int main(int argc, char **argv) {
@@ -131,8 +133,12 @@ int main(int argc, char **argv) {
   }
   else {
     // interactive mode
+    // Instantiate Misc Messenger that saves image
+    new MyVisMessenger();
+
     // UImanager->ApplyCommand("/control/execute init_vis.mac");
     ui->SessionStart();
+
     delete ui;
   }
 

@@ -21,6 +21,7 @@ public:
   static G4String getGPSParticleName();
   static G4int getNumberOfEvents();
   static G4String getCrystalMaterial();
+  static G4double getPmtLength();
 
   static G4ThreeVector* getCrystalSize();
   static G4double getCrystalX();

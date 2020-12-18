@@ -14,7 +14,15 @@
 #include "DetectorConstruction.hh"
 #include "G4ScoringManager.hh"
 #include "G4VScoringMesh.hh"
+#include "G4VisManager.hh"
+#include "G4VViewer.hh"
+#include "G4OpenGLViewer.hh"
+#include "G4ThreeVector.hh"
+#include <regex>
 
+using CLHEP::Hep3Vector;
+
+#include "../geant4_source/externals/clhep/include/CLHEP/Vector/ThreeVector.h"
 G4Utils::G4Utils() {
   // TODO Auto-generated constructor stub
 
@@ -105,6 +113,14 @@ G4int G4Utils::getNCrystals() {
   return getNCrystalsX() * getNCrystalsY();
 }
 
+G4double G4Utils::getPmtLength() {
+  DetectorConstruction *detectorConstruction =
+      (DetectorConstruction*) G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  if (detectorConstruction == NULL)
+    return 0;
+  return detectorConstruction->GetPMTLength();
+}
+
 // Petr Stepanov: Obtain total energy deposited in the Mesh
 //                code copied from G4VScoreWriter.cc
 G4double G4Utils::getTotalQuantityFromMesh(const char *meshName, const char *psName) {
@@ -192,12 +208,16 @@ G4double G4Utils::getProjectionZMaximumQuantityFromMesh(const char *meshName, co
 
   G4double fact = 1;
   G4double total = 0;
-  G4double grandMax = 0;
+  // G4double grandMax = 0;
   // G4double totalVal2 = 0;
   // G4double entry = 0;
 
+  size_t segmentsX = fNMeshSegments[0];
+  size_t segmentsY = fNMeshSegments[1];
+  size_t segmentsZ = fNMeshSegments[2];
+
   // XY projection Maximum
-  Double_t xy[fNMeshSegments[0]][fNMeshSegments[1]];
+  std::vector<std::vector<G4double>> xy (segmentsX, std::vector<G4double> (segmentsY, 0));
   for (int x = 0; x < fNMeshSegments[0]; x++) {
     for (int y = 0; y < fNMeshSegments[1]; y++) {
       xy[x][y] = 0;
@@ -224,7 +244,7 @@ G4double G4Utils::getProjectionZMaximumQuantityFromMesh(const char *meshName, co
   std::cout << "xyMax = " << xyMax << std::endl;
 
   // YZ projection Maximum
-  Double_t yz[fNMeshSegments[1]][fNMeshSegments[2]];
+  std::vector<std::vector<G4double>> yz (segmentsY, std::vector<G4double> (segmentsZ, 0));
   for (int y = 0; y < fNMeshSegments[1]; y++) {
     for (int z = 0; z < fNMeshSegments[2]; z++) {
       yz[y][z] = 0;
@@ -251,7 +271,7 @@ G4double G4Utils::getProjectionZMaximumQuantityFromMesh(const char *meshName, co
   std::cout << "yzMax = " << yzMax << std::endl;
 
   // XZ projection Maximum
-  Double_t xz[fNMeshSegments[0]][fNMeshSegments[2]];
+  std::vector<std::vector<G4double>> xz (segmentsX, std::vector<G4double> (segmentsZ, 0));
   for (int x = 0; x < fNMeshSegments[0]; x++) {
     for (int z = 0; z < fNMeshSegments[2]; z++) {
       xz[x][z] = 0;
@@ -304,7 +324,7 @@ G4double G4Utils::getMaximumQuantityFromMesh(const char *meshName, const char *p
   std::map<G4int, G4StatDouble*>::iterator it;
 
   for (it = score->begin(); it != score->end(); it++){
-    Double_t total = (it->second->sum_wx())/unitValue; //*fact;
+    Double_t total = (it->second->sum_wx())/unitValue*fact;
     if (total > max) max = total;
   }
 

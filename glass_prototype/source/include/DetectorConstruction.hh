@@ -78,6 +78,8 @@ public:
   void SetCrystalNumberY(G4int num);
   G4int GetCrystalNumberY();
  
+  G4double GetPMTLength();
+
   G4VPrimitiveScorer* GetEdepScorer();
 
 //  G4TwoVector* GetMomXY();
