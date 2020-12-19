@@ -10,7 +10,7 @@
 #include "G4VisManager.hh"
 #include "G4Point3D.hh"
 #include "G4Text.hh"
-
+#include "TString.h"
 #include <ostream>
 
 G4Helper* G4Helper::instance = NULL;
@@ -31,7 +31,6 @@ G4Helper::~G4Helper() {
   // TODO Auto-generated destructor stub
 }
 
-
 void G4Helper::add2DText(const char *text) {
   G4VVisManager* fVisManager = G4VVisManager::GetConcreteInstance();
   if(!fVisManager) {
@@ -41,11 +40,17 @@ void G4Helper::add2DText(const char *text) {
 
   fVisManager->BeginDraw2D();
 
-  G4Text t(text, G4Point3D(-0.9, 0.9 -(lineNumber++)*0.02, 0.1));
-  t.SetScreenSize(12);
+  G4Text t(text, G4Point3D(-0.9, 0.9 -(lineNumber++)*0.05, 0.1));
+  t.SetScreenSize(21);
   G4VisAttributes att(G4Colour::White());
   t.SetVisAttributes(&att);
   fVisManager->Draw2D(t);
 
   fVisManager->EndDraw2D();
+}
+
+void G4Helper::drawSatistics(){
+  // Write material
+  TString sMat = TString::Format("Crystal material:  %s", G4Utils::getCrystalMaterial().c_str());
+  add2DText(sMat.Data());
 }

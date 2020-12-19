@@ -327,23 +327,3 @@ G4double G4Utils::getMaximumQuantityFromMesh(const char *meshName, const char *p
 
   return max;
 }
-
-void G4Utils::add2DText(const char *text) {
-  G4VVisManager* fVisManager = G4VVisManager::GetConcreteInstance();
-  if(!fVisManager) {
-    G4cerr << "G4VScoringMesh::DrawColorChart(): no visualization system" << G4endl;
-    return;
-  }
-  fVisManager->BeginDraw2D();
-
-  for (G4double d = -0.9; d <=0.9; d+=0.1){
-    G4Text t(text, G4Point3D(d, d, 0.1));
-    t.SetScreenSize(12);
-    G4VisAttributes att(G4Colour::White());
-    t.SetVisAttributes(&att);
-    fVisManager->Draw2D(t);
-  }
-
-  fVisManager->EndDraw2D();
-}
-

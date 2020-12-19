@@ -415,12 +415,6 @@ G4bool HistoManager::getWriteWorldEscape(){
 }
 
 void HistoManager::outputEdepStats() {
-//  G4Helper* helper = G4Helper::getInstance();
-//  helper->add2DText("asdasd");
-  G4Utils::add2DText("asdasd");
-//  // Write material
-//  TString sMat = TString::Format("Crystal material:  %s", G4Utils::getCrystalMaterial().c_str());
-//  helper->add2DText(sMat.Data());
 
 //  // Write crystal size
 //  TString sSiz = TString::Format("Crystal size:      %.1fx%.1fx%.1f mm", G4Utils::getCrystalX(), G4Utils::getCrystalY(), G4Utils::getCrystalZ());

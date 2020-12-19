@@ -6,6 +6,7 @@
  */
 
 #include "MyMessenger.hh"
+#include "G4Helper.hh"
 #include "G4Utils.hh"
 
 MyMessenger::MyMessenger() : G4UImessenger(){
@@ -23,6 +24,8 @@ MyMessenger::~MyMessenger() {
 
 void MyMessenger::SetNewValue(G4UIcommand * command, G4String /* newValues */){
   if(command == myCommand){
-    G4Utils::add2DText("Hello World");
+    G4Helper* helper = G4Helper::getInstance();
+    helper->add2DText("Hello World");
+    // G4Utils::add2DText("Hello World");
   }
 }
