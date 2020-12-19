@@ -51,8 +51,8 @@
 #include "G4GeneralParticleSource.hh"
 #include "G4SingleParticleSource.hh"
 #include <g4root.hh>
+#include "VisHelper.hh"
 #include "G4Utils.hh"
-#include "G4Helper.hh"
 #include "G4Run.hh"
 
 #pragma GCC diagnostic push
@@ -412,36 +412,4 @@ void HistoManager::setWriteWorldEscape(G4bool value){
 
 G4bool HistoManager::getWriteWorldEscape(){
   return fWriteWorldEscape;
-}
-
-void HistoManager::outputEdepStats() {
-
-//  // Write crystal size
-//  TString sSiz = TString::Format("Crystal size:      %.1fx%.1fx%.1f mm", G4Utils::getCrystalX(), G4Utils::getCrystalY(), G4Utils::getCrystalZ());
-//  helper->add2DText(sSiz.Data());
-//
-//  // Write incident particle
-//  TString sPar = TString::Format("Incident particle: %s, %.0f MeV, %d events", G4Utils::getGPSParticleName().c_str(), G4Utils::getGPSMonoEnergy(), G4Utils::getNumberOfEvents());
-//  helper->add2DText(sPar.Data());
-//
-//  helper->add2DText("");
-//
-//  // Total deposited energy
-//  G4double energyTotalGPSDouble = G4Utils::getGPSMonoEnergy()*G4Utils::getNumberOfEvents();
-//  TString s1 = TString::Format("Total incident energy, GeV:     %.0f", energyTotalGPSDouble/1000);
-//  helper->add2DText(s1.Data());
-//
-//  // Write total energy in crystals from mesh
-//  G4double energyTotalCrystalsMeshDouble = G4Utils::getTotalQuantityFromMesh("crystalsMesh", "eneDepCrystal");
-//  TString s2 = TString::Format("Deposited in crystals, GeV:     %.1f", energyTotalCrystalsMeshDouble/1000);
-//  helper->add2DText(s2.Data());
-//
-//  // Write total energy in pmts from mesh
-//  G4double energyTotalPMTMeshDouble = G4Utils::getTotalQuantityFromMesh("pmtsMesh", "eneDepPMT");
-//  TString s3 = TString::Format("Deposited in PMT assembly, GeV: %.1f", energyTotalPMTMeshDouble/1000);
-//  helper->add2DText(s3.Data());
-//
-//  // Write total energy escaped the world
-//  TString s4 = TString::Format("Escaped the world, GeV:         %.1f", energyTotalCrystalsMeshDouble/1000);
-//  helper->add2DText(s4.Data());
 }

@@ -96,7 +96,8 @@
 
 # Output 2D text on the visualization
 #/histoManager/drawEdepText
-#/mydirectory/draw
+#/visHelper/drawText HelloWorld
+/visHelper/drawStats
 
 #/vis/ogl/set/printFilename ./scorer.png
 #/vis/ogl/export
