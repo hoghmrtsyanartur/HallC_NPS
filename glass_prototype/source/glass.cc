@@ -29,6 +29,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include <MyVisCommands.hh>
 #include <VisHelperMessenger.hh>
 #include "G4Timer.hh"
 #include "G4UIExecutive.hh"
@@ -53,7 +54,6 @@
 //#include "G4OpticalPhysics.hh"
 //#include "QGSP_BERT.hh"
 //#include "G4EmStandardPhysics_option4.hh"
-#include "MyVisMessenger.hh"
 #include "VisHelperMessenger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -133,8 +133,7 @@ int main(int argc, char **argv) {
   else {
     // interactive mode
     // Instantiate Misc Messenger that saves image
-    new MyVisMessenger();
-    new VisHelperMessenger();
+    new MyVisCommands();
 
     // UImanager->ApplyCommand("/control/execute init_vis.mac");
     ui->SessionStart();

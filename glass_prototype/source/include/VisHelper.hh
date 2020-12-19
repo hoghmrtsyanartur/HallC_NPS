@@ -18,6 +18,7 @@ public:
 
   void draw2DText(const char* text);
   void drawSatistics();
+  void exportImage(G4String extension);
 
 private:
   VisHelper();

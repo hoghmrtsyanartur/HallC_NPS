@@ -13,6 +13,8 @@
 #include "G4Square.hh"
 #include "TString.h"
 #include "G4Utils.hh"
+#include "G4OpenGLViewer.hh"
+#include "G4UImanager.hh"
 #include <ostream>
 
 VisHelper* VisHelper::instance = NULL;
@@ -33,6 +35,7 @@ VisHelper::~VisHelper() {
   // TODO Auto-generated destructor stub
 }
 
+// From G4VScoreColorMap.cc
 void VisHelper::draw2DText(const char *text) {
   G4VVisManager* fVisManager = G4VVisManager::GetConcreteInstance();
   if(!fVisManager) {
@@ -42,10 +45,10 @@ void VisHelper::draw2DText(const char *text) {
 
   fVisManager->BeginDraw2D();
 
-
   // Draw text shadow (black)
   // G4double shadowOffset = 0.0035;
   G4int textSize = 14;
+
   G4double lineHeight = textSize/200.;
   G4double textY = 0.9-lineNumber*lineHeight;
 
@@ -101,4 +104,35 @@ void VisHelper::drawSatistics(){
   // Write total energy escaped the world
   TString s4 = TString::Format("Escaped the world, GeV:         %.1f (%.1f %%)", energyTotalCrystalsMeshDouble/1000, energyTotalCrystalsMeshDouble/energyTotalGPSDouble*100);
   draw2DText(s4.Data());
+}
+
+// From G4OpenGLViewerMessenger.cc
+void VisHelper::exportImage(G4String extension){
+  G4VisManager* pVisManager = G4VisManager::GetInstance();
+
+  G4VViewer* pViewer = pVisManager->GetCurrentViewer();
+  if (!pViewer) {
+    G4cout <<
+      "G4OpenGLViewerMessenger::SetNewValue: No current viewer."
+      "\n  \"/vis/open\", or similar, to get one."
+           << G4endl;
+    return;
+  }
+
+  G4OpenGLViewer* pOGLViewer = dynamic_cast<G4OpenGLViewer*>(pViewer);
+  if (!pOGLViewer) {
+    G4cout <<
+      "G4OpenGLViewerMessenger::SetNewValue: Current viewer is not of type"
+      "\n  OGL.  (It is \""
+     << pViewer->GetName() <<
+      "\".)\n  Use \"/vis/viewer/select\" or \"/vis/open\"."
+           << G4endl;
+    return;
+  }
+
+  pOGLViewer->exportImage("output/123.png");
+
+  if (pOGLViewer->GetViewParameters().IsAutoRefresh())
+    G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/refresh");
+  return;
 }

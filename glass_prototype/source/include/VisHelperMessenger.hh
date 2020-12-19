@@ -22,8 +22,9 @@ public:
 private:
 
   G4UIdirectory* fDirectory;
-  G4UIcommand* draw2dTextCommand;
+  G4UIcmdWithAString* draw2dTextCommand;
   G4UIcommand* drawStatsCommand;
+  G4UIcmdWithAString* exportImageCommand;
 };
 
 #endif /* SRC_VisHelperMessenger_HH_ */

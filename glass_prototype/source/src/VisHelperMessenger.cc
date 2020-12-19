@@ -21,6 +21,10 @@ VisHelperMessenger::VisHelperMessenger() : G4UImessenger(){
   // Instantiate command for drawing 2D statistics
   drawStatsCommand = new G4UIcommand("/visHelper/drawStats",this);
   drawStatsCommand->SetGuidance("Draw statistics");
+
+  // Instantiate command for exporting image
+  exportImageCommand = new G4UIcmdWithAString("/visHelper/exportImage",this);
+  exportImageCommand->SetGuidance("Export OGL image");
 }
 
 VisHelperMessenger::~VisHelperMessenger() {
@@ -33,5 +37,7 @@ void VisHelperMessenger::SetNewValue(G4UIcommand * command, G4String newValue){
     helper->draw2DText(newValue.c_str());
   } else if (command == drawStatsCommand){
     helper->drawSatistics();
+  } else if (command == exportImageCommand){
+    helper->exportImage(newValue);
   }
 }
