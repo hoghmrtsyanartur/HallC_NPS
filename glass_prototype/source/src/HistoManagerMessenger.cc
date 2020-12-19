@@ -22,12 +22,16 @@ HistoManagerMessenger::HistoManagerMessenger(HistoManager* histoManager) : G4UIm
   // Instantiate command that controls output of the Step Points
   writeStepPointsCommand = new G4UIcmdWithAString("/histoManager/writeStepPoints",this);
   writeStepPointsCommand->SetGuidance("Control output of data related to Step Points.");
-  writeStepPointsCommand->AvailableForStates(G4ApplicationState::G4State_PreInit);
+  // writeStepPointsCommand->AvailableForStates(G4ApplicationState::G4State_PreInit);
 
   // Instantiate command that controls output of the
   writeWorldEscapeCommand = new G4UIcmdWithAString("/histoManager/writeWorldEscape",this);
   writeWorldEscapeCommand->SetGuidance("Control output of the particles escaping the World.");
-  writeWorldEscapeCommand->AvailableForStates(G4ApplicationState::G4State_PreInit);
+  // writeWorldEscapeCommand->AvailableForStates(G4ApplicationState::G4State_PreInit);
+
+  // Instantiate command to output 2d text on screen
+  output2DTextCommand = new G4UIcommand("/histoManager/drawEdepText", this);
+  output2DTextCommand->SetGuidance("Draw 2D  text with energy deposition on the screen");
 }
 
 HistoManagerMessenger::~HistoManagerMessenger() {
@@ -40,7 +44,10 @@ void HistoManagerMessenger::SetNewValue(G4UIcommand * command, G4String newValue
     fHistoManager->setWriteStepPoints(writeStepPointsCommand->ConvertToBool(newValues));
   } else if(command == writeWorldEscapeCommand){
     fHistoManager->setWriteWorldEscape(writeWorldEscapeCommand->ConvertToBool(newValues));
+  } else if (command == output2DTextCommand){
+    fHistoManager->outputEdepStats();
   }
+
 }
 
 G4String HistoManagerMessenger::GetCurrentValue(G4UIcommand * command){

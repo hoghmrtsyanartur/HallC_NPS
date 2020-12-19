@@ -39,7 +39,9 @@ cmake -DGEANT4_INSTALL_DATA=ON .
 cmake -DGEANT4_USE_OPENGL_X11=ON .
 cmake -DGEANT4_USE_QT=ON .
 cmake -DGEANT4_USE_XM=ON .
+cmake -DGEANT4_BUILD_MULTITHREADED=ON .
 cmake -DCMAKE_BUILD_TYPE=Debug .
+
 ```
 After the CMake configuration was specified, the compilation process is started. Depending on the performance of your computer this process can take about 30 minutes.
 ```

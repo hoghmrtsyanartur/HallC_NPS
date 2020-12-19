@@ -11,6 +11,7 @@
 #include <G4UImessenger.hh>
 #include <HistoManager.hh>
 #include <G4UIcmdWithAString.hh>
+#include <G4UIcommand.hh>
 
 class HistoManagerMessenger : G4UImessenger {
 public:
@@ -27,6 +28,7 @@ private:
   G4UIcmdWithAString* fileNameCommand;
   G4UIcmdWithAString* writeStepPointsCommand;
   G4UIcmdWithAString* writeWorldEscapeCommand;
+  G4UIcommand* output2DTextCommand;
 };
 
 #endif /* SRC_HISTOMANAGERMESSENGER_HH_ */

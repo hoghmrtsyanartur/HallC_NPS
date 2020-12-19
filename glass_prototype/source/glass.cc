@@ -37,7 +37,7 @@
 #include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
 
-//#include "HistoManager.hh"
+#include "HistoManager.hh"
 //#include "DetectorConstructionAna02.hh"
 #include "ActionInitialization.hh"
 #include "G4VisManager.hh"
@@ -52,7 +52,7 @@
 //#include "G4OpticalPhysics.hh"
 //#include "QGSP_BERT.hh"
 //#include "G4EmStandardPhysics_option4.hh"
-
+#include "MyMessenger.hh"
 #include "MyVisMessenger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -70,8 +70,6 @@ int main(int argc, char **argv) {
 
   // Choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
-
-  // For some reason it only works here
 
 	// Create an instance of the G4RunManager class
   // It controls the flow of the program and manages the event loop(s) within a run
@@ -135,6 +133,7 @@ int main(int argc, char **argv) {
     // interactive mode
     // Instantiate Misc Messenger that saves image
     new MyVisMessenger();
+    new MyMessenger();
 
     // UImanager->ApplyCommand("/control/execute init_vis.mac");
     ui->SessionStart();

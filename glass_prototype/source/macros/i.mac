@@ -49,45 +49,9 @@
 /gps/source/multiplevertex true
 /gps/source/list
 
-# /vis/list
-# OpenGLStoredQt (OGLSQt, OGL, OGLS) - cannot have trajectories and mesh, legend disappears when move
-# /vis/open OGL
-# OpenGLImmediateQt (OGLIQt, OGLI) - cannot draw mesh after trajectories
-#/vis/open OGLIQt
-# OpenGLImmediateXm (OGLIXm, OGLIQt_FALLBACK) - separate window, freezes
-#/vis/open OGLIXm
-# OpenGLStoredXm (OGLSXm, OGLSQt_FALLBACK) - separate window, freezes
-#/vis/open OGLSXm
-# OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK, OGLIXm_FALLBACK) - separate window, everything works!
-/vis/open OGLIX
-# OpenGLStoredX (OGLSX, OGLSQt_FALLBACK, OGLSXm_FALLBACK) - no trajectories with scorer
-# /vis/open OGLSX
+/vis/open OGL
 
-
-/vis/ogl/set/displayListLimit 500000
-#/vis/open VRML2FILE
-#/vis/open HepRepFile
 /vis/drawVolume
-/vis/scene/add/trajectories
-#/vis/scene/add/axes 0 0 0 10 cm
-#/vis/scene/endOfEventAction accumulate 10
-
-/run/beamOn 1
-
-# https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
-
-
-# Camera pivot point
-# /vis/viewer/set/targetPoint 0 0 145 mm
-# Direction from target to camera
-# /vis/viewer/set/viewpointVector -1 1 -1
-# Zoom level
-#/vis/viewer/zoomTo 50
-
-# Set light to camera
-#/vis/viewer/set/lightsMove with-camera
-
-# Center camera on the crystal and PMT assembly
 /vis/viewer/set/centerOnCrystals
 
 # Draw energy deposition projections 
@@ -96,12 +60,12 @@
 
 # Output 2D text on the visualization
 #/histoManager/drawEdepText
-#/mydirectory/draw
 
 #/vis/ogl/set/printFilename ./scorer.png
 #/vis/ogl/export
 
-/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
-/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
+#/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
+#/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
+
 
 # You can create two viewers and copy camera position. Search examples for: /vis/viewer/copyViewFrom viewer-0

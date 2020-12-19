@@ -6,7 +6,7 @@
 /detector/setCrystalNumberY 3
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
-/histoManager/writeWorldEscape true
+/histoManager/writeWorldEscape false
 
 /run/initialize
 
@@ -19,21 +19,20 @@
 /gps/source/multiplevertex true
 /gps/source/list
 
+# Run the simulation
+/tracking/verbose 0
+/run/beamOn 100
+
 # Visualize geometry and events for debugging
-/vis/open OGLIX
+/histoManager/writeWorldEscape false
+
+/vis/open OGLI
 /vis/drawVolume
 /vis/scene/add/trajectories
-/run/beamOn 5
 /vis/viewer/set/centerOnCrystals
+
+/run/beamOn 15
 
 # Draw energy deposition projections 
 /score/drawProjection crystalsMesh eneDepCrystal myColorMap
 /score/drawProjection pmtsMesh eneDepPMT myColorMap
-
-/score/dumpAllQuantitiesToFile crystalsMesh output/crystalsMesh.txt
-/score/dumpAllQuantitiesToFile pmtsMesh output/pmtsMesh.txt
-
-# Simulate more events
-/vis/disable
-/tracking/verbose 0
-/run/beamOn 100

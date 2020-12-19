@@ -8,6 +8,7 @@
 #include <CLHEP/Vector/ThreeVector.h>
 #include <MyVisMessenger.hh>
 #include "G4Utils.hh"
+#include "G4Helper.hh"
 
 using CLHEP::Hep3Vector;
 
@@ -15,6 +16,8 @@ MyVisMessenger::MyVisMessenger() : G4VVisCommand() {
   // Instantiate command for setting the gap between crystals
   fSaveImageCommand = new G4UIcommand("/vis/viewer/set/centerOnCrystals", this);
   fSaveImageCommand->SetGuidance("Set the gap between the crystals.");
+
+
 }
 
 MyVisMessenger::~MyVisMessenger() {
@@ -41,6 +44,9 @@ void MyVisMessenger::SetNewValue(G4UIcommand* cmd, G4String /* g4String */) {
     G4ThreeVector viewVector(-1, 1, -1);
     Hep3Vector viewpointVector = viewVector.unit();
     vp.SetViewAndLights(viewpointVector);
+
+    // G4Helper* helper = G4Helper::getInstance();
+    // helper->add2DText("asdasd");
   }
 
   SetViewParameters(currentViewer,vp);

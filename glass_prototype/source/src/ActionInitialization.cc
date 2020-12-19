@@ -47,6 +47,7 @@ ActionInitialization::ActionInitialization(DetectorConstruction *detector)
 
 ActionInitialization::~ActionInitialization()
 {
+  std::cout << "Destroying ActionInitialization" << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
