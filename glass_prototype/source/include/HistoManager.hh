@@ -88,6 +88,8 @@ public:
   G4bool getWriteWorldEscape();
   //  void BookBeginOfEventAction();
 
+  G4double getTotalWorldOutEnergy();
+
 private:
   HistoManager();
   static HistoManager* instance;

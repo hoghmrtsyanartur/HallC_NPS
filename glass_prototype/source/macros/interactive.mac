@@ -51,7 +51,7 @@
 
 # /vis/list
 # OpenGLStoredQt (OGLSQt, OGL, OGLS) - cannot have trajectories and mesh, legend disappears when move
-/vis/open OGL
+# /vis/open OGL
 # OpenGLImmediateQt (OGLIQt, OGLI) - cannot draw mesh after trajectories
 #/vis/open OGLIQt
 # OpenGLImmediateXm (OGLIXm, OGLIQt_FALLBACK) - separate window, freezes
@@ -59,7 +59,7 @@
 # OpenGLStoredXm (OGLSXm, OGLSQt_FALLBACK) - separate window, freezes
 #/vis/open OGLSXm
 # OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK, OGLIXm_FALLBACK) - separate window, everything works!
-# /vis/open OGLIX
+/vis/open OGLIX
 # OpenGLStoredX (OGLSX, OGLSQt_FALLBACK, OGLSXm_FALLBACK) - no trajectories with scorer
 # /vis/open OGLSX
 
@@ -88,21 +88,15 @@
 #/vis/viewer/set/lightsMove with-camera
 
 # Center camera on the crystal and PMT assembly
-#/vis/viewer/set/centerOnCrystals
-
 /myvis/centerViewer
 
 # Draw energy deposition projections 
-#/score/drawProjection crystalsMesh eneDepCrystal myColorMap
-#/score/drawProjection pmtsMesh eneDepPMT myColorMap
+/score/drawProjection crystalsMesh eneDepCrystal myColorMap
+/score/drawProjection pmtsMesh eneDepPMT myColorMap
 
-# Output 2D text on the visualization
-#/histoManager/drawEdepText
-#/visHelper/drawText HelloWorld
-#/visHelper/drawStats
-#/visHelper/export
+# Output statistics
+/myvis/drawStats
 
-/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
-/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
-
-# You can create two viewers and copy camera position. Search examples for: /vis/viewer/copyViewFrom viewer-0
+# Save scoring mesh data
+#/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
+#/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt

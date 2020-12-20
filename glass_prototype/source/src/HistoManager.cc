@@ -51,7 +51,6 @@
 #include "G4GeneralParticleSource.hh"
 #include "G4SingleParticleSource.hh"
 #include <g4root.hh>
-#include "VisHelper.hh"
 #include "G4Utils.hh"
 #include "G4Run.hh"
 
@@ -412,4 +411,8 @@ void HistoManager::setWriteWorldEscape(G4bool value){
 
 G4bool HistoManager::getWriteWorldEscape(){
   return fWriteWorldEscape;
+}
+
+G4double HistoManager::getTotalWorldOutEnergy() {
+  return fTotalOutWorldEnergy;
 }

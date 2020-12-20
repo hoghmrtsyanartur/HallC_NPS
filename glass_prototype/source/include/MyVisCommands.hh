@@ -26,6 +26,7 @@ private:
   G4UIcmdWithAString* fDrawText2DCommand;
   G4UIcommand* fDrawStatsCommand;
 
+  void drawText2D(const char*);
   void drawText2D(G4String);
 };
 

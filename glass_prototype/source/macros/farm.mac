@@ -26,13 +26,18 @@
 # Visualize geometry and events for debugging
 /histoManager/writeWorldEscape false
 
-/vis/open OGLI
+/vis/open OGLIX
 /vis/drawVolume
 /vis/scene/add/trajectories
-/vis/viewer/set/centerOnCrystals
 
 /run/beamOn 15
+
+# Center camera on the crystal and PMT assembly
+/myvis/centerViewer
 
 # Draw energy deposition projections 
 /score/drawProjection crystalsMesh eneDepCrystal myColorMap
 /score/drawProjection pmtsMesh eneDepPMT myColorMap
+
+# Output statistics
+/myvis/drawStats

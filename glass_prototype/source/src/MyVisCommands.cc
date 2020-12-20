@@ -9,9 +9,14 @@
 #include "G4Utils.hh"
 
 #include <CLHEP/Vector/ThreeVector.h>
-#include <TString.h>
+#include "TString.h"
 #include <G4Square.hh>
 #include <G4Point3D.hh>
+#include <G4VViewer.hh>
+#include <G4OpenGLViewer.hh>
+#include <G4ViewParameters.hh>
+#include <HistoManager.hh>
+
 using CLHEP::Hep3Vector;
 
 // /myvis/centerviewer
@@ -68,7 +73,7 @@ void MyVisCommands::SetNewValue(G4UIcommand* cmd, G4String string) {
     drawText2D(sSiz.Data());
 
     // Write incident particle
-    TString sPar = TString::Format("Incident particle: %s, %.0f MeV, %d events", G4Utils::getGPSParticleName().c_str(), G4Utils::getGPSMonoEnergy(), G4Utils::getNumberOfEvents());
+    TString sPar = TString::Format("Incident particle: %s, %.1f GeV, %d events", G4Utils::getGPSParticleName().c_str(), G4Utils::getGPSMonoEnergy()/1000, G4Utils::getNumberOfEvents());
     drawText2D(sPar.Data());
 
     // Total deposited energy
@@ -87,49 +92,60 @@ void MyVisCommands::SetNewValue(G4UIcommand* cmd, G4String string) {
     drawText2D(s3.Data());
 
     // Write total energy escaped the world
-    TString s4 = TString::Format("Escaped the world, GeV:         %.1f (%.1f %%)", energyTotalCrystalsMeshDouble/1000, energyTotalCrystalsMeshDouble/energyTotalGPSDouble*100);
+    G4double totalWorldOutEnergy = HistoManager::getInstance()->getTotalWorldOutEnergy();
+    TString s4 = TString::Format("Escaped the world, GeV:         %.1f (%.1f %%)", totalWorldOutEnergy/1000, totalWorldOutEnergy/energyTotalGPSDouble*100);
     drawText2D(s4.Data());
   }
 }
 
+void MyVisCommands::drawText2D(const char* string){
+  G4String s(string);
+  drawText2D(s);
+}
+
 void MyVisCommands::drawText2D(G4String text){
-  G4VVisManager* fVisManager = G4VVisManager::GetConcreteInstance();
-  if(!fVisManager) {
-    G4cerr << "G4VScoringMesh::DrawColorChart(): no visualization system" << G4endl;
-    return;
-  }
+//  G4VViewer* currentViewer = fpVisManager->GetCurrentViewer();
+//  G4ViewParameters vp = currentViewer->GetViewParameters();
 
-
+//  G4VVisManager* fVisManager = G4VVisManager::GetConcreteInstance();
+//  if(!fVisManager) {
+//    G4cerr << "G4VScoringMesh::DrawColorChart(): no visualization system" << G4endl;
+//    return;
+//  }
+//
   static G4int lineNumber = 0;
 
   // Draw text shadow (black)
   // G4double shadowOffset = 0.0035;
 
-//  G4int visWidth =
+  // G4VViewer* currentViewer = fpVisManager->GetCurrentViewer();
+
   G4int textSize = 14;
 
   G4double lineHeight = textSize/200.;
+
   G4double textY = 0.9-lineNumber*lineHeight;
 
-  fVisManager->BeginDraw2D();
+  fpVisManager->BeginDraw2D();
 
+  // Draw background
   for(size_t i = 0; i <= text.length(); i++){
     G4Square* shadow = new G4Square(G4Point3D(-0.9 + i*lineHeight*textSize/33., textY+lineHeight/3, 0));
     shadow->SetScreenSize(textSize*1.5);
     shadow->SetFillStyle(G4VMarker::FillStyle::filled);
-    G4VisAttributes att(G4Colour::Red());
+    G4VisAttributes att(G4Colour::Black());
     shadow->SetVisAttributes(&att);
-    fVisManager->Draw2D(*shadow);
+    fpVisManager->Draw2D(*shadow);
   }
 
-  // Draw text itself (white)
+  // Draw text
   G4Text t(text, G4Point3D(-0.9, textY, 0.1));
   t.SetScreenSize(textSize);
   G4VisAttributes attText(G4Colour::White());
   t.SetVisAttributes(&attText);
-  fVisManager->Draw2D(t);
+  fpVisManager->Draw2D(t);
 
-  fVisManager->EndDraw2D();
+  fpVisManager->EndDraw2D();
 
   lineNumber++;
 }
