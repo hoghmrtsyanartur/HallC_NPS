@@ -6,7 +6,7 @@
 /detector/setCrystalNumberY 3
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
-/histoManager/writeWorldEscape false
+/histoManager/writeWorldEscape true
 
 /run/initialize
 
@@ -19,18 +19,14 @@
 /gps/source/multiplevertex true
 /gps/source/list
 
-# Run the simulation
-/tracking/verbose 0
-/run/beamOn 100
-
-# Visualize geometry and events for debugging
-/histoManager/writeWorldEscape false
-
+# Visualize some events for debuging 
 /vis/open OGLIX
 /vis/drawVolume
 /vis/scene/add/trajectories
 
-/run/beamOn 15
+# Test run some events for debuging
+/tracking/verbose 0
+/run/beamOn 2
 
 # Center camera on the crystal and PMT assembly
 /myvis/centerViewer
@@ -41,3 +37,13 @@
 
 # Output statistics
 /myvis/drawStats
+
+# Close visualization
+/vis/disable
+
+# Main run for energy resolution (many events)
+/histoManager/writeWorldEscape false
+
+/tracking/verbose 0
+
+/run/beamOn 1
