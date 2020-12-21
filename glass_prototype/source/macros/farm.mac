@@ -26,7 +26,7 @@
 
 # Test run some events for debuging
 /tracking/verbose 0
-/run/beamOn 2
+/run/beamOn 15
 
 # Center camera on the crystal and PMT assembly
 /myvis/centerViewer
@@ -46,4 +46,4 @@
 
 /tracking/verbose 0
 
-/run/beamOn 1
+/run/beamOn 5000
