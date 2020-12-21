@@ -33,6 +33,10 @@ MyVisCommands::MyVisCommands() : G4VVisCommand() {
   // Instantiate command for drawing 2D text
   fDrawStatsCommand = new G4UIcommand("/myvis/drawStats", this);
   fDrawStatsCommand->SetGuidance("Draw energy deposition statistics.");
+
+  // Instantiate Print EPS command
+  fPrintEPScommand = new G4UIcommand("/myvis/ogl/printEPS", this);
+  fPrintEPScommand->SetGuidance("Prnt EPS file.");
 }
 
 MyVisCommands::~MyVisCommands() {
@@ -95,6 +99,16 @@ void MyVisCommands::SetNewValue(G4UIcommand* cmd, G4String string) {
     G4double totalWorldOutEnergy = HistoManager::getInstance()->getTotalWorldOutEnergy();
     TString s4 = TString::Format("Escaped the world, GeV:         %.1f (%.1f %%)", totalWorldOutEnergy/1000, totalWorldOutEnergy/energyTotalGPSDouble*100);
     drawText2D(s4.Data());
+  }
+  else if (cmd==fPrintEPScommand){
+    G4String fileName = HistoManager::getInstance()->getFileName();
+    G4VViewer* currentViewer = fpVisManager->GetCurrentViewer();
+    G4OpenGLViewer* pOGLViewer = dynamic_cast<G4OpenGLViewer*>(currentViewer);
+    G4Utils::replaceSubstring(fileName, ".root", ".eps");
+    G4Utils::replaceSubstring(fileName, ".root", ".eps");
+    pOGLViewer->ExportImageFormat("eps",true);
+    pOGLViewer->setExportImageFormat("eps",true);
+    pOGLViewer->exportImage();
   }
 }
 

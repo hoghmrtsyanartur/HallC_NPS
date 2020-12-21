@@ -327,3 +327,11 @@ G4double G4Utils::getMaximumQuantityFromMesh(const char *meshName, const char *p
 
   return max;
 }
+
+bool G4Utils::replaceSubstring(std::string& str, const std::string& from, const std::string& to) {
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}

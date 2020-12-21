@@ -25,6 +25,7 @@ private:
   G4UIcommand* fCenterViewCommand;
   G4UIcmdWithAString* fDrawText2DCommand;
   G4UIcommand* fDrawStatsCommand;
+  G4UIcommand* fPrintEPScommand;
 
   void drawText2D(const char*);
   void drawText2D(G4String);

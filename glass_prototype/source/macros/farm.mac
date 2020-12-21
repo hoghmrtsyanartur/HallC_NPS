@@ -38,6 +38,10 @@
 # Output statistics
 /myvis/drawStats
 
+# Export visualization
+/vis/ogl/set/printMode pixmap
+/myvis/ogl/printEPS
+
 # Close visualization
 /vis/disable
 

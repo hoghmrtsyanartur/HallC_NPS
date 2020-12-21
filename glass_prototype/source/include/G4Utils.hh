@@ -36,6 +36,8 @@ public:
   static G4double getMaximumQuantityFromMesh(const char *meshName, const char *psName);
   static G4double getProjectionZMaximumQuantityFromMesh(const char *meshName, const char *psName);
   static void setMaximumMeshQuantity(const char *meshName, const char *psName, G4double val);
+
+  static bool replaceSubstring(std::string& str, const std::string& from, const std::string& to);
 };
 
 #endif /* SRC_G4UTILS_HH_ */
