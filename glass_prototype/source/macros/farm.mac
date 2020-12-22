@@ -1,7 +1,12 @@
 /testhadr/Physics QBBC
 
+# Crystal size along X, Y and Z axis
 /detector/setCrystalSize 20 20 200 mm
+
+# Crystal material - currently supported values are BaGdSiO, BaSi2O5, PbWO4
 /detector/setCrystalMaterial BaGdSiO
+
+# Number of crystals in the assembly along X and Y axis
 /detector/setCrystalNumberX 3
 /detector/setCrystalNumberY 3
 
@@ -10,6 +15,7 @@
 
 /run/initialize
 
+# Incident particle type, energy and direction
 /gps/source/intensity 1
 /gps/particle e-
 /gps/pos/type Point
@@ -24,14 +30,14 @@
 /vis/drawVolume
 /vis/scene/add/trajectories
 
-# Test run some events for debuging
+# Number of events for the visualization run
 /tracking/verbose 0
 /run/beamOn 15
 
 # Center camera on the crystal and PMT assembly
 /myvis/centerViewer
 
-# Draw energy deposition projections 
+# Uncomment lines below in order to draw the energy deposition projections for crystals and PMTs
 /score/drawProjection crystalsMesh eneDepCrystal myColorMap
 /score/drawProjection pmtsMesh eneDepPMT myColorMap
 
@@ -45,9 +51,7 @@
 # Close visualization
 /vis/disable
 
-# Main run for energy resolution (many events)
+# Number of events for the energy resolution run
 /histoManager/writeWorldEscape false
-
 /tracking/verbose 0
-
-/run/beamOn 5000
+/run/beamOn 10000

@@ -9,6 +9,7 @@
 #include "G4Utils.hh"
 
 #include <CLHEP/Vector/ThreeVector.h>
+#include "TROOT.h"
 #include "TString.h"
 #include <G4Square.hh>
 #include <G4Point3D.hh>
@@ -105,10 +106,8 @@ void MyVisCommands::SetNewValue(G4UIcommand* cmd, G4String string) {
     G4VViewer* currentViewer = fpVisManager->GetCurrentViewer();
     G4OpenGLViewer* pOGLViewer = dynamic_cast<G4OpenGLViewer*>(currentViewer);
     G4Utils::replaceSubstring(fileName, ".root", ".eps");
-    G4Utils::replaceSubstring(fileName, ".root", ".eps");
-    pOGLViewer->ExportImageFormat("eps",true);
     pOGLViewer->setExportImageFormat("eps",true);
-    pOGLViewer->exportImage();
+    pOGLViewer->exportImage(fileName);
   }
 }
 

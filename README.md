@@ -152,22 +152,32 @@ Adjust values of the following macro commands, that correspond to a variety of s
 /gps/particle e-
 /gps/ene/mono 5.2 GeV
 
-# Number of the events (particle shot in the detector)
-/run/beamOn 20
+# Number of events for the visualization run
+/run/beamOn 15
 
 # Uncomment lines below in order to draw the energy deposition projections for crystals and PMTs
 /score/drawProjection crystalsMesh eneDepCrystal myColorMap
 /score/drawProjection pmtsMesh eneDepPMT myColorMap
+
+# Number of events in the main run (for energy resolution)
+/run/beamOn 5000
 ```
+Please note that there are two `/run/beamOn` comands. First command defines the number of the events for the visualization run. Usually 10-20 events are enough to obtain an energy deposition shower profile. Second `/run/beamOn` command generates output ROOT file with a larger number of events for obtaining the energy resolution. Please use about 10000 events for the energy resolution.
+
 Once the above parameter values are set, hit `CTRL+X` to close nano editor and save the macro file. Program can be launched via following command:
 ```
 glass
 ```
-The Geant4 user interface window is presented to the user. Click on the "Open" bitton on the toolbar and locate the `./macros/interactive.mac` macro file containing the above commands that control the simulation. After the program run finishes the visualization window will be demonstarted to the user. Visualization accumulates particle trajectories from a single event. However, the energy profiles correspond to the total number of the events specified in the macro file.
-
+The Geant4 user interface window is presented to the user. Click on the "Open" bitton on the toolbar and locate the `./macros/farm.mac` macro file containing the above commands that control the simulation. After the program run finishes the visualization window will be demonstarted to the user. Second run Visualization accumulates particle trajectories from a single event. However, the energy profiles correspond to the total number of the events specified in the macro file.
 
 ### Analysis of the Output File
+Simulation results, namely the visualization image in EPS format as well as two output ROOt files are saved under the `./output` folder.
 
+A special ROOT script is designed to analyze the output files. It plots the world escape particles locations and energies, energy deposition in every crystal and calculates the energy resolution. Command to launch the script is following:
+```
+root ~/Downloads/HallC_NPS/glass_prototype/draw/energy-deposition/energyDeposition.cpp
+```
+In the dialog box 
 ## Notes from the former developers
 
 For Hall C DVCS (DVCS_evt_gen/), see https://wiki.jlab.org/cuawiki/images/f/fa/User_Guide.pdf for a short description on how to run on JLab/ifarm
