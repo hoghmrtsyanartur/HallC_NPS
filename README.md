@@ -168,7 +168,19 @@ Once the above parameter values are set, hit `CTRL+X` to close nano editor and s
 ```
 glass
 ```
-The Geant4 user interface window is presented to the user. Click on the "Open" bitton on the toolbar and locate the `./macros/farm.mac` macro file containing the above commands that control the simulation. After the program run finishes the visualization window will be demonstarted to the user. Second run Visualization accumulates particle trajectories from a single event. However, the energy profiles correspond to the total number of the events specified in the macro file.
+The Geant4 user interface window is presented to the user. Click on the "Open" bitton on the toolbar and locate the `./macros/farm.mac` macro file containing the above commands that control the simulation. 
+
+<figure>
+ <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-42-48.png" alt="Specify the Geant4 Macro File" />
+ <figcaption>Click the `Open` button on the left of the toolbar and locate the `./mcaros/farm.mac` macro file.</figcaption>
+</figure> 
+
+After the program run finishes the visualization window will be demonstarted to the user. Second run Visualization accumulates particle trajectories from a single event. However, the energy profiles correspond to the total number of the events specified in the macro file.
+
+<figure>
+ <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-45-41.png" alt="Visualization Image of the Energy Deposition in the Crystals and PMT assembly" />
+ <figcaption>Visualization Image of the Energy Deposition in the Crystals and PMT assembly is automatically saved in `./output` folder.</figcaption>
+</figure> 
 
 ### Analysis of the Output File
 Simulation results, namely the visualization image in EPS format as well as two output ROOt files are saved under the `./output` folder.

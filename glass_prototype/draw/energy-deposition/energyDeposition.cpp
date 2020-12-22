@@ -281,8 +281,8 @@ void plotEscapeParticles(const char* fileName){
   Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
 
   // Set Marker Style
-  TCanvas* canvas = new TCanvas("escapeCanvas", "Particles escaping the World", 800, 800);
-  canvas->Divide(2, 2);
+  TCanvas* canvas = new TCanvas("escapeCanvas", "Particles escaping the World", 1024, 400);
+  canvas->Divide(3, 1);
 
   // PAD 1: Draw world escape locations
   tree->SetMarkerStyle(6);
