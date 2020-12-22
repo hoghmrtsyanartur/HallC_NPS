@@ -181,12 +181,15 @@ void plotCrystalEdep(const char *fileName){
   const Int_t nHists = nCrystals->X() * nCrystals->Y();
   std::cout << "Crystal assembly size: " <<  nCrystals->X() << "x" << nCrystals->Y() << std::endl;
 
+  // Obtain incident particle energy
+  Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();
+
   // Instantiate histograms to be saved in ROOT file
   TH1D **edepHist = new TH1D*[nHists];
   for (UInt_t i = 0; i < nHists; i++){
     TString edepHistName = TString::Format("edepHist_%d", i);
     TString edepHistTitle = TString::Format("Energy Deposition in Crystal %d", i+1);
-    edepHist[i] = new TH1D(edepHistName.Data(), edepHistTitle.Data(), 100, 0, 8000);
+    edepHist[i] = new TH1D(edepHistName.Data(), edepHistTitle.Data(), 100, 0, 5000);
     edepHist[i]->GetXaxis()->SetTitle("Deposited energy, MeV");
     edepHist[i]->GetYaxis()->SetTitle("Counts");
   }
@@ -202,18 +205,16 @@ void plotCrystalEdep(const char *fileName){
   // Every branch contains an array with values for each PMT event
   Double_t* edep = new Double_t[nHists];
   Double_t* totalEdep = new Double_t[nHists];
+  for(Int_t j = 0 ; j < nHists ; j++){
+    totalEdep[j] = 0;
+  }
 
   tree->SetBranchAddress("edep", edep);
   for (Int_t i = 0; i < (Int_t)tree->GetEntries(); i++){
-    for(Int_t j = 0 ; j < nHists ; j++){
-      edep[j]=0;
-    }
-
     tree->GetEntry(i);
     for(Int_t j = 0 ; j < nHists ; j++){
       edepHist[j]->Fill(edep[j]);
       totalEdep[j] += edep[j];
-      TString* fileNameOnly = removeFileExtension(fileName);   // std::cout << "edep[" << j << "] = " << edep[j] << std::endl;
     }
   }
 
@@ -221,11 +222,11 @@ void plotCrystalEdep(const char *fileName){
   // TODO: check if correct
   Double_t totalDepositedEnergy = 0;
   for (Int_t i = 0; i < nHists; i++){
+    std::cout << "Crystal " << i << ": " << totalEdep[i] << " MeV" << std::endl;
     totalDepositedEnergy += totalEdep[i];
   }
 
   // Get number of events, GPS particle energy and particle name
-  Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();
   Int_t numberOfEvents = ((RooConstVar*)file->Get("numberOfEvents"))->getVal();
   const char* particleName = ((TObjString*)file->Get("gpsParticleName"))->GetName();
   const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();

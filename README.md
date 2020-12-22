@@ -8,8 +8,9 @@ Repository containing the code for simulation of the energy deposition profiles 
 - [User notes](#user-notes)
     - [Logging to the Computing Farm](#logging-to-the-computing-farm)
     - [Compilation of the Executable Program](#compilation-of-the-executable-program)
-    - [Running the Simulation](#running-the-simulation)
-    - [Plotting the output results](#analysis-of-the-output-file)
+    - [Analysis of the Output Files](#analysis-of-the-outputfiles)
+    - [Copying the Results to Local Computer](#copying-the-results-to-local-computer)
+    - [Notes from the Former Developers](#notes-from-the-former-developers)
 
 ## Developer notes
 
@@ -182,14 +183,27 @@ After the program run finishes the visualization window will be demonstarted to 
  <figcaption>Visualization Image of the Energy Deposition in the Crystals and PMT assembly is automatically saved in `./output` folder.</figcaption>
 </figure> 
 
-### Analysis of the Output File
-Simulation results, namely the visualization image in EPS format as well as two output ROOt files are saved under the `./output` folder.
+### Analysis of the Output Files
+Simulation results, namely the visualization image in EPS format as well as two output ROOT files are automatically saved under the `./output` folder.
 
-A special ROOT script is designed to analyze the output files. It plots the world escape particles locations and energies, energy deposition in every crystal and calculates the energy resolution. Command to launch the script is following:
+A special ROOT script is designed to analyze the output files. Command to launch the script is following:
 ```
 root ~/Downloads/HallC_NPS/glass_prototype/draw/energy-deposition/energyDeposition.cpp
 ```
-In the dialog box 
-## Notes from the former developers
+Locate the desired `.root` output file in the open file dialog box. The output or the script contains 
+
+Below is a screenshot of a sample output of the script. Several graphs are plotted. One canvas contains plots of the locations and energies of the particles escaping the world, as well as the particle types. Another canvas contains spectra of the energy deposition in every crystal. Graph that calculates the energy resolution of the assembly is plotted separately. 
+
+Above graphs are automatically saved under the `./output` folder in the build directory.
+
+### Copying the Results to Local Computer
+
+In order to copy the results from the Computing Farm to the local computer the `scp` command can be used. On Windows one must install the PuTTY software to execute the below command. Native Terminal applications can be used on MacOS and Linux:
+```
+scp -r <your-username>@login.jlab.org:/home/<your-username>/Downloads/HallC_NPS_glass_bulid/output ~/
+```
+The above command will copy the `output` folder from the Computing Farm to your local home directory.
+
+## Notes from the Former Developers
 
 For Hall C DVCS (DVCS_evt_gen/), see https://wiki.jlab.org/cuawiki/images/f/fa/User_Guide.pdf for a short description on how to run on JLab/ifarm
