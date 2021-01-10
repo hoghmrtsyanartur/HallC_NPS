@@ -382,6 +382,61 @@ void plotEscapeParticles(const char* fileName){
 // Plot energy resolution
 // ---------------------------------
 
+class CrystalBallFunctionObject {
+  public:
+
+    CrystalBallFunctionObject(TH1* hist){
+      // if option "width" is specified, the integral is the sum of
+      // the bin contents multiplied by the bin width in x.
+      this->normalization = hist->Integral("width");
+    }
+
+    Double_t operator() (double *_x, double *par) {
+      LongDouble_t x = _x[0];
+      LongDouble_t a = par[0];
+      LongDouble_t n = par[1];
+      LongDouble_t mean = par[2];
+      LongDouble_t sigma = par[3];
+
+      LongDouble_t pi = TMath::Pi();
+
+      LongDouble_t A = pow(n/abs(a), n)*exp(-a*a/2);
+      LongDouble_t B = n/abs(a) - abs(a);
+      LongDouble_t C = n/abs(a)/(n-1)*exp(-abs(a)*abs(a)/2.);
+      LongDouble_t D = sqrt(pi/2)*(1+erf(abs(a)/sqrt(2)));
+      LongDouble_t N = 1/sigma/(C+D);
+
+      if ((x-mean)/sigma > -a){
+        return normalization*N*exp(-(x-mean)*(x-mean)/2/sigma/sigma);
+      }
+
+      return normalization*N*A*pow(B-(x-mean)/sigma, -n);
+    }
+
+  private:
+    Double_t normalization;
+};
+
+class GaussFunctionObject {
+  public:
+    GaussFunctionObject(TH1* hist){
+      // if option "width" is specified, the integral is the sum of
+      // the bin contents multiplied by the bin width in x.
+      this->normalization = hist->Integral("width");
+    }
+
+    Double_t operator() (double *_x, double *par) {
+      Double_t x = _x[0];
+      Double_t mean = par[0];
+      Double_t sigma = par[1];
+
+      return normalization*1/sigma/TMath::Sqrt(2*TMath::Pi())*TMath::Exp(-(x-mean)*(x-mean)/2/sigma/sigma);
+    }
+
+  private:
+    Double_t normalization;
+};
+
 void plotEnergyResolution(const char* fileName){
   TFile* file = openFile(fileName);
   TTree *tree = getTree(file, "tree_crystals");
@@ -409,12 +464,12 @@ void plotEnergyResolution(const char* fileName){
 
   // Instantiate histogram for total energy deposition
   TString title = TString::Format("Energy resolution of %s crystal assembly, %.0f GeV.", crystalMaterial, particleEnergy/1E3);
-  TH1D* edepHist = new TH1D("totalEdepHist", title.Data(), 100, 0, firstEdep*3);
+  TH1D* edepHist = new TH1D("totalEdepHist", title.Data(), 250, 0, firstEdep*3);
   edepHist->GetYaxis()->SetTitle("Counts");
   edepHist->GetXaxis()->SetTitle("Total deposited energy, MeV");
 
   // Fill histogram from the tree
-//  tree->Reset();
+  //  tree->Reset();
   for (Int_t i = 0; i < (Int_t)tree->GetEntries(); i++){
     // Get tree entry
     tree->GetEntry(i);
@@ -429,16 +484,117 @@ void plotEnergyResolution(const char* fileName){
   TCanvas* canvas = new TCanvas("eResCanvas", title.Data());
 
   // Fit energy spectrum, obtain resolution
-  edepHist->Fit("gaus");
-  Double_t m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
-  Double_t Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
-  Double_t s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
-  Double_t Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
+//   edepHist->Fit("gaus"); // "0" - Fit with gaus, do not plot the result of the fit
+//
+//  Double_t m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
+//  Double_t Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
+//  Double_t s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
+//  Double_t Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
+
+
+
+
+
+
+
+
+// Fit with my gauss
+//  GaussFunctionObject* fGaussFunctionObject = new GaussFunctionObject(edepHist);
+//  TF1* fGauss = new TF1("fGauss", fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 2);    // create TF1 class.
+//
+//  fGauss->SetParName(0, "mean");
+//  fGauss->SetParameter(0, 3000);
+//  fGauss->SetParLimits(0, 1000, 5000);
+//
+//  fGauss->SetParName(1, "sigma");
+//  fGauss->SetParameter(1, 200);
+//  fGauss->SetParLimits(1, 0, 1000);
+//
+//  edepHist->Fit(fGauss, "W"); // ignore bin uncertanties?
+//  Double_t m = edepHist->GetFunction("fGauss")->GetParameter(0); // mean
+//  Double_t Dm = edepHist->GetFunction("fGauss")->GetParError(0); // mean error
+//  Double_t s = edepHist->GetFunction("fGauss")->GetParameter(1); // sigma
+//  Double_t Ds = edepHist->GetFunction("fGauss")->GetParError(1); // sigma error
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Fit with crystal ball
+  CrystalBallFunctionObject* fGaussFunctionObject = new CrystalBallFunctionObject(edepHist);
+  TF1* fBall = new TF1("fBall", *fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 4);    // create TF1 class.
+  fBall->SetNpx(1000);
+
+  // fBall->SetParName(0, "norm");
+  // fBall->SetParameter(0, edepHist->Integral("width"));
+  // fBall->SetParLimits(0, edepHist->Integral("width")*0.9, edepHist->Integral("width")*1.1);
+
+  fBall->SetParName(0, "a");
+  fBall->SetParameter(0, 1);
+  fBall->SetParLimits(0, 0, 1E2);
+
+  fBall->SetParName(1, "n");
+  fBall->SetParameter(1, 10);
+  // fBall->SetParLimits(1, 2, 1E3);
+
+  fBall->SetParName(2, "mean");
+  fBall->SetParameter(2, edepHist->GetBinCenter(edepHist->GetMaximumBin()));
+  // fBall->SetParLimits(2, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax());
+
+  fBall->SetParName(3, "sigma");
+  fBall->SetParameter(3, 200);
+  fBall->SetParLimits(3, 0, 1000);
+
+   // ROOT::Math::MinimizerOptions::SetDefaultTolerance(1); // Default: 1.E-2
+   // ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(10000000);
+
+
+   // Abnormal termination of minimization.
+   // Solution: increase the fitting range. Specify function range (-10000, 10000) and pass "R" parameter
+
+   // ROOT::Math::MinimizerOptions::SetDefaultTolerance(1E-6); // Default: 1.E-2
+   // ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(100000);
+
+  edepHist->Fit(fBall);
+
+//  // Create data
+//  ROOT::Fit::DataOptions opt;
+//  opt.fIntegral = true;
+//  ROOT::Fit::BinData data(opt);
+//  ROOT::Fit::FillData(data, edepHist);
+//
+//  // Creating the fit model
+//  ROOT::Math::WrappedMultiTF1 fitFunction(fBall, fBall->GetNdim());
+//  ROOT::Fit::Fitter fitter;
+//  fitter.SetFunction(fitFunction, false);
+//
+//  // Fit Data
+//  fitter.LikelihoodFit(data);
+
+
+  Double_t m = edepHist->GetFunction("fBall")->GetParameter(2); // mean
+  Double_t Dm = edepHist->GetFunction("fBall")->GetParError(2); // mean error
+  Double_t s = edepHist->GetFunction("fBall")->GetParameter(3); // sigma
+  Double_t Ds = edepHist->GetFunction("fBall")->GetParError(3); // sigma error
+
   Double_t r = s/m*100;  // Resolution
   Double_t Dr = 100*TMath::Sqrt(TMath::Power(1/m*Ds,2)+TMath::Power(s/m/m*Dm,2)); // Indirect error
 
   // Plot histogram and fit
+
   edepHist->Draw();
+//  fBall->Draw();
+
   edepHist->SetFillColor(kCyan);
   TString meanString = TString::Format("Gaus mean, MeV = %.1f #pm %.1f", m, Dm);
   addTextToStats(canvas, meanString.Data());
@@ -451,6 +607,40 @@ void plotEnergyResolution(const char* fileName){
   // Save canvas
   TString* fileNameOnly = removeFileExtension(fileName);
   canvas->SaveAs((*fileNameOnly+"-eres.png").Data());
+
+/*
+  TF1* fBall = new TF1("fBall", fobj, -10, 4, 4);    // create TF1 class.
+
+
+
+  fBall->SetParName(0, "a");
+  fBall->SetParameter(0, 1);
+  fBall->SetParLimits(0, 0, 1E3);
+
+  fBall->SetParName(1, "n");
+  fBall->SetParameter(1, 2);
+  fBall->SetParLimits(1, 1.1, 1E3); // n > 1
+
+  fBall->SetParName(2, "mean");
+  fBall->SetParameter(2, edepHist->GetBinCenter(edepHist->GetMaximumBin()));
+  fBall->SetParLimits(2, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax());
+
+  fBall->SetParName(3, "sigma");
+  fBall->SetParameter(3, 200);
+  fBall->SetParLimits(3, 0, 1000);
+
+  edepHist->Fit(fBall);
+
+  Double_t m = fBall->GetParameter(2); // mean
+  Double_t Dm = fBall->GetParError(2); // mean error
+  Double_t s = fBall->GetParameter(3); // sigma
+  Double_t Ds = fBall->GetParError(3); // sigma error
+
+  Double_t r = s/m*100;  // Resolution
+  Double_t Dr = 100*TMath::Sqrt(TMath::Power(1/m*Ds,2)+TMath::Power(s/m/m*Dm,2)); // Indirect error
+*/
+  // TCanvas* tempCanvas = new TCanvas("tempCanvas");
+  // fBall->Draw();
 }
 
 
