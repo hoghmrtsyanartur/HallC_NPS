@@ -463,8 +463,8 @@ void plotEnergyResolution(const char* fileName){
   }
 
   // Instantiate histogram for total energy deposition
-  TString title = TString::Format("Energy resolution of %s crystal assembly, %.0f GeV.", crystalMaterial, particleEnergy/1E3);
-  TH1D* edepHist = new TH1D("totalEdepHist", title.Data(), 250, 0, firstEdep*3);
+  TString title = TString::Format("Total energy deposition of %s crystal assembly per event, %.0f GeV.", crystalMaterial, particleEnergy/1E3);
+  TH1D* edepHist = new TH1D("totalEdepHist", title.Data(), 250, 0, firstEdep*2);
   edepHist->GetYaxis()->SetTitle("Counts");
   edepHist->GetXaxis()->SetTitle("Total deposited energy, MeV");
 
@@ -565,22 +565,7 @@ void plotEnergyResolution(const char* fileName){
    // ROOT::Math::MinimizerOptions::SetDefaultTolerance(1E-6); // Default: 1.E-2
    // ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(100000);
 
-  edepHist->Fit(fBall);
-
-//  // Create data
-//  ROOT::Fit::DataOptions opt;
-//  opt.fIntegral = true;
-//  ROOT::Fit::BinData data(opt);
-//  ROOT::Fit::FillData(data, edepHist);
-//
-//  // Creating the fit model
-//  ROOT::Math::WrappedMultiTF1 fitFunction(fBall, fBall->GetNdim());
-//  ROOT::Fit::Fitter fitter;
-//  fitter.SetFunction(fitFunction, false);
-//
-//  // Fit Data
-//  fitter.LikelihoodFit(data);
-
+  edepHist->Fit(fBall, "W");
 
   Double_t m = edepHist->GetFunction("fBall")->GetParameter(2); // mean
   Double_t Dm = edepHist->GetFunction("fBall")->GetParError(2); // mean error
@@ -593,12 +578,11 @@ void plotEnergyResolution(const char* fileName){
   // Plot histogram and fit
 
   edepHist->Draw();
-//  fBall->Draw();
 
   edepHist->SetFillColor(kCyan);
-  TString meanString = TString::Format("Gaus mean, MeV = %.1f #pm %.1f", m, Dm);
+  TString meanString = TString::Format("Mean, MeV = %.1f #pm %.1f", m, Dm);
   addTextToStats(canvas, meanString.Data());
-  TString sigmaString = TString::Format("Gaus sigma, MeV = %.1f #pm %.1f", s, Ds);
+  TString sigmaString = TString::Format("Sigma, MeV = %.1f #pm %.1f", s, Ds);
   addTextToStats(canvas, sigmaString.Data());
   TString resolutionString = TString::Format("Resolution, %% = %.1f #pm %.1f", r, Dr);
   addTextToStats(canvas, resolutionString.Data());
@@ -607,40 +591,6 @@ void plotEnergyResolution(const char* fileName){
   // Save canvas
   TString* fileNameOnly = removeFileExtension(fileName);
   canvas->SaveAs((*fileNameOnly+"-eres.png").Data());
-
-/*
-  TF1* fBall = new TF1("fBall", fobj, -10, 4, 4);    // create TF1 class.
-
-
-
-  fBall->SetParName(0, "a");
-  fBall->SetParameter(0, 1);
-  fBall->SetParLimits(0, 0, 1E3);
-
-  fBall->SetParName(1, "n");
-  fBall->SetParameter(1, 2);
-  fBall->SetParLimits(1, 1.1, 1E3); // n > 1
-
-  fBall->SetParName(2, "mean");
-  fBall->SetParameter(2, edepHist->GetBinCenter(edepHist->GetMaximumBin()));
-  fBall->SetParLimits(2, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax());
-
-  fBall->SetParName(3, "sigma");
-  fBall->SetParameter(3, 200);
-  fBall->SetParLimits(3, 0, 1000);
-
-  edepHist->Fit(fBall);
-
-  Double_t m = fBall->GetParameter(2); // mean
-  Double_t Dm = fBall->GetParError(2); // mean error
-  Double_t s = fBall->GetParameter(3); // sigma
-  Double_t Ds = fBall->GetParError(3); // sigma error
-
-  Double_t r = s/m*100;  // Resolution
-  Double_t Dr = 100*TMath::Sqrt(TMath::Power(1/m*Ds,2)+TMath::Power(s/m/m*Dm,2)); // Indirect error
-*/
-  // TCanvas* tempCanvas = new TCanvas("tempCanvas");
-  // fBall->Draw();
 }
 
 
