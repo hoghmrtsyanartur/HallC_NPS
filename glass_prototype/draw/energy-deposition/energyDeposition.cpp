@@ -604,14 +604,18 @@ int energyDeposition(){
   const char *filetypes[] = { "All files",     "*",
                               "ROOT files",    "*.root",
                               0,               0 };
-  // static TString dir(".");
-  TGFileInfo fi;
-  fi.fFileTypes = filetypes;
-  // fi.SetIniDir(dir);
-  printf("fIniDir = %s\n", fi.fIniDir);
-  new TGFileDialog(gClient->GetRoot(), 0, kFDOpen, &fi);
-  printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
-  // dir = fi.fIniDir;
 
-  return energyDeposition(fi.fFilename);
+  TGFileInfo fi;
+  if (fi.fMultipleSelection && fi.fFileNamesList) {
+    // If selected multiple files
+    TObjString *el;
+    TIter next(fi.fFileNamesList);
+    while ((el = (TObjString *) next())) {
+      energyDeposition(el->GetString().Data());
+    }
+  } else if (fi.fFilename) {
+    // If selected single file
+    energyDeposition(fi.fFilename);
+  }
+  return 1;
 }
