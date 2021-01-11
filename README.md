@@ -190,9 +190,9 @@ A special ROOT script is designed to analyze the output files. Command to launch
 ```
 root ~/Downloads/HallC_NPS/glass_prototype/draw/energy-deposition/energyDeposition.cpp
 ```
-Locate the desired `.root` output file in the open file dialog box. The output or the script contains 
+Locate the desired `.root` output file in the open file dialog box. It is possible to process multiple ROOT files at once by checking the `Multiple files` checkbox on the top right of the dialog box.
 
-Below is a screenshot of a sample output of the script. Several graphs are plotted. The ROOT file containing 15 events stores information with the locations and energies of the particles escaping the world, as well as the particle types. This is important to ensure the energy balance in the simulation is correct.
+Below we demonstrate a screenshot of the sample output of the script. Several graphs are plotted. The ROOT file containing 15 events stores information with the locations and energies of the particles escaping the world, as well as the particle types. This is important to ensure the energy balance in the simulation is correct.
 
 <figure>
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-12-55.png" alt="Visualization Image of the Energy Deposition in the Crystals and PMT assembly" />
@@ -202,10 +202,13 @@ Below is a screenshot of a sample output of the script. Several graphs are plott
 Another ROOT file containing condiderably larger number of events (10000 by default) must be used for plotting the energy resolution of the assembly.
 
 <figure>
- <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-43-16.png" alt="Energy deposition in the crystals and Energy Resolution calculation" />
+ <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-43-16.png?123" alt="Energy deposition in the crystals and Energy Resolution calculation" />
  <figcaption>Energy deposition in the crystals and Energy Resolution calculation.</figcaption>
 </figure> 
 
+The graph with total energy deposition in the crystal assembly per event is fitted with the Crystal Ball function. Energy resolution of the detector is calculated as the ratio of the Crystal Ball functino mean to the sigma. 
+
+To simplify the plotting of the energy resolution graph of the crystal assembly a special file containing the calculated energy resolution for the simulated incident energy is created. When processing multiple ROOT files at a single time, the energy resolution values are automatically appended in separate files with following filename pattern `resolution-BaGdSiO-3x3-20x20x200.txt`.
 Once plotted, the above graphs are automatically saved under the `./output` folder in the build directory. File names are following the generic pattern.
 
 ### Copying the Results to Local Computer

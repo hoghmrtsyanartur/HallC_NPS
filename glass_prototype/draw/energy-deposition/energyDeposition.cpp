@@ -28,6 +28,9 @@
 #include <TMathBase.h>
 #include <TF1.h>
 #include <TGFileDialog.h>
+#include <iostream>
+#include <fstream>
+#include <TSystem.h>
 
 const Double_t statsLineHeight = 0.06;
 
@@ -123,11 +126,16 @@ Double_t getWeightedIntegral(TH1* hist){
   return weightedIntegral;
 }
 
-void addCanvasTitle(TCanvas* canvas, const char* title){
+void addCanvasTitle(TCanvas* canvas, const char* title, const char* subtitle = 0){
   canvas->cd();
-  Int_t headingHeightPx = 40;
+  Int_t titleHeightPx = 40;
+  Int_t subtitleHeightPx = 25;
+
+  Int_t topShiftPx = titleHeightPx + (subtitle == 0 ? 0 : subtitleHeightPx);
+
   Int_t canvasHeightPx = canvas->GetWh();
-  Double_t titleHeightNDC = (Double_t)headingHeightPx/(Double_t)canvasHeightPx;
+  Double_t topShiftNDC = (Double_t)topShiftPx/(Double_t)canvasHeightPx;
+
   // Resize child canvases to free space on to for title
   for (Int_t i=1; canvas->GetPad(i)!=NULL; i++){
     TVirtualPad* childPad = canvas->GetPad(i);
@@ -135,15 +143,24 @@ void addCanvasTitle(TCanvas* canvas, const char* title){
     Double_t xLow = childPad->GetAbsXlowNDC();
     Double_t height = childPad->GetAbsHNDC();
     Double_t width = childPad->GetAbsWNDC();
-    childPad->SetPad(xLow, yLow*(1-titleHeightNDC), xLow+width, (yLow+height)*(1-titleHeightNDC));
+    childPad->SetPad(xLow, yLow*(1-topShiftNDC), xLow+width, (yLow+height)*(1-topShiftNDC));
   }
 
   // Add title text (fixed size in px)
-  TText *t = new TText(0.5, (canvasHeightPx-headingHeightPx/2.)/canvasHeightPx, title);
+  TText *t = new TText(0.5, (canvasHeightPx-(titleHeightPx+subtitleHeightPx)*0.35)/canvasHeightPx, title);
   t->SetTextFont(63);
-  t->SetTextSizePixels(16);
+  t->SetTextSizePixels(21);
   t->SetTextAlign(kHAlignCenter+kVAlignCenter);
   t->Draw();
+
+  // Add subtitle text
+  // Add title text (fixed size in px)
+  if (subtitle == 0) return;
+  TText *t2 = new TText(0.5, (canvasHeightPx-(titleHeightPx+subtitleHeightPx)*0.75)/canvasHeightPx, subtitle);
+  t2->SetTextFont(63);
+  t2->SetTextSizePixels(16);
+  t2->SetTextAlign(kHAlignCenter+kVAlignCenter);
+  t2->Draw();
 }
 
 TFile* openFile(const char* fileName){
@@ -230,15 +247,19 @@ void plotCrystalEdep(const char *fileName){
   Int_t numberOfEvents = ((RooConstVar*)file->Get("numberOfEvents"))->getVal();
   const char* particleName = ((TObjString*)file->Get("gpsParticleName"))->GetName();
   const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();
+  TVector2* crystalsNumber = (TVector2*)file->Get("crystalsNumber");
   TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
   Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
 
   // Instantiate the Canvas
   TString canvasTitle = TString::Format(
-      "Injected Kinetic Energy %.1f GeV (%s) in %dx%dx%d mm %s. Deposited in Crystals %.1f GeV (%.1f %%)",
-      totalGPSEnergy/1E3, particleName, (int)crystalSize->x(), (int)crystalSize->y(), (int)crystalSize->z(),
-      crystalMaterial, totalDepositedEnergy/1E3,
-      totalDepositedEnergy/totalGPSEnergy*100);
+      "Energy deposition in %dx%d, %dx%dx%d %s crystal assembly, %.0f GeV %s.",
+      (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(),
+      (Int_t)crystalSize->Z(), crystalMaterial, particleEnergy/1E3, particleName);
+  TString canvasSubtitle = TString::Format(
+      "Injected Kinetic Energy %.1f GeV. Deposited in Crystals %.1f GeV (%.1f %%).",
+      totalGPSEnergy/1E3, totalDepositedEnergy/1E3, totalDepositedEnergy/totalGPSEnergy*100);
+
   TCanvas* canvas = new TCanvas("crystalEdepCanvas", canvasTitle.Data(), 1024, 800);
   canvas->Divide(nCrystals->X(),nCrystals->Y());
 
@@ -256,7 +277,7 @@ void plotCrystalEdep(const char *fileName){
   }
 
   // Write global title for first Canvas
-  addCanvasTitle(canvas, canvas->GetTitle());
+  addCanvasTitle(canvas, canvasTitle.Data(), canvasSubtitle.Data());
 
   // Save canvas to file
   TString* fileNameOnly = removeFileExtension(fileName);
@@ -278,6 +299,7 @@ void plotEscapeParticles(const char* fileName){
   Int_t numberOfEvents = ((RooConstVar*)file->Get("numberOfEvents"))->getVal();
   const char* particleName = ((TObjString*)file->Get("gpsParticleName"))->GetName();
   const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();
+  TVector2* crystalsNumber = (TVector2*)file->Get("crystalsNumber");
   TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
   Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
 
@@ -384,19 +406,13 @@ void plotEscapeParticles(const char* fileName){
 
 class CrystalBallFunctionObject {
   public:
-
-    CrystalBallFunctionObject(TH1* hist){
-      // if option "width" is specified, the integral is the sum of
-      // the bin contents multiplied by the bin width in x.
-      this->normalization = hist->Integral("width");
-    }
-
     Double_t operator() (double *_x, double *par) {
       LongDouble_t x = _x[0];
       LongDouble_t a = par[0];
       LongDouble_t n = par[1];
       LongDouble_t mean = par[2];
       LongDouble_t sigma = par[3];
+      LongDouble_t norm = par[4];
 
       LongDouble_t pi = TMath::Pi();
 
@@ -407,14 +423,11 @@ class CrystalBallFunctionObject {
       LongDouble_t N = 1/sigma/(C+D);
 
       if ((x-mean)/sigma > -a){
-        return normalization*N*exp(-(x-mean)*(x-mean)/2/sigma/sigma);
+        return norm*N*exp(-(x-mean)*(x-mean)/2/sigma/sigma);
       }
 
-      return normalization*N*A*pow(B-(x-mean)/sigma, -n);
+      return norm*N*A*pow(B-(x-mean)/sigma, -n);
     }
-
-  private:
-    Double_t normalization;
 };
 
 class GaussFunctionObject {
@@ -448,6 +461,7 @@ void plotEnergyResolution(const char* fileName){
   const char* particleName = ((TObjString*)file->Get("gpsParticleName"))->GetName();
   const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();
   TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
+  TVector2* crystalsNumber =  (TVector2*)file->Get("crystalsNumber");
   Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
 
   // Estimate energy histogram upper range
@@ -463,7 +477,7 @@ void plotEnergyResolution(const char* fileName){
   }
 
   // Instantiate histogram for total energy deposition
-  TString title = TString::Format("Total energy deposition of %s crystal assembly per event, %.0f GeV.", crystalMaterial, particleEnergy/1E3);
+  TString title = TString::Format("Total energy deposition in %dx%d, %dx%dx%d %s crystal assembly per event, %.0f GeV %s.", (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Z(), crystalMaterial, particleEnergy/1E3, particleName);
   TH1D* edepHist = new TH1D("totalEdepHist", title.Data(), 250, 0, firstEdep*2);
   edepHist->GetYaxis()->SetTitle("Counts");
   edepHist->GetXaxis()->SetTitle("Total deposited energy, MeV");
@@ -483,61 +497,32 @@ void plotEnergyResolution(const char* fileName){
 
   TCanvas* canvas = new TCanvas("eResCanvas", title.Data());
 
-  // Fit energy spectrum, obtain resolution
-//   edepHist->Fit("gaus"); // "0" - Fit with gaus, do not plot the result of the fit
-//
-//  Double_t m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
-//  Double_t Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
-//  Double_t s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
-//  Double_t Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
+  // Fit with ROOT gaus
+  // edepHist->Fit("gaus"); // "0" - Fit with gaus, do not plot the result of the fit
+  // Double_t m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
+  // Double_t Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
+  // Double_t s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
+  // Double_t Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
 
+  // Fit with my gauss
+  // GaussFunctionObject* fGaussFunctionObject = new GaussFunctionObject(edepHist);
+  // TF1* fGauss = new TF1("fGauss", fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 2);    // create TF1 class.
+  // fGauss->SetParName(0, "mean");
+  // fGauss->SetParameter(0, 3000);
+  // fGauss->SetParLimits(0, 1000, 5000);
+  // fGauss->SetParName(1, "sigma");
+  // fGauss->SetParameter(1, 200);
+  // fGauss->SetParLimits(1, 0, 1000);
+  // edepHist->Fit(fGauss, "W"); // ignore bin uncertanties?
+  // Double_t m = edepHist->GetFunction("fGauss")->GetParameter(0); // mean
+  // Double_t Dm = edepHist->GetFunction("fGauss")->GetParError(0); // mean error
+  // Double_t s = edepHist->GetFunction("fGauss")->GetParameter(1); // sigma
+  // Double_t Ds = edepHist->GetFunction("fGauss")->GetParError(1); // sigma error
 
-
-
-
-
-
-
-// Fit with my gauss
-//  GaussFunctionObject* fGaussFunctionObject = new GaussFunctionObject(edepHist);
-//  TF1* fGauss = new TF1("fGauss", fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 2);    // create TF1 class.
-//
-//  fGauss->SetParName(0, "mean");
-//  fGauss->SetParameter(0, 3000);
-//  fGauss->SetParLimits(0, 1000, 5000);
-//
-//  fGauss->SetParName(1, "sigma");
-//  fGauss->SetParameter(1, 200);
-//  fGauss->SetParLimits(1, 0, 1000);
-//
-//  edepHist->Fit(fGauss, "W"); // ignore bin uncertanties?
-//  Double_t m = edepHist->GetFunction("fGauss")->GetParameter(0); // mean
-//  Double_t Dm = edepHist->GetFunction("fGauss")->GetParError(0); // mean error
-//  Double_t s = edepHist->GetFunction("fGauss")->GetParameter(1); // sigma
-//  Double_t Ds = edepHist->GetFunction("fGauss")->GetParError(1); // sigma error
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Fit with crystal ball
-  CrystalBallFunctionObject* fGaussFunctionObject = new CrystalBallFunctionObject(edepHist);
-  TF1* fBall = new TF1("fBall", *fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 4);    // create TF1 class.
+  // Fit with crystal ball
+  CrystalBallFunctionObject* fGaussFunctionObject = new CrystalBallFunctionObject();
+  TF1* fBall = new TF1("fBall", *fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 5);    // create TF1 class.
   fBall->SetNpx(1000);
-
-  // fBall->SetParName(0, "norm");
-  // fBall->SetParameter(0, edepHist->Integral("width"));
-  // fBall->SetParLimits(0, edepHist->Integral("width")*0.9, edepHist->Integral("width")*1.1);
 
   fBall->SetParName(0, "a");
   fBall->SetParameter(0, 1);
@@ -545,27 +530,24 @@ void plotEnergyResolution(const char* fileName){
 
   fBall->SetParName(1, "n");
   fBall->SetParameter(1, 10);
-  // fBall->SetParLimits(1, 2, 1E3);
+  fBall->SetParLimits(1, 1+1E-3, 1E2);
 
   fBall->SetParName(2, "mean");
   fBall->SetParameter(2, edepHist->GetBinCenter(edepHist->GetMaximumBin()));
-  // fBall->SetParLimits(2, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax());
+  fBall->SetParLimits(2, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax());
 
   fBall->SetParName(3, "sigma");
   fBall->SetParameter(3, 200);
   fBall->SetParLimits(3, 0, 1000);
 
-   // ROOT::Math::MinimizerOptions::SetDefaultTolerance(1); // Default: 1.E-2
-   // ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(10000000);
+  fBall->SetParName(4, "norm");
+  fBall->SetParameter(4, edepHist->Integral("width"));
+  fBall->SetParLimits(4, edepHist->Integral("width")/2, edepHist->Integral("width")*2);
 
+  // Abnormal termination of minimization.
+  // Solution: increase the fitting range. Specify function range (-10000, 10000) and pass "R" parameter
 
-   // Abnormal termination of minimization.
-   // Solution: increase the fitting range. Specify function range (-10000, 10000) and pass "R" parameter
-
-   // ROOT::Math::MinimizerOptions::SetDefaultTolerance(1E-6); // Default: 1.E-2
-   // ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(100000);
-
-  edepHist->Fit(fBall, "W");
+  edepHist->Fit(fBall);
 
   Double_t m = edepHist->GetFunction("fBall")->GetParameter(2); // mean
   Double_t Dm = edepHist->GetFunction("fBall")->GetParError(2); // mean error
@@ -576,9 +558,7 @@ void plotEnergyResolution(const char* fileName){
   Double_t Dr = 100*TMath::Sqrt(TMath::Power(1/m*Ds,2)+TMath::Power(s/m/m*Dm,2)); // Indirect error
 
   // Plot histogram and fit
-
   edepHist->Draw();
-
   edepHist->SetFillColor(kCyan);
   TString meanString = TString::Format("Mean, MeV = %.1f #pm %.1f", m, Dm);
   addTextToStats(canvas, meanString.Data());
@@ -591,6 +571,19 @@ void plotEnergyResolution(const char* fileName){
   // Save canvas
   TString* fileNameOnly = removeFileExtension(fileName);
   canvas->SaveAs((*fileNameOnly+"-eres.png").Data());
+
+  // Save data to ASCII file
+  TString resolutionFileName = TString::Format("resolution-%s-%dx%d-%dx%dx%d.txt", crystalMaterial,  (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Y());
+  std::ofstream outfile;
+  if (gSystem->AccessPathName(resolutionFileName.Data())){
+    // If file not exists - write header
+    outfile.open(resolutionFileName.Data()); // overwrite
+    outfile << "Energy, GeV" << "\t" << "Resolution, %" << "\t" << "Resolution Error, %" << "\n";
+  } else {
+    // If file already exists - open for append
+    outfile.open(resolutionFileName.Data(), std::ios_base::app); // append
+  }
+  outfile << particleEnergy/1E3 << "\t" << r << "\t" << Dr << "\n";
 }
 
 
