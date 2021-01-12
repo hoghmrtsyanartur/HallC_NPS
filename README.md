@@ -173,7 +173,9 @@ The Geant4 user interface window is presented to the user. Click on the "Open" b
 
 <p align="center">
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-42-48.png" alt="Specify the Geant4 Macro File" />
- Click the `Open` button on the left of the toolbar and locate the `./mcaros/farm.mac` macro file.
+</p>
+<p align="center">
+ <i>Click the `Open` button on the left of the toolbar and locate the `./mcaros/farm.mac` macro file.</i>
 </p>
 
 After the program run finishes the visualization window will be demonstarted to the user. Second run Visualization accumulates particle trajectories from a single event. However, the energy profiles correspond to the total number of the events specified in the macro file.
