@@ -186,12 +186,18 @@ After the program run finishes the visualization window will be demonstarted to 
 ### Analysis of the Output Files
 Simulation results, namely the visualization image in EPS format as well as two output ROOT files are automatically saved under the `./output` folder.
 
+The glass prototype Geant4 program code generated two ROOT files for every simulation. First ROOT file contains events from 15 injected particles by default and is used to visualize the shower profile. Additionally this file contains information about the particles escaped the simulation: location, energy and particle type.
+
+Second ROOT file contains considerably more number of events (10k by default) and is used to calculate the energy resolution of the detector.
+
 A special ROOT script is designed to analyze the output files. Command to launch the script is following:
 ```
 root ~/Downloads/HallC_NPS/glass_prototype/draw/energy-deposition/energyDeposition.cpp
 ```
 
-#### Plotting energy resolution for multiple files
+Script can process both types of output files.
+
+#### Analysis of a single file
 
 Select a desired ROOT data file to be processed by the program. The ROOT file containing smaller number of the events (15 by default) stores information about the escape locations and energies of the particles escaping the world, as well as the particle types. This is important to ensure the energy balance in the simulation is correct.
 
@@ -211,7 +217,7 @@ The graph with total energy deposition in the crystal assembly per event is fitt
 
 #### Plotting energy resolution for multiple files
 
-Locate the `.root` output files that correspond to the simulations of the same detector geometry for different energies. It is possible to select multiple files in ROOT dialog box by checking the `Multiple files` checkbox on the top right of the dialog box and holding the `CTRL` or `CMD` key on the keyboard:
+Program will plot the energy resolution graph for a set of energies if multiple input ROOT files with large statistics are selected. Locate the `.root` output files that correspond to the simulations of the same detector geometry for different energies. It is possible to select multiple files in ROOT dialog box by checking the `Multiple files` checkbox on the top right of the dialog box and holding the `CTRL` or `CMD` key on the keyboard:
 
 <figure>
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screencast_01-12-2021_09 33 55 AM.gif" alt="Selecting multiple files with ROOT File dialog." />
