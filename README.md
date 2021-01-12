@@ -190,12 +190,13 @@ A special ROOT script is designed to analyze the output files. Command to launch
 ```
 root ~/Downloads/HallC_NPS/glass_prototype/draw/energy-deposition/energyDeposition.cpp
 ```
-Locate the desired `.root` output file in the open file dialog box. It is possible to process multiple ROOT files at once by checking the `Multiple files` checkbox on the top right of the dialog box.
 
-Below we demonstrate a screenshot of the sample output of the script. Several graphs are plotted. The ROOT file containing 15 events stores information with the locations and energies of the particles escaping the world, as well as the particle types. This is important to ensure the energy balance in the simulation is correct.
+#### Plotting energy resolution for multiple files
+
+Select a desired ROOT data file to be processed by the program. The ROOT file containing smaller number of the events (15 by default) stores information about the escape locations and energies of the particles escaping the world, as well as the particle types. This is important to ensure the energy balance in the simulation is correct.
 
 <figure>
- <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-12-55.png" alt="Visualization Image of the Energy Deposition in the Crystals and PMT assembly" />
+ <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-12-55.png" alt="Visualization of the particles escaping the world." />
  <figcaption>Visualization of the particles escaping the world.</figcaption>
 </figure> 
 
@@ -208,7 +209,17 @@ Another ROOT file containing condiderably larger number of events (10000 by defa
 
 The graph with total energy deposition in the crystal assembly per event is fitted with the Crystal Ball function. Energy resolution of the detector is calculated as the ratio of the Crystal Ball functino mean to the sigma. 
 
+#### Plotting energy resolution for multiple files
+
+Locate the `.root` output files that correspond to the simulations of the same detector geometry for different energies. It is possible to select multiple files in ROOT dialog box by checking the `Multiple files` checkbox on the top right of the dialog box and holding the `CTRL` or `CMD` key on the keyboard:
+
+<figure>
+ <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screencast_01-12-2021_09 33 55 AM.gif" alt="Selecting multiple files with ROOT File dialog." />
+ <figcaption>Selecting multiple files with ROOT File dialog.</figcaption>
+</figure>
+
 To simplify the plotting of the energy resolution graph of the crystal assembly a special file containing the calculated energy resolution for the simulated incident energy is created. When processing multiple ROOT files at a single time, the energy resolution values are automatically appended in separate files with following filename pattern `resolution-BaGdSiO-3x3-20x20x200.txt`.
+
 Once plotted, the above graphs are automatically saved under the `./output` folder in the build directory. File names are following the generic pattern.
 
 ### Copying the Results to Local Computer
