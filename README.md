@@ -173,9 +173,6 @@ The Geant4 user interface window is presented to the user. Click on the "Open" b
 
 <p align="center">
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-42-48.png" alt="Specify the Geant4 Macro File" />
-</p>
-
-<p align="center">
  <i>Click the `Open` button on the left of the toolbar and locate the `./mcaros/farm.mac` macro file.</i>
 </p>
 
@@ -183,7 +180,7 @@ After the program run finishes the visualization window will be demonstarted to 
 
 <p align="center">
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-45-41.png" alt="Visualization Image of the Energy Deposition in the Crystals and PMT assembly" />
- Visualization Image of the Energy Deposition in the Crystals and PMT assembly is automatically saved in `./output` folder.
+ <i>Visualization Image of the Energy Deposition in the Crystals and PMT assembly is automatically saved in `./output` folder</i>.
 </p> 
 
 ### Analysis of the Output Files
@@ -204,17 +201,17 @@ Script can process both types of output files.
 
 Select a desired ROOT data file to be processed by the program. The ROOT file containing smaller number of the events (15 by default) stores information about the escape locations and energies of the particles escaping the world, as well as the particle types. This is important to ensure the energy balance in the simulation is correct.
 
-<figure>
+<p align="center">
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-12-55.png" alt="Visualization of the particles escaping the world." />
- <figcaption>Visualization of the particles escaping the world.</figcaption>
-</figure> 
+ <i>Visualization of the particles escaping the world.</i>
+</p> 
 
 Another ROOT file containing condiderably larger number of events (10000 by default) must be used for plotting the energy resolution of the assembly.
 
-<figure>
+<p align="center">
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-43-16.png?123" alt="Energy deposition in the crystals and Energy Resolution calculation" />
- <figcaption>Energy deposition in the crystals and Energy Resolution calculation.</figcaption>
-</figure> 
+ <i>Energy deposition in the crystals and Energy Resolution calculation.</i>
+</p> 
 
 The graph with total energy deposition in the crystal assembly per event is fitted with the Crystal Ball function. Energy resolution of the detector is calculated as the ratio of the Crystal Ball functino mean to the sigma. 
 
@@ -222,10 +219,10 @@ The graph with total energy deposition in the crystal assembly per event is fitt
 
 Program will plot the energy resolution graph for a set of energies if multiple input ROOT files with large statistics are selected. Locate the `.root` output files that correspond to the simulations of the same detector geometry for different energies. It is possible to select multiple files in ROOT dialog box by checking the `Multiple files` checkbox on the top right of the dialog box and holding the `CTRL` or `CMD` key on the keyboard:
 
-<figure>
+<p align="center">
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screencast_01-12-2021_09 33 55 AM.gif" alt="Selecting multiple files with ROOT File dialog." />
- <figcaption>Selecting multiple files with ROOT File dialog.</figcaption>
-</figure>
+ <i>Selecting multiple files with ROOT File dialog.</i>
+</p>
 
 To simplify the plotting of the energy resolution graph of the crystal assembly a special file containing the calculated energy resolution for the simulated incident energy is created. When processing multiple ROOT files at a single time, the energy resolution values are automatically appended in separate files with following filename pattern `resolution-BaGdSiO-3x3-20x20x200.txt`.
 
