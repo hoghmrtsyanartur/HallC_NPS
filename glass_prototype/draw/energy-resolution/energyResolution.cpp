@@ -325,8 +325,7 @@ void plotEscapeParticles(const char* fileName){
   TVirtualPad* pad1 = canvas->cd(1);
   // Int_t maxEntries = TMath::Min((Double_t)tree->GetEntries(), 1.E4);
   // tree->Draw("x:y:z:energy", "", "COLZ", maxEntries);
-  pad1->SetLeftMargin(0.2);
-  pad1->SetRightMargin(0.2);
+  pad1->SetMargin(0.15, 0.2, 0.15, 0.15);
   gStyle->SetPalette(kTemperatureMap);
   tree->Draw("x:y:z:energy", "", "COLZ");
   TH1* htemp1 = (TH1*) pad1->GetListOfPrimitives()->FindObject("htemp");
