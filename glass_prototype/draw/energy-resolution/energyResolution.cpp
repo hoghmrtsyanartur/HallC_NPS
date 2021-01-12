@@ -28,9 +28,14 @@
 #include <TMathBase.h>
 #include <TF1.h>
 #include <TGFileDialog.h>
-#include <iostream>
-#include <fstream>
 #include <TSystem.h>
+#include <TGraphErrors.h>
+
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+
 
 const Double_t statsLineHeight = 0.06;
 
@@ -206,12 +211,17 @@ void plotCrystalEdep(const char *fileName){
   for (UInt_t i = 0; i < nHists; i++){
     TString edepHistName = TString::Format("edepHist_%d", i);
     TString edepHistTitle = TString::Format("Energy Deposition in Crystal %d", i+1);
-    edepHist[i] = new TH1D(edepHistName.Data(), edepHistTitle.Data(), 100, 0, 5000);
+    edepHist[i] = new TH1D(edepHistName.Data(), edepHistTitle.Data(), 100, 0, particleEnergy);
     edepHist[i]->GetXaxis()->SetTitle("Deposited energy, MeV");
     edepHist[i]->GetYaxis()->SetTitle("Counts");
   }
 
   TTree* tree = getTree(file, "tree_crystals");
+  if (tree == NULL) return 0;
+
+  // Do not process files smaller that 100 events
+  if ((Int_t)tree->GetEntries() < 100) return 0;
+
   // Try opening branches
   // TBranch* branch = tree->GetBranch("edep");
   // if (!branch){
@@ -252,10 +262,11 @@ void plotCrystalEdep(const char *fileName){
   Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
 
   // Instantiate the Canvas
-  TString canvasTitle = TString::Format(
-      "Energy deposition in %dx%d, %dx%dx%d %s crystal assembly, %.0f GeV %s.",
-      (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(),
-      (Int_t)crystalSize->Z(), crystalMaterial, particleEnergy/1E3, particleName);
+  std::stringstream buffer;
+  buffer << "Energy deposition in " << (Int_t)crystalsNumber->X() << "x" << (Int_t)crystalsNumber->Y() <<
+      ", " << crystalSize->X() << "x" << crystalSize->Y() << "x" << crystalSize->Z() << " mm " <<  crystalMaterial <<
+      "crystal assembly per event, " << particleEnergy/1E3 << " GeV " << particleName << ".";
+  TString canvasTitle = buffer.str().c_str();
   TString canvasSubtitle = TString::Format(
       "Injected Kinetic Energy %.1f GeV. Deposited in Crystals %.1f GeV (%.1f %%).",
       totalGPSEnergy/1E3, totalDepositedEnergy/1E3, totalDepositedEnergy/totalGPSEnergy*100);
@@ -304,7 +315,7 @@ void plotEscapeParticles(const char* fileName){
   Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
 
   // Set Marker Style
-  TCanvas* canvas = new TCanvas("escapeCanvas", "Particles escaping the World", 1024, 400);
+  TCanvas* canvas = new TCanvas("escapeCanvas", "", 1280, 520);
   canvas->Divide(3, 1);
 
   // PAD 1: Draw world escape locations
@@ -332,9 +343,14 @@ void plotEscapeParticles(const char* fileName){
     tree->GetEntry(i);
     escapeEnergy+= energy;
   }
+  std::stringstream buffer;
+  buffer << "Particles escaped the simulation for " << (Int_t)crystalsNumber->X() << "x" << (Int_t)crystalsNumber->Y() <<
+      ", " << crystalSize->X() << "x" << crystalSize->Y() << "x" << crystalSize->Z() << " mm " <<  crystalMaterial <<
+      "crystal assembly per event, " << particleEnergy/1E3 << " GeV " << particleName << ".";
+
   TString escapeEnergyString = TString::Format("Total E = %.0f MeV", escapeEnergy);
   addTextToStats(pad2, escapeEnergyString.Data());
-  TString canvasTitle = TString::Format("Injected Kinetic Energy %.1f GeV (%s) in %s. Escaped Kinetic Energy %.1f GeV (%.1f %%)", totalGPSEnergy/1E3, particleName, crystalMaterial, escapeEnergy/1E3, escapeEnergy/totalGPSEnergy*100);
+  TString canvasTitle = buffer.str().c_str();
   canvas->SetTitle(canvasTitle.Data());
 
   // PAD 3: Draw PDG
@@ -392,7 +408,8 @@ void plotEscapeParticles(const char* fileName){
   pie4->SetTitle("Particle Types and Ratios");
 
   // Add title to canvas2
-  addCanvasTitle(canvas, canvas->GetTitle());
+  TString subtitle = TString::Format("Injected Kinetic Energy %.1f GeV. Escaped Kinetic Energy %.1f GeV (%.1f %%)", totalGPSEnergy/1E3, escapeEnergy/1E3, escapeEnergy/totalGPSEnergy*100);
+  addCanvasTitle(canvas, canvas->GetTitle(), subtitle.Data());
 
   // Save canvas
   TString* fileNameOnly = removeFileExtension(fileName);
@@ -450,10 +467,13 @@ class GaussFunctionObject {
     Double_t normalization;
 };
 
-void plotEnergyResolution(const char* fileName){
+TVector3* plotEnergyResolution(const char* fileName){
   TFile* file = openFile(fileName);
   TTree *tree = getTree(file, "tree_crystals");
-  if (tree == NULL) return;
+  if (tree == NULL) return 0;
+
+  // Do not process files smaller that 100 events
+  if ((Int_t)tree->GetEntries() < 100) return 0;
 
   // Get number of events, GPS particle energy and particle name
   Double_t particleEnergy = ((RooConstVar*)file->Get("gpsParticleEnergy"))->getVal();
@@ -465,25 +485,35 @@ void plotEnergyResolution(const char* fileName){
   Double_t totalGPSEnergy = numberOfEvents*particleEnergy;
 
   // Estimate energy histogram upper range
-  Int_t nCrystals = 9;
+  Int_t nCrystals = crystalsNumber->X()*crystalsNumber->Y();
   Double_t edep[nCrystals];
-  Double_t maxEnergy = 0;
   tree->SetBranchAddress("edep", edep);
-  tree->GetEntry(0);      // Get first entry
-  Double_t firstEdep = 0;
-  for(Int_t j = 0 ; j < nCrystals ; j++){
-    // Calculate the total energy deposited in all crystals in 1st event
-    firstEdep += edep[j];
+  Double_t minEdep = particleEnergy;
+  Double_t maxEdep = 0;
+  for (Int_t i = 0; i < (Int_t)tree->GetEntries(); i++){
+    // Get tree entry
+    tree->GetEntry(i);
+    // Each event we calculate the total energy deposited in all crystals
+    Double_t totalEdep = 0;
+    for(Int_t j = 0 ; j < nCrystals ; j++){
+      totalEdep += edep[j];
+    }
+    if (totalEdep > maxEdep) maxEdep = totalEdep;
+    if (totalEdep < minEdep) minEdep = totalEdep;
   }
 
   // Instantiate histogram for total energy deposition
-  TString title = TString::Format("Total energy deposition in %dx%d, %dx%dx%d %s crystal assembly per event, %.0f GeV %s.", (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Z(), crystalMaterial, particleEnergy/1E3, particleName);
-  TH1D* edepHist = new TH1D("totalEdepHist", title.Data(), 250, 0, firstEdep*2);
+  std::stringstream buffer;
+  buffer << "Total energy deposition in " << (Int_t)crystalsNumber->X() << "x" << (Int_t)crystalsNumber->Y() <<
+      ", " << crystalSize->X() << "x" << crystalSize->Y() << "x" << crystalSize->Z() << " mm " <<  crystalMaterial <<
+      "crystal assembly per event, " << particleEnergy/1E3 << " GeV " << particleName << ".";
+
+  // TString title = TString::Format("Total energy deposition in %dx%d, %dx%dx%d %s crystal assembly per event, %.0f GeV %s.", (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Z(), crystalMaterial, particleEnergy/1E3, particleName);
+  TH1D* edepHist = new TH1D("totalEdepHist", buffer.str().c_str(), 250, minEdep, maxEdep*1.5);
   edepHist->GetYaxis()->SetTitle("Counts");
   edepHist->GetXaxis()->SetTitle("Total deposited energy, MeV");
 
   // Fill histogram from the tree
-  //  tree->Reset();
   for (Int_t i = 0; i < (Int_t)tree->GetEntries(); i++){
     // Get tree entry
     tree->GetEntry(i);
@@ -495,7 +525,7 @@ void plotEnergyResolution(const char* fileName){
     edepHist->Fill(totalEdep);
   }
 
-  TCanvas* canvas = new TCanvas("eResCanvas", title.Data());
+  TCanvas* canvas = new TCanvas("eResCanvas", buffer.str().c_str());
 
   // Fit with ROOT gaus
   // edepHist->Fit("gaus"); // "0" - Fit with gaus, do not plot the result of the fit
@@ -547,7 +577,7 @@ void plotEnergyResolution(const char* fileName){
   // Abnormal termination of minimization.
   // Solution: increase the fitting range. Specify function range (-10000, 10000) and pass "R" parameter
 
-  edepHist->Fit(fBall);
+  edepHist->Fit(fBall, "W");
 
   Double_t m = edepHist->GetFunction("fBall")->GetParameter(2); // mean
   Double_t Dm = edepHist->GetFunction("fBall")->GetParError(2); // mean error
@@ -572,18 +602,39 @@ void plotEnergyResolution(const char* fileName){
   TString* fileNameOnly = removeFileExtension(fileName);
   canvas->SaveAs((*fileNameOnly+"-eres.png").Data());
 
+  return new TVector3(particleEnergy/1000., r, Dr);
   // Save data to ASCII file
-  TString resolutionFileName = TString::Format("resolution-%s-%dx%d-%dx%dx%d.txt", crystalMaterial,  (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Y());
+  TString fileNameNoExtension = TString::Format("resolution-%s-%dx%d-%dx%dx%d", crystalMaterial, (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Y());
+  TString resolutionFileName = fileNameNoExtension + ".txt";
   std::ofstream outfile;
+  outfile << std::left; // left align
+  const unsigned int tab = 20;
   if (gSystem->AccessPathName(resolutionFileName.Data())){
     // If file not exists - write header
     outfile.open(resolutionFileName.Data()); // overwrite
-    outfile << "Energy, GeV" << "\t" << "Resolution, %" << "\t" << "Resolution Error, %" << "\n";
+    outfile << "# " << std::setw(tab) << "Energy, GeV" << std::setw(tab) << "Resolution, %" << "Resolution Error, %" << std::endl;
   } else {
     // If file already exists - open for append
     outfile.open(resolutionFileName.Data(), std::ios_base::app); // append
   }
-  outfile << particleEnergy/1E3 << "\t" << r << "\t" << Dr << "\n";
+  outfile << "  " << std::setw(tab) << particleEnergy/1E3 << std::setw(tab) << r << Dr << std::endl;
+  outfile.close();
+
+  // Generate gnuplot file
+//  TString gnuplotFileName =  fileNameNoExtension + ".gp";
+//  TString gnuplotPngFileName =  fileNameNoExtension + ".png";
+//  outfile.open(gnuplotFileName.Data()); // overwrite
+//  outfile << "set output '" << gnuplotPngFileName.Data() << "'" << std::endl;
+//  outfile << "set style line 1 linecolor rgb '#0060ad' linetype 1 linewidth 1 pointtype 7" << std::endl;
+//  outfile << "unset key" << std::endl;
+//
+//  outfile << "set title \"Energy resolution for 3x3, 20x20x400 mm Ga assembly\"" << std::endl;
+//  outfile << "set xlabel \"Particle energy, GeV\"" << std::endl;
+//  outfile << "set ylabel \"Energy resolution, %\"" << std::endl;
+//
+//  outfile << "plot '< sort -nk1 resolution-BaGdSiO-5x5-20x20x20.txt' using 1:2:3 with yerrorbars linestyle 1, \\" << std::endl;
+//  outfile << "     ''                                                            with lines linestyle 1" << std::endl;
+//  outfile.close();
 }
 
 
@@ -591,31 +642,73 @@ void plotEnergyResolution(const char* fileName){
 // Main function
 // ---------------------------------
 
-int energyDeposition(const char *fileName){
+TVector3* energyResolution(const char *fileName){
   plotCrystalEdep(fileName);
   plotEscapeParticles(fileName);
-  plotEnergyResolution(fileName);
-
-  // Return success
-  return 0;
+  return plotEnergyResolution(fileName);
 }
 
-int energyDeposition(){
+int energyResolution(){
   const char *filetypes[] = { "All files",     "*",
                               "ROOT files",    "*.root",
                               0,               0 };
-
   TGFileInfo fi;
+  fi.fFileTypes = filetypes;
+  new TGFileDialog(gClient->GetRoot(), 0, kFDOpen, &fi);
+
   if (fi.fMultipleSelection && fi.fFileNamesList) {
     // If selected multiple files
+    fi.fFileNamesList->Sort();
+
     TObjString *el;
     TIter next(fi.fFileNamesList);
+
+    std::vector<Double_t> energy = {};
+    std::vector<Double_t> resolution = {};
+    std::vector<Double_t> resolutionErr = {};
+
     while ((el = (TObjString *) next())) {
-      energyDeposition(el->GetString().Data());
+      TVector3* v = energyResolution(el->GetString().Data());
+      if (v != NULL){
+        energy.push_back(v->X());
+        resolution.push_back(v->Y());
+        resolutionErr.push_back(v->Z());
+      }
+    }
+
+    // Plot graph with energy resolution
+    const char* firstFilename = ((TObjString *)fi.fFileNamesList->At(0))->GetString().Data();
+    TFile* file = openFile(firstFilename);
+    // Get number of events, GPS particle energy and particle name
+    const char* crystalMaterial = ((TObjString*)file->Get("crystalMaterial"))->GetName();
+    TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
+    TVector2* crystalsNumber =  (TVector2*)file->Get("crystalsNumber");
+
+    // Plot graph with energy resolution graph if given more than one energy point
+    if (energy.size() > 1){
+      TCanvas* canvas = new TCanvas("energyResolution", "asdasd");
+      canvas->SetGrid();
+      TGraphErrors* gr = new TGraphErrors((int)energy.size(), &energy[0], &resolution[0], 0, &resolutionErr[0]); // convert vector to array
+      std::stringstream buffer;
+      buffer << "Energy resolution of the " << (Int_t)crystalsNumber->X() << "x" << (Int_t)crystalsNumber->Y() <<
+          ", " << crystalSize->X() << "x" << crystalSize->Y() << "x" << crystalSize->Z() << " mm " <<  crystalMaterial <<
+          " crystal assembly;";
+      buffer << "Incident particle energy, GeV;";
+      buffer << "Energy resolution, %;";
+
+      gr->SetTitle(buffer.str().c_str());
+      // gr->SetMarkerColor(4);
+      gr->SetMarkerStyle(21);
+      gr->Sort(&TGraph::CompareX);
+      gr->Draw("ALP");
+      canvas->Update();
+      TString fileNameNoExtension = TString::Format("resolution-%s-%dx%d-%dx%dx%d", crystalMaterial, (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Y());
+      TString resolutionPngFileName = fileNameNoExtension + ".png";
+      canvas->SaveAs(resolutionPngFileName.Data());
     }
   } else if (fi.fFilename) {
     // If selected single file
-    energyDeposition(fi.fFilename);
+    energyResolution(fi.fFilename);
   }
   return 1;
 }
