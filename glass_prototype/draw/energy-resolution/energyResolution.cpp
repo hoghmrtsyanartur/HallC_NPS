@@ -30,6 +30,7 @@
 #include <TGFileDialog.h>
 #include <TSystem.h>
 #include <TGraphErrors.h>
+#include <TPaletteAxis.h>
 
 #include <string>
 #include <iostream>
@@ -37,7 +38,6 @@
 #include <fstream>
 
 
-const Double_t statsLineHeight = 0.06;
 
 TString* removeFileExtension(const char* fileNamePath){
   TString* s = new TString(fileNamePath);
@@ -85,7 +85,7 @@ TPaveStats* getPaveStats(TVirtualPad* pad){
   return NULL;
 }
 
-void alignStats(TVirtualPad* pad, Double_t statsWidth=0.6){
+void alignStats(TVirtualPad* pad, Double_t statsWidth=0.6, Double_t statsLineHeight = 0.06){
   // Retrieve the stat box
   TPaveStats *stats = getPaveStats(pad);
   if (!stats) return;
@@ -195,7 +195,7 @@ TTree* getTree(TFile* file, const char* treeName){
 // Plot energy deposition in crystals
 // ----------------------------------
 
-void plotCrystalEdep(const char *fileName){
+int plotCrystalEdep(const char *fileName){
   TFile *file = openFile(fileName);
 
   // Obtain number of crystals from file
@@ -293,6 +293,8 @@ void plotCrystalEdep(const char *fileName){
   // Save canvas to file
   TString* fileNameOnly = removeFileExtension(fileName);
   canvas->SaveAs((*fileNameOnly+"-edep.png").Data());
+
+  return 0;
 }
 
 
@@ -323,9 +325,22 @@ void plotEscapeParticles(const char* fileName){
   TVirtualPad* pad1 = canvas->cd(1);
   // Int_t maxEntries = TMath::Min((Double_t)tree->GetEntries(), 1.E4);
   // tree->Draw("x:y:z:energy", "", "COLZ", maxEntries);
+  pad1->SetLeftMargin(0.2);
+  pad1->SetRightMargin(0.2);
+  gStyle->SetPalette(kTemperatureMap);
   tree->Draw("x:y:z:energy", "", "COLZ");
   TH1* htemp1 = (TH1*) pad1->GetListOfPrimitives()->FindObject("htemp");
-  htemp1->SetTitle("Escape Locations");
+  // ROOT bug:
+  htemp1->SetTitle("Escape Locations;X, mm; Y, mm; Energy, MeV");
+  pad1->Update();
+  TPaletteAxis *palette = (TPaletteAxis*)htemp1->GetListOfFunctions()->FindObject("palette");
+  palette->SetX1NDC(0.85);
+  palette->SetX2NDC(0.9);
+  palette->SetTitleOffset(1.5);
+  htemp1->GetXaxis()->SetTitleOffset(2);
+  htemp1->GetYaxis()->SetTitleOffset(2);
+  htemp1->GetZaxis()->SetTitleOffset(2);
+  htemp1->GetZaxis()->SetTitle("Z, mm");
 
   // PAD 2: Draw Energy distribution
   TVirtualPad* pad2 = canvas->cd(2);
@@ -399,7 +414,7 @@ void plotEscapeParticles(const char* fileName){
     legend->AddEntry(pie4->GetSlice(i),text.Data(),"f");
   }
   legend->SetX1(0.1);
-  Double_t legendBottom = 0.9-statsLineHeight*legend->GetNRows();
+  Double_t legendBottom = 0.9-0.06*legend->GetNRows();
   legend->SetY1(legendBottom);
   legend->SetX2(.9);
   legend->SetY2(.9);
@@ -509,7 +524,7 @@ TVector3* plotEnergyResolution(const char* fileName){
       "crystal assembly per event, " << particleEnergy/1E3 << " GeV " << particleName << ".";
 
   // TString title = TString::Format("Total energy deposition in %dx%d, %dx%dx%d %s crystal assembly per event, %.0f GeV %s.", (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Z(), crystalMaterial, particleEnergy/1E3, particleName);
-  TH1D* edepHist = new TH1D("totalEdepHist", buffer.str().c_str(), 250, minEdep, maxEdep*1.5);
+  TH1D* edepHist = new TH1D("totalEdepHist", buffer.str().c_str(), 250, minEdep, maxEdep);
   edepHist->GetYaxis()->SetTitle("Counts");
   edepHist->GetXaxis()->SetTitle("Total deposited energy, MeV");
 
@@ -603,38 +618,7 @@ TVector3* plotEnergyResolution(const char* fileName){
   canvas->SaveAs((*fileNameOnly+"-eres.png").Data());
 
   return new TVector3(particleEnergy/1000., r, Dr);
-  // Save data to ASCII file
-  TString fileNameNoExtension = TString::Format("resolution-%s-%dx%d-%dx%dx%d", crystalMaterial, (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Y());
-  TString resolutionFileName = fileNameNoExtension + ".txt";
-  std::ofstream outfile;
-  outfile << std::left; // left align
-  const unsigned int tab = 20;
-  if (gSystem->AccessPathName(resolutionFileName.Data())){
-    // If file not exists - write header
-    outfile.open(resolutionFileName.Data()); // overwrite
-    outfile << "# " << std::setw(tab) << "Energy, GeV" << std::setw(tab) << "Resolution, %" << "Resolution Error, %" << std::endl;
-  } else {
-    // If file already exists - open for append
-    outfile.open(resolutionFileName.Data(), std::ios_base::app); // append
-  }
-  outfile << "  " << std::setw(tab) << particleEnergy/1E3 << std::setw(tab) << r << Dr << std::endl;
-  outfile.close();
 
-  // Generate gnuplot file
-//  TString gnuplotFileName =  fileNameNoExtension + ".gp";
-//  TString gnuplotPngFileName =  fileNameNoExtension + ".png";
-//  outfile.open(gnuplotFileName.Data()); // overwrite
-//  outfile << "set output '" << gnuplotPngFileName.Data() << "'" << std::endl;
-//  outfile << "set style line 1 linecolor rgb '#0060ad' linetype 1 linewidth 1 pointtype 7" << std::endl;
-//  outfile << "unset key" << std::endl;
-//
-//  outfile << "set title \"Energy resolution for 3x3, 20x20x400 mm Ga assembly\"" << std::endl;
-//  outfile << "set xlabel \"Particle energy, GeV\"" << std::endl;
-//  outfile << "set ylabel \"Energy resolution, %\"" << std::endl;
-//
-//  outfile << "plot '< sort -nk1 resolution-BaGdSiO-5x5-20x20x20.txt' using 1:2:3 with yerrorbars linestyle 1, \\" << std::endl;
-//  outfile << "     ''                                                            with lines linestyle 1" << std::endl;
-//  outfile.close();
 }
 
 
@@ -684,8 +668,9 @@ int energyResolution(){
     TVector3* crystalSize = (TVector3*)file->Get("crystalSize");
     TVector2* crystalsNumber =  (TVector2*)file->Get("crystalsNumber");
 
-    // Plot graph with energy resolution graph if given more than one energy point
+    // If given more than one energy point
     if (energy.size() > 1){
+      // Plot graph with energy resolution graph
       TCanvas* canvas = new TCanvas("energyResolution", "asdasd");
       canvas->SetGrid();
       TGraphErrors* gr = new TGraphErrors((int)energy.size(), &energy[0], &resolution[0], 0, &resolutionErr[0]); // convert vector to array
@@ -705,6 +690,35 @@ int energyResolution(){
       TString fileNameNoExtension = TString::Format("resolution-%s-%dx%d-%dx%dx%d", crystalMaterial, (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Y());
       TString resolutionPngFileName = fileNameNoExtension + ".png";
       canvas->SaveAs(resolutionPngFileName.Data());
+
+      // Export graph with energy resolution data
+      // Save data to ASCII file
+      TString resolutionFileName = fileNameNoExtension + ".txt";
+      std::ofstream outfile;
+      outfile << std::left; // left align
+      const unsigned int tab = 20;
+      outfile.open(resolutionFileName.Data()); // overwrite
+      outfile << "# " << std::setw(tab) << "Energy, GeV" << std::setw(tab) << "Resolution, %" << "Resolution Error, %" << std::endl;
+      for (int i = 0; i < (int)energy.size(); i++){
+        outfile << "  " << std::setw(tab) << energy[i]/1E3 << std::setw(tab) << resolution[i] << resolutionErr[i] << std::endl;
+      }
+      outfile.close();
+
+      // Generate gnuplot file
+      // TString gnuplotFileName =  fileNameNoExtension + ".gp";
+      // TString gnuplotPngFileName =  fileNameNoExtension + ".png";
+      // outfile.open(gnuplotFileName.Data()); // overwrite
+      // outfile << "set output '" << gnuplotPngFileName.Data() << "'" << std::endl;
+      // outfile << "set style line 1 linecolor rgb '#0060ad' linetype 1 linewidth 1 pointtype 7" << std::endl;
+      // outfile << "unset key" << std::endl;
+      //
+      // outfile << "set title \"Energy resolution for 3x3, 20x20x400 mm Ga assembly\"" << std::endl;
+      // outfile << "set xlabel \"Particle energy, GeV\"" << std::endl;
+      // outfile << "set ylabel \"Energy resolution, %\"" << std::endl;
+      //
+      // outfile << "plot '< sort -nk1 resolution-BaGdSiO-5x5-20x20x20.txt' using 1:2:3 with yerrorbars linestyle 1, \\" << std::endl;
+      // outfile << "     ''                                                            with lines linestyle 1" << std::endl;
+      // outfile.close();
     }
   } else if (fi.fFilename) {
     // If selected single file
