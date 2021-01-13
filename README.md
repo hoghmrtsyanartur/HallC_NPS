@@ -172,14 +172,14 @@ glass
 The Geant4 user interface window is presented to the user. Click on the "Open" bitton on the toolbar and locate the `./macros/farm.mac` macro file containing the above commands that control the simulation. 
 
 <p align="center">
- <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-42-48.png" alt="Specify the Geant4 Macro File" />
+ <img clear="both" src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-42-48.png" alt="Specify the Geant4 Macro File" />
  <i>Click the `Open` button on the left of the toolbar and locate the `./mcaros/farm.mac` macro file.</i>
 </p>
 
 After the program run finishes the visualization window will be demonstarted to the user. Second run Visualization accumulates particle trajectories from a single event. However, the energy profiles correspond to the total number of the events specified in the macro file.
 
 <p align="center">
- <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-45-41.png" alt="Visualization Image of the Energy Deposition in the Crystals and PMT assembly" />
+ <img clear="both" src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-21%2020-45-41.png" alt="Visualization Image of the Energy Deposition in the Crystals and PMT assembly" />
  <i>Visualization Image of the Energy Deposition in the Crystals and PMT assembly is automatically saved in `./output` folder</i>.
 </p> 
 
@@ -202,14 +202,14 @@ Script can process both types of output files.
 Select a desired ROOT data file to be processed by the program. The ROOT file containing smaller number of the events (15 by default) stores information about the escape locations and energies of the particles escaping the world, as well as the particle types. This is important to ensure the energy balance in the simulation is correct.
 
 <p align="center">
- <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-12-55.png" alt="Visualization of the particles escaping the world." />
+ <img clear="both" src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-12-55.png" alt="Visualization of the particles escaping the world." />
  <i>Visualization of the particles escaping the world.</i>
 </p> 
 
 Another ROOT file containing condiderably larger number of events (10000 by default) must be used for plotting the energy resolution of the assembly.
 
 <p align="center">
- <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-43-16.png?123" alt="Energy deposition in the crystals and Energy Resolution calculation" />
+ <img clear="both" src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot%20from%202020-12-22%2000-43-16.png?123" alt="Energy deposition in the crystals and Energy Resolution calculation" />
  <i>Energy deposition in the crystals and Energy Resolution calculation.</i>
 </p> 
 
@@ -221,13 +221,17 @@ Program will plot the energy resolution graph for a set of energies if multiple 
 
 <p align="center">
  <img clear="both" src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screencast_01-12-2021_09 33 55 AM.gif" alt="Selecting multiple files with ROOT File dialog." />
- <br/>
  <i>Selecting multiple files with ROOT File dialog.</i>
 </p>
 
-To simplify the plotting of the energy resolution graph of the crystal assembly a special file containing the calculated energy resolution for the simulated incident energy is created. When processing multiple ROOT files at a single time, the energy resolution values are automatically appended in separate files with following filename pattern `resolution-BaGdSiO-3x3-20x20x200.txt`.
+The ASCII data file with energy resolution values for every energy of the incident particle is created. Additionally the energy resolution graph is plotted.
 
-Once plotted, the above graphs are automatically saved under the `./output` folder in the build directory. File names are following the generic pattern.
+<p align="center">
+ <img clear="both" src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot from 2021-01-12 21-38-45.png" alt="Energy resolution plot for multiple incident particle energies" />
+ <i>Energy resolution plot for multiple incident particle energies.</i>
+</p>
+
+All above graphs are automatically saved in the same folder where the input data files are located.
 
 ### Copying the Results to Local Computer
 
