@@ -553,30 +553,31 @@ TVector3* plotEnergyResolution(const char* fileName){
 
   TCanvas* canvas = new TCanvas("eResCanvas", buffer.str().c_str());
   canvas->SetGrid();
+
   // Fit with ROOT gaus
-  // edepHist->Fit("gaus"); // "0" - Fit with gaus, do not plot the result of the fit
-  // Double_t m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
-  // Double_t Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
-  // Double_t s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
-  // Double_t Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
+//   edepHist->Fit("gaus"); //, "", "", 5000, edepHist->GetXaxis()->GetXmax()); // "0" - Fit with gaus, do not plot the result of the fit
+//   Double_t m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
+//   Double_t Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
+//   Double_t s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
+//   Double_t Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
 
   // Fit with my gauss
-  // GaussFunctionObject* fGaussFunctionObject = new GaussFunctionObject(edepHist);
-  // TF1* fGauss = new TF1("fGauss", fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 2);    // create TF1 class.
-  // fGauss->SetParName(0, "mean");
-  // fGauss->SetParameter(0, 3000);
-  // fGauss->SetParLimits(0, 1000, 5000);
-  // fGauss->SetParName(1, "sigma");
-  // fGauss->SetParameter(1, 200);
-  // fGauss->SetParLimits(1, 0, 1000);
-  // edepHist->Fit(fGauss, "W"); // ignore bin uncertanties?
-  // Double_t m = edepHist->GetFunction("fGauss")->GetParameter(0); // mean
-  // Double_t Dm = edepHist->GetFunction("fGauss")->GetParError(0); // mean error
-  // Double_t s = edepHist->GetFunction("fGauss")->GetParameter(1); // sigma
-  // Double_t Ds = edepHist->GetFunction("fGauss")->GetParError(1); // sigma error
+//   GaussFunctionObject* fGaussFunctionObject = new GaussFunctionObject(edepHist);
+//   TF1* fGauss = new TF1("fGauss", fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 2);    // create TF1 class.
+//   fGauss->SetParName(0, "mean");
+//   fGauss->SetParameter(0, 3000);
+//   fGauss->SetParLimits(0, 1000, 5000);
+//   fGauss->SetParName(1, "sigma");
+//   fGauss->SetParameter(1, 200);
+//   fGauss->SetParLimits(1, 0, 1000);
+//   edepHist->Fit(fGauss, "RW"); // ignore bin uncertanties?
+//   Double_t m = edepHist->GetFunction("fGauss")->GetParameter(0); // mean
+//   Double_t Dm = edepHist->GetFunction("fGauss")->GetParError(0); // mean error
+//   Double_t s = edepHist->GetFunction("fGauss")->GetParameter(1); // sigma
+//   Double_t Ds = edepHist->GetFunction("fGauss")->GetParError(1); // sigma error
 
   // Fit with crystal ball
-  CrystalBallFunctionObject* fGaussFunctionObject = new CrystalBallFunctionObject();
+//  CrystalBallFunctionObject* fGaussFunctionObject = new CrystalBallFunctionObject();
   TF1* fBall = new TF1("fBall", *fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 5);    // create TF1 class.
   fBall->SetNpx(1000);
 
@@ -586,7 +587,7 @@ TVector3* plotEnergyResolution(const char* fileName){
 
   fBall->SetParName(1, "n");
   fBall->SetParameter(1, 10);
-  fBall->SetParLimits(1, 1+1E-3, 1E2);
+  fBall->SetParLimits(1, 1+1E-3, 500);
 
   fBall->SetParName(2, "mean");
   fBall->SetParameter(2, edepHist->GetBinCenter(edepHist->GetMaximumBin()));
