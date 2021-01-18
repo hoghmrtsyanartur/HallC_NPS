@@ -646,8 +646,8 @@ TVector3* plotEnergyResolution(const char* fileName, FitFunction fitFunction){
   alignStats(canvas, 0.35, Align::kLeft);
 
   // Save canvas
-  TString* fileNameOnly = removeFileExtension(fileName);
-  canvas->SaveAs((*fileNameOnly+"-eres.png").Data());
+  TString pngFileName = TString::Format("%s-eres-%s.png", removeFileExtension(fileName)->Data(), fitFunctionToString(fitFunction));
+  canvas->SaveAs(pngFileName.Data());
 
   return new TVector3(particleEnergy/1000., r, Dr);
 }
@@ -672,7 +672,7 @@ int energyResolution(){
   new TGFileDialog(gClient->GetRoot(), 0, kFDOpen, &fi);
 
   // Define fitting function
-  FitFunction fitFunction = FitFunction::CBALL;
+  FitFunction fitFunction = FitFunction::GAUSS;
 
   if (fi.fMultipleSelection && fi.fFileNamesList) {
     TObjString *el;
@@ -719,7 +719,7 @@ int energyResolution(){
       gr->Sort(&TGraph::CompareX);
       gr->Draw("ALP");
       canvas->Update();
-      TString fileNameNoExtension = TString::Format("resolution-%s-%dx%d-%dx%dx%d-%s", crystalMaterial, (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Z(), (Int_t)crystalSize->Y(), fitFunctionToString(fitFunction));
+      TString fileNameNoExtension = TString::Format("resolution-%s-%dx%d-%dx%dx%d-%s", crystalMaterial, (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Z(), fitFunctionToString(fitFunction));
       TString resolutionPngFileName = fileNameNoExtension + ".png";
       canvas->SaveAs(resolutionPngFileName.Data());
 
