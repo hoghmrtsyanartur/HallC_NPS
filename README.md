@@ -244,8 +244,14 @@ nano ./draw/energy-resolution/energyResolution.gp
 ```
 Update the data file names in the Gnuplot script to correspond to the energy resolution data points output by the `energyResolution.cpp` script. Then the energy resolution series can can be plotted with the following command:
 ```
-
+gnuplot -p -c ./draw/energy-resolution/energyResolution.gp
 ```
+A demonstration output of the Gnuplot script is presented on the picture below:
+
+<p align="center">
+ <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screenshot from 2021-01-18 15-32-12.png" alt="Series of Energy resolutions for multiple detector geometries." /><br/>
+ <i>Series of Energy resolutions for multiple detector geometries.</i>
+</p>
 
 ### Copying the Results to Local Computer
 
