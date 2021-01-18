@@ -38,6 +38,17 @@
 #include <fstream>
 
 
+enum class FitFunction {
+  CBALL,
+  GAUSS,
+  MYGAUSS
+};
+
+const char* fitFunctionToString(FitFunction fitFunction){
+  if (fitFunction == FitFunction::CBALL) return "cball";
+  if (fitFunction == FitFunction::GAUSS) return "gauss";
+  return "mygauss";
+}
 
 TString* removeFileExtension(const char* fileNamePath){
   TString* s = new TString(fileNamePath);
@@ -493,7 +504,7 @@ class GaussFunctionObject {
     Double_t normalization;
 };
 
-TVector3* plotEnergyResolution(const char* fileName){
+TVector3* plotEnergyResolution(const char* fileName, FitFunction fitFunction){
   TFile* file = openFile(fileName);
   TTree *tree = getTree(file, "tree_crystals");
   if (tree == NULL) return 0;
@@ -554,63 +565,71 @@ TVector3* plotEnergyResolution(const char* fileName){
   TCanvas* canvas = new TCanvas("eResCanvas", buffer.str().c_str());
   canvas->SetGrid();
 
-  // Fit with ROOT gaus
-//   edepHist->Fit("gaus"); //, "", "", 5000, edepHist->GetXaxis()->GetXmax()); // "0" - Fit with gaus, do not plot the result of the fit
-//   Double_t m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
-//   Double_t Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
-//   Double_t s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
-//   Double_t Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
+  Double_t m, Dm, s, Ds;
 
-  // Fit with my gauss
-//   GaussFunctionObject* fGaussFunctionObject = new GaussFunctionObject(edepHist);
-//   TF1* fGauss = new TF1("fGauss", fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 2);    // create TF1 class.
-//   fGauss->SetParName(0, "mean");
-//   fGauss->SetParameter(0, 3000);
-//   fGauss->SetParLimits(0, 1000, 5000);
-//   fGauss->SetParName(1, "sigma");
-//   fGauss->SetParameter(1, 200);
-//   fGauss->SetParLimits(1, 0, 1000);
-//   edepHist->Fit(fGauss, "RW"); // ignore bin uncertanties?
-//   Double_t m = edepHist->GetFunction("fGauss")->GetParameter(0); // mean
-//   Double_t Dm = edepHist->GetFunction("fGauss")->GetParError(0); // mean error
-//   Double_t s = edepHist->GetFunction("fGauss")->GetParameter(1); // sigma
-//   Double_t Ds = edepHist->GetFunction("fGauss")->GetParError(1); // sigma error
+  if (fitFunction == FitFunction::GAUSS){
+    // Fit with ROOT gaus
+    edepHist->Fit("gaus"); //, "", "", 5000, edepHist->GetXaxis()->GetXmax()); // "0" - Fit with gaus, do not plot the result of the fit
+    m = edepHist->GetFunction("gaus")->GetParameter(1); // mean
+    Dm = edepHist->GetFunction("gaus")->GetParError(1); // mean error
+    s = edepHist->GetFunction("gaus")->GetParameter(2); // sigma
+    Ds = edepHist->GetFunction("gaus")->GetParError(2); // sigma error
+  }
+  else if (fitFunction == FitFunction::MYGAUSS){
+    // Fit with my gauss
+    GaussFunctionObject* fGaussFunctionObject = new GaussFunctionObject(edepHist);
+    TF1* fGauss = new TF1("fGauss", fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 2);    // create TF1 class.
+    fGauss->SetParName(0, "mean");
+    fGauss->SetParameter(0, 3000);
+    fGauss->SetParLimits(0, 1000, 5000);
+    fGauss->SetParName(1, "sigma");
+    fGauss->SetParameter(1, 200);
+    fGauss->SetParLimits(1, 0, 1000);
+    edepHist->Fit(fGauss, "RW"); // ignore bin uncertanties?
+    m = edepHist->GetFunction("fGauss")->GetParameter(0); // mean
+    Dm = edepHist->GetFunction("fGauss")->GetParError(0); // mean error
+    s = edepHist->GetFunction("fGauss")->GetParameter(1); // sigma
+    Ds = edepHist->GetFunction("fGauss")->GetParError(1); // sigma error
+  }
+  else if (fitFunction == FitFunction::CBALL){
+    // Fit with crystal ball
+    CrystalBallFunctionObject* fGaussFunctionObject = new CrystalBallFunctionObject();
+    TF1* fBall = new TF1("fBall", *fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 5);    // create TF1 class.
+    fBall->SetNpx(1000);
 
-  // Fit with crystal ball
-//  CrystalBallFunctionObject* fGaussFunctionObject = new CrystalBallFunctionObject();
-  TF1* fBall = new TF1("fBall", *fGaussFunctionObject, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax(), 5);    // create TF1 class.
-  fBall->SetNpx(1000);
+    fBall->SetParName(0, "a");
+    fBall->SetParameter(0, 1);
+    fBall->SetParLimits(0, 0, 1E2);
 
-  fBall->SetParName(0, "a");
-  fBall->SetParameter(0, 1);
-  fBall->SetParLimits(0, 0, 1E2);
+    fBall->SetParName(1, "n");
+    fBall->SetParameter(1, 10);
+    fBall->SetParLimits(1, 1+1E-3, 500);
 
-  fBall->SetParName(1, "n");
-  fBall->SetParameter(1, 10);
-  fBall->SetParLimits(1, 1+1E-3, 500);
+    fBall->SetParName(2, "mean");
+    fBall->SetParameter(2, edepHist->GetBinCenter(edepHist->GetMaximumBin()));
+    fBall->SetParLimits(2, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax());
 
-  fBall->SetParName(2, "mean");
-  fBall->SetParameter(2, edepHist->GetBinCenter(edepHist->GetMaximumBin()));
-  fBall->SetParLimits(2, edepHist->GetXaxis()->GetXmin(), edepHist->GetXaxis()->GetXmax());
+    fBall->SetParName(3, "sigma");
+    fBall->SetParameter(3, 200);
+    fBall->SetParLimits(3, 0, 1000);
 
-  fBall->SetParName(3, "sigma");
-  fBall->SetParameter(3, 200);
-  fBall->SetParLimits(3, 0, 1000);
+    fBall->SetParName(4, "norm");
+    fBall->SetParameter(4, edepHist->Integral("width"));
+    fBall->SetParLimits(4, edepHist->Integral("width")/2, edepHist->Integral("width")*2);
 
-  fBall->SetParName(4, "norm");
-  fBall->SetParameter(4, edepHist->Integral("width"));
-  fBall->SetParLimits(4, edepHist->Integral("width")/2, edepHist->Integral("width")*2);
+    // Abnormal termination of minimization.
+    // Solution: increase the fitting range. Specify function range (-10000, 10000) and pass "R" parameter
+    //           also use Long Double vs Double in the fitting function evaluate()
 
-  // Abnormal termination of minimization.
-  // Solution: increase the fitting range. Specify function range (-10000, 10000) and pass "R" parameter
+    edepHist->Fit(fBall, "W");
 
-  edepHist->Fit(fBall, "W");
+    m = edepHist->GetFunction("fBall")->GetParameter(2); // mean
+    Dm = edepHist->GetFunction("fBall")->GetParError(2); // mean error
+    s = edepHist->GetFunction("fBall")->GetParameter(3); // sigma
+    Ds = edepHist->GetFunction("fBall")->GetParError(3); // sigma error
+  }
 
-  Double_t m = edepHist->GetFunction("fBall")->GetParameter(2); // mean
-  Double_t Dm = edepHist->GetFunction("fBall")->GetParError(2); // mean error
-  Double_t s = edepHist->GetFunction("fBall")->GetParameter(3); // sigma
-  Double_t Ds = edepHist->GetFunction("fBall")->GetParError(3); // sigma error
-
+  // Calculate resolution value and error
   Double_t r = s/m*100;  // Resolution
   Double_t Dr = 100*TMath::Sqrt(TMath::Power(1/m*Ds,2)+TMath::Power(s/m/m*Dm,2)); // Indirect error
 
@@ -631,7 +650,6 @@ TVector3* plotEnergyResolution(const char* fileName){
   canvas->SaveAs((*fileNameOnly+"-eres.png").Data());
 
   return new TVector3(particleEnergy/1000., r, Dr);
-
 }
 
 
@@ -639,10 +657,10 @@ TVector3* plotEnergyResolution(const char* fileName){
 // Main function
 // ---------------------------------
 
-TVector3* energyResolution(const char *fileName){
+TVector3* energyResolution(const char *fileName, FitFunction fitFunction = FitFunction::CBALL){
   plotCrystalEdep(fileName);
   plotEscapeParticles(fileName);
-  return plotEnergyResolution(fileName);
+  return plotEnergyResolution(fileName, fitFunction);
 }
 
 int energyResolution(){
@@ -653,6 +671,9 @@ int energyResolution(){
   fi.fFileTypes = filetypes;
   new TGFileDialog(gClient->GetRoot(), 0, kFDOpen, &fi);
 
+  // Define fitting function
+  FitFunction fitFunction = FitFunction::CBALL;
+
   if (fi.fMultipleSelection && fi.fFileNamesList) {
     TObjString *el;
     TIter next(fi.fFileNamesList);
@@ -662,7 +683,7 @@ int energyResolution(){
     std::vector<Double_t> resolutionErr = {};
 
     while ((el = (TObjString *) next())) {
-      TVector3* v = energyResolution(el->GetString().Data());
+      TVector3* v = energyResolution(el->GetString().Data(), fitFunction);
       if (v != NULL){
         energy.push_back(v->X());
         resolution.push_back(v->Y());
@@ -698,7 +719,7 @@ int energyResolution(){
       gr->Sort(&TGraph::CompareX);
       gr->Draw("ALP");
       canvas->Update();
-      TString fileNameNoExtension = TString::Format("resolution-%s-%dx%d-%dx%dx%d", crystalMaterial, (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Y(), (Int_t)crystalSize->Y());
+      TString fileNameNoExtension = TString::Format("resolution-%s-%dx%d-%dx%dx%d-%s", crystalMaterial, (Int_t)crystalsNumber->X(), (Int_t)crystalsNumber->Y(), (Int_t)crystalSize->X(), (Int_t)crystalSize->Z(), (Int_t)crystalSize->Y(), fitFunctionToString(fitFunction));
       TString resolutionPngFileName = fileNameNoExtension + ".png";
       canvas->SaveAs(resolutionPngFileName.Data());
 
@@ -714,22 +735,6 @@ int energyResolution(){
         outfile << "  " << std::setw(tab) << gr->GetPointX(i) << std::setw(tab) << gr->GetPointY(i) << gr->GetErrorY(i) << std::endl;
       }
       outfile.close();
-
-      // Generate gnuplot file
-      // TString gnuplotFileName =  fileNameNoExtension + ".gp";
-      // TString gnuplotPngFileName =  fileNameNoExtension + ".png";
-      // outfile.open(gnuplotFileName.Data()); // overwrite
-      // outfile << "set output '" << gnuplotPngFileName.Data() << "'" << std::endl;
-      // outfile << "set style line 1 linecolor rgb '#0060ad' linetype 1 linewidth 1 pointtype 7" << std::endl;
-      // outfile << "unset key" << std::endl;
-      //
-      // outfile << "set title \"Energy resolution for 3x3, 20x20x400 mm Ga assembly\"" << std::endl;
-      // outfile << "set xlabel \"Particle energy, GeV\"" << std::endl;
-      // outfile << "set ylabel \"Energy resolution, %\"" << std::endl;
-      //
-      // outfile << "plot '< sort -nk1 resolution-BaGdSiO-5x5-20x20x20.txt' using 1:2:3 with yerrorbars linestyle 1, \\" << std::endl;
-      // outfile << "     ''                                                            with lines linestyle 1" << std::endl;
-      // outfile.close();
     }
   } else if (fi.fFilename) {
     // If selected single file
