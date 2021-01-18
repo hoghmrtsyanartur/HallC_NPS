@@ -9,6 +9,9 @@ Repository containing the code for simulation of the energy deposition profiles 
     - [Logging to the Computing Farm](#logging-to-the-computing-farm)
     - [Compilation of the Executable Program](#compilation-of-the-executable-program)
     - [Analysis of the Output Files](#analysis-of-the-outputfiles)
+    - [Analysis of a Single File](#analysis-of-a-single-file)
+    - [Plotting Energy Resolution for Multiple Energies](#plotting-energy-resolution-for-multiple-energies)
+    - [Plotting Energy Resolution for Multiple Geometries](#plotting-energy-resolution-for-multiple-geometries)
     - [Copying the Results to Local Computer](#copying-the-results-to-local-computer)
     - [Notes from the Former Developers](#notes-from-the-former-developers)
 
@@ -192,9 +195,8 @@ Second ROOT file contains considerably more number of events (10k by default) an
 
 A special ROOT script is designed to analyze the output files. Command to launch the script is following:
 ```
-root ~/Downloads/HallC_NPS/glass_prototype/draw/energy-deposition/energyDeposition.cpp
+root ./draw/energy-deposition/energyDeposition.cpp
 ```
-
 Script can process both types of output files.
 
 #### Analysis of a single file
@@ -215,9 +217,9 @@ Another ROOT file containing condiderably larger number of events (10000 by defa
 
 The graph with total energy deposition in the crystal assembly per event is fitted with the Crystal Ball function. Energy resolution of the detector is calculated as the ratio of the Crystal Ball functino mean to the sigma. 
 
-#### Plotting energy resolution for multiple files
+#### Plotting Energy Resolution for Multiple Energies
 
-Program will plot the energy resolution graph for a set of energies if multiple input ROOT files with large statistics are selected. Locate the `.root` output files that correspond to the simulations of the same detector geometry for different energies. It is possible to select multiple files in ROOT dialog box by checking the `Multiple files` checkbox on the top right of the dialog box and holding the `CTRL` or `CMD` key on the keyboard:
+Script `energyDeposition.cpp` will plot the energy resolution graph for a set of energies if multiple input ROOT files with large statistics are selected. Locate the `.root` output files that correspond to the simulations of the same detector geometry for different energies. It is possible to select multiple files in ROOT dialog box by checking the `Multiple files` checkbox on the top right of the dialog box and holding the `CTRL` or `CMD` key on the keyboard:
 
 <p align="center">
  <img src="https://raw.githubusercontent.com/petrstepanov/HallC_NPS/master/glass_prototype/resources/Screencast_01-12-2021_09 33 55 AM.gif" alt="Selecting multiple files with ROOT File dialog." /><br/>
@@ -233,13 +235,25 @@ The ASCII data file with energy resolution values for every energy of the incide
 
 All above graphs are automatically saved in the same folder where the input data files are located.
 
+#### Plotting Energy Resolution for Multiple Geometries
+
+A special Gnuplot script `./glass_prototype/draw/energy-resolution/energyResolution.gp` can plot series of the energy resolutions for various detector geometries. open the script with a text editor of your choice:
+
+```
+nano ./draw/energy-resolution/energyResolution.gp
+```
+Update the data file names in the Gnuplot script to correspond to the energy resolution data points output by the `energyResolution.cpp` script. Then the energy resolution series can can be plotted with the following command:
+```
+
+```
+
 ### Copying the Results to Local Computer
 
-In order to copy the results from the Computing Farm to the local computer the `scp` command can be used. On Windows one must install the PuTTY software to execute the below command. Native Terminal applications can be used on MacOS and Linux:
+In order to copy the results from the Computing Farm to the local computer the `scp` command can be used. On Windows one must install the PuTTY software to execute the below command. Native Terminal applications can be used on MacOS and Linux. Use following command to copy the Geant4 `output` folder to the local machine. Replace `<your-username>` with your JLab username:
 ```
 scp -r <your-username>@login.jlab.org:/home/<your-username>/Downloads/HallC_NPS_glass_bulid/output ~/
 ```
-The above command will copy the `output` folder from the Computing Farm to your local home directory.
+In order to copy a single file, remove the `-r` flag from the above command.
 
 ## Notes from the Former Developers
 

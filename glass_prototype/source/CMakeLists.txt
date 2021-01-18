@@ -59,14 +59,29 @@ target_link_libraries(glass ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} )
 # build glass. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(glass_SCRIPTS
-    /macros/i.mac /macros/farm.mac /macros/vis.mac /macros/test.mac /macros/interactive.mac /macros/batch.mac 
+set(glass_MACROS
+    /macros/i.mac /macros/farm.mac /macros/vis.mac /macros/test.mac /macros/interactive.mac /macros/batch.mac
   )
 
-foreach(_script ${glass_SCRIPTS})
+foreach(_macros ${glass_MACROS})
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${_script}
-    ${PROJECT_BINARY_DIR}/${_script}
+    ${PROJECT_SOURCE_DIR}/${_macros}
+    ${PROJECT_BINARY_DIR}/${_macros}
+    COPYONLY
+    )
+endforeach()
+
+#----------------------------------------------------------------------------
+# Copy ROOT scripts that plot the Geant data to the build directory
+
+set(glass_SCRIPTS
+    /draw/energy-resolution/energyResolution.cpp /draw/energy-resolution/energyResolution.gp
+  )
+
+foreach(_file ${glass_SCRIPTS})
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/${_file}
+    ${PROJECT_BINARY_DIR}/${_file}
     COPYONLY
     )
 endforeach()
