@@ -37,7 +37,6 @@
 #include <sstream>
 #include <fstream>
 
-
 enum class FitFunction {
   CBALL,
   GAUSS,
@@ -672,7 +671,7 @@ int energyResolution(){
   new TGFileDialog(gClient->GetRoot(), 0, kFDOpen, &fi);
 
   // Define fitting function
-  FitFunction fitFunction = FitFunction::GAUSS;
+  FitFunction fitFunction = FitFunction::CBALL;
 
   if (fi.fMultipleSelection && fi.fFileNamesList) {
     TObjString *el;

@@ -156,44 +156,44 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 {
   //optical photons properties
   // 
-  G4double hc = 1.23984193;
   
-  // Petr Stepanov: question what is this 8 value?
   const G4int n = 8;
-  G4double OpticalPhotonWavelength[n] = //in micro meters
-    { 0.400, 0.440, 0.480, 0.520, 0.560, 0.600, 0.640, 0.680};
+  G4double OpticalPhotonWavelength[n] =
+    { 0.400, 0.440, 0.480, 0.520, 0.560, 0.600, 0.640, 0.680}; // um
+
   G4double OpticalPhotonEnergy[n] = {0.};
   for (G4int i = 0 ; i < n ; i++){
+    G4double hc = 1.23984193;
     OpticalPhotonEnergy[i] = (hc/OpticalPhotonWavelength[i])*eV;
   }
 
-  //Refractive Index of Crystal
+  // Refractive Index of Crystal
   G4double RefractiveIndexCrystal[n] = 
     { 2.35, 2.30, 2.27, 2.25, 2.23, 2.21, 2.201, 2.2}; 
 
-  //Refractive Index of Air
+  // Refractive Index of Air
   G4double RefractiveIndexAir[n] = 
     { 1., 1., 1., 1., 1., 1., 1., 1.};
 
-  //Reflectivity. To be filled from down below
+  // Reflectivity. To be filled from down below
   G4double R[n] = {0.};
 
-  //Theoretical Transmittance. To be filled from down below
+  // Theoretical Transmittance. To be filled from down below
   G4double Ts[n] = {0.};
 
-  //Measured Transmittance(longitudinal)
+  // Measured Transmittance (longitudinal I/I_0)
+  // https://sci-hub.do/https://www.sciencedirect.com/science/article/abs/pii/0168900296002860
   G4double T[n] = 
     { 0.33, 0.48, 0.62, 0.67, 0.68, 0.689, 0.69, 0.69};
 
-  //Attenuation length
+  // Attenuation length
   G4double LAL[n] = {0.};
-
 
   for (G4int i = 0 ; i < n ; i++){
     R[i] = ((RefractiveIndexCrystal[i] - RefractiveIndexAir[i])*(RefractiveIndexCrystal[i] - RefractiveIndexAir[i]))/((RefractiveIndexCrystal[i] + RefractiveIndexAir[i])*(RefractiveIndexCrystal[i] + RefractiveIndexAir[i]));
     Ts[i] = (1 - R[i])/(1 + R[i]); 
     LAL[i] = fCrystal_Z/(log((T[i]*(1-Ts[i])*(1-Ts[i]))/(sqrt(4*Ts[i]*Ts[i]*Ts[i]*Ts[i] + T[i]*T[i]*(1-Ts[i]*Ts[i])*(1-Ts[i]*Ts[i]))-2*Ts[i]*Ts[i])));
-    G4cout<<"n[i]"<<RefractiveIndexCrystal[i]<<"["<<i<<"], "<<"Wavelength[i] : "<<OpticalPhotonWavelength[i]<<"["<<i<<"], "<<"R[i] : "<<R[i]<<"["<<i<<"], "<<"T[i] : "<<T[i]<<"["<<i<<"], "<<"LAL[i] : "<<LAL[i]<<"["<<i<<"]"<<G4endl;  
+    G4cout << "n[i]" << RefractiveIndexCrystal[i]<<"["<<i<<"], "<<"Wavelength[i] : "<<OpticalPhotonWavelength[i]<<"["<<i<<"], "<<"R[i] : "<<R[i]<<"["<<i<<"], "<<"T[i] : "<<T[i]<<"["<<i<<"], "<<"LAL[i] : "<<LAL[i]<<"["<<i<<"]"<<G4endl;
   }
 
   G4double ScintilFast[n] =
@@ -424,6 +424,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   opWrapperSurface->SetType(dielectric_LUT);
   opWrapperSurface->SetFinish(polishedvm2000air);
   opWrapperSurface->SetModel(LUT);
+
   new G4LogicalBorderSurface("WrapperSurface", crystalPos,fWrapPos,opWrapperSurface);
   G4MaterialPropertiesTable* opWS = new G4MaterialPropertiesTable();
   opWS->DumpTable();
