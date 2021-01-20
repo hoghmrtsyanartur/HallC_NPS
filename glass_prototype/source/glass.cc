@@ -49,7 +49,7 @@
 //#include "G4PhysListFactory.hh"
 
 // PS: add optical photon physics
-#include "FTFP_BERT.hh"
+// #include "FTFP_BERT.hh"
 //#include "G4OpticalPhysics.hh"
 //#include "QGSP_BERT.hh"
 //#include "G4EmStandardPhysics_option4.hh"
@@ -82,8 +82,7 @@ int main(int argc, char **argv) {
 
 	// PS: Instantiate local physics list and define physics
 	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/physicsDef.html?highlight=g4vuserphysicslists#how-to-specify-physics-processes
-  PhysicsList *phys = new PhysicsList();
-  runManager->SetUserInitialization(phys);
+  PhysicsList *physicsList = new PhysicsList();
 
   // PS: 5. Replace Physics
   // G4VModularPhysicsList* physicsList = new FTFP_BERT();
@@ -92,16 +91,18 @@ int main(int argc, char **argv) {
   // PS: Try adding optical physics (works)
 	// http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsProcess.html?highlight=ftfp_bert#g4opticalphysics-constructor
   // G4VModularPhysicsList* physicsList = new QGSP_BERT();
-  // // G4VModularPhysicsList* physicsList = new FTFP_BERT();
+  // G4VModularPhysicsList* physicsList = new FTFP_BERT();
   // G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
   // physicsList->RegisterPhysics(opticalPhysics);
   // runManager-> SetUserInitialization(physicsList);
 
-  // PS: Try set up physics using factory
-	// G4PhysListFactory factory;
-	// G4VModularPhysicsList* physlist = factory.GetReferencePhysList("FTFP_BERT_EMV");
+  // PS: Try set up physics using factory - like in Gears App
+	// G4PhysListFactory factory = new G4PhysListFactory();
+	// G4VModularPhysicsList* physlist = factory->GetReferencePhysList("FTFP_BERT_EMV");
 	// physlist.SetVerboseLevel(verbose);
 	// runManager->SetUserInitialization(physlist);
+
+  runManager->SetUserInitialization(physicsList);
 
 	// PS: Object that outputs the ROOT file
 

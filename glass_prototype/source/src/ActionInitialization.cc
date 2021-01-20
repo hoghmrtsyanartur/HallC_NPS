@@ -32,6 +32,7 @@
 #include "RunAction.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "SteppingAction.hh"
+#include "SteppingActionOptical.hh"
 #include "HistoManager.hh"
 
 class DetectorConstruction;
@@ -83,6 +84,10 @@ void ActionInitialization::Build() const
   // Stepping action detects and records particles that are leaving the World volume
   SteppingAction* outsideWorldSteppingAction = new SteppingAction(histoManager);
   SetUserAction(outsideWorldSteppingAction);
+
+  // Stepping action detects optical photons
+  SteppingActionOptical* opticalSteppingAction = new SteppingActionOptical(histoManager);
+  SetUserAction(opticalSteppingAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

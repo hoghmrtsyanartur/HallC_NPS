@@ -1,3 +1,4 @@
+# Specify the physics (TODO: try other physics)
 /testhadr/Physics QBBC
 
 # Crystal size along X, Y and Z axis
