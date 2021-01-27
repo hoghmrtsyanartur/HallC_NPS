@@ -19,18 +19,18 @@
 /detector/setCrystalNumberY 1
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
-/histoManager/writeWorldEscape true
+/histoManager/writeWorldEscape false
 
 #/process/optical/verbose 2
 
 # Control optical processes
-#/process/optical/processActivation Cerenkov      false
+#/process/optical/processActivation Cerenkov      true
 #/process/optical/processActivation OpAbsorption  true
 #/process/optical/processActivation OpBoundary    true
 #/process/optical/processActivation Scintillation true
-#/process/optical/processActivation OpRayleigh    true
-#/process/optical/processActivation OpMieHG       true
-#/process/optical/processActivation OpWLS         true
+/process/optical/processActivation OpRayleigh    false
+/process/optical/processActivation OpMieHG       false
+/process/optical/processActivation OpWLS         false
 
 #/process/optical/scintillation/setExcitationRatio .5
 #/process/optical/scintillation/setByParticleType false
@@ -80,7 +80,7 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 200
+/run/beamOn 2000
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 

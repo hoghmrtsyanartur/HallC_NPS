@@ -9,7 +9,16 @@
 /detector/setCrystalNumberY 3
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
-/histoManager/writeWorldEscape true
+/histoManager/writeWorldEscape false
+
+# Control optical processes
+#/process/optical/processActivation Cerenkov      true
+#/process/optical/processActivation OpAbsorption  true
+#/process/optical/processActivation OpBoundary    true
+#/process/optical/processActivation Scintillation true
+/process/optical/processActivation OpRayleigh    false
+/process/optical/processActivation OpMieHG       false
+/process/optical/processActivation OpWLS         false
 
 /run/initialize
 
