@@ -67,6 +67,7 @@ public:
 //  void FillNtuple();
 //  void FillNtuple_Flux();
   void FillNtupleEnergyDep(G4double* energy);
+  void FillNtuplePE(G4double* peNumber);
   void FillNtupleOutOfWorld(G4double energy, G4double x, G4double y, G4double z, G4int pdg, const char* particleName);
   void Save();
 
@@ -102,6 +103,7 @@ private:
 
   TFile*   fRootFile;
   TTree*   fNtupleCrystals;
+  TTree*   fNtupleCrystalsPE; // ntuple for number of charge carriers
   TTree*   fNtuplePMT;
 //  TTree*   fNtuple_Flux;
   TTree*   fNtupleOutOfWorld;
@@ -113,6 +115,8 @@ private:
 
   G4double* fEdep;
   G4double fEdepTotal;
+
+  G4double* fPE;
 
   //  G4int    fOP_sc[MaxNtuple];
 //  G4int    fOP_ce[MaxNtuple];

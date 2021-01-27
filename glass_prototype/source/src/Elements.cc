@@ -14,32 +14,40 @@
 
 Elements::Elements() : fElementsList{} {
   // Lead
-  G4Isotope* Pb204 = new G4Isotope("204Pb", 82, 204, 203.97*g/mole);
-  G4Isotope* Pb206 = new G4Isotope("204Pb", 82, 206, 205.97*g/mole);
-  G4Isotope* Pb207 = new G4Isotope("204Pb", 82, 207, 206.98*g/mole);
-  G4Isotope* Pb208 = new G4Isotope("204Pb", 82, 208, 207.98*g/mole);
-  G4Element* Pb = new G4Element("Lead","Pb", 4); // nIsotopes
-  Pb->AddIsotope(Pb204, 1.4000*perCent);
-  Pb->AddIsotope(Pb206, 24.100*perCent);
-  Pb->AddIsotope(Pb207, 22.100*perCent);
-  Pb->AddIsotope(Pb208, 52.400*perCent);
-  fElementsList.push_back(Pb);
-
-  // Tungsten
-  G4Isotope *W180 = new G4Isotope("180W", 74, 180, 179.95*g/mole);
-  G4Isotope *W182 = new G4Isotope("182W", 74, 182, 181.95*g/mole);
-  G4Isotope *W183 = new G4Isotope("183W", 74, 183, 182.95*g/mole);
-  G4Isotope *W184 = new G4Isotope("184W", 74, 184, 183.95*g/mole);
-  G4Isotope *W186 = new G4Isotope("186W", 74, 186, 185.95*g/mole);
-  G4Element* W  = new G4Element("Tungsten","W" , 5); //Introducimos el Wolframio
-  W->AddIsotope(W180, 0.1200*perCent);
-  W->AddIsotope(W182, 26.500*perCent);
-  W->AddIsotope(W183, 14.310*perCent);
-  W->AddIsotope(W184, 30.640*perCent);
-  W->AddIsotope(W186, 28.430*perCent);
-  fElementsList.push_back(W);
+//  G4Isotope* Pb204 = new G4Isotope("204Pb", 82, 204, 203.97*g/mole);
+//  G4Isotope* Pb206 = new G4Isotope("204Pb", 82, 206, 205.97*g/mole);
+//  G4Isotope* Pb207 = new G4Isotope("204Pb", 82, 207, 206.98*g/mole);
+//  G4Isotope* Pb208 = new G4Isotope("204Pb", 82, 208, 207.98*g/mole);
+//  G4Element* Pb = new G4Element("Lead","Pb", 4); // nIsotopes
+//  Pb->AddIsotope(Pb204, 1.4000*perCent);
+//  Pb->AddIsotope(Pb206, 24.100*perCent);
+//  Pb->AddIsotope(Pb207, 22.100*perCent);
+//  Pb->AddIsotope(Pb208, 52.400*perCent);
+//  fElementsList.push_back(Pb);
+//
+//  // Tungsten
+//  G4Isotope *W180 = new G4Isotope("180W", 74, 180, 179.95*g/mole);
+//  G4Isotope *W182 = new G4Isotope("182W", 74, 182, 181.95*g/mole);
+//  G4Isotope *W183 = new G4Isotope("183W", 74, 183, 182.95*g/mole);
+//  G4Isotope *W184 = new G4Isotope("184W", 74, 184, 183.95*g/mole);
+//  G4Isotope *W186 = new G4Isotope("186W", 74, 186, 185.95*g/mole);
+//  G4Element* W  = new G4Element("Tungsten","W" , 5); //Introducimos el Wolframio
+//  W->AddIsotope(W180, 0.1200*perCent);
+//  W->AddIsotope(W182, 26.500*perCent);
+//  W->AddIsotope(W183, 14.310*perCent);
+//  W->AddIsotope(W184, 30.640*perCent);
+//  W->AddIsotope(W186, 28.430*perCent);
+//  fElementsList.push_back(W);
 
   // Trying to use the NIST database
+
+  // Lead
+  G4Element* elPb = G4NistManager::Instance()->FindOrBuildElement("Pb");
+  fElementsList.push_back(elPb);
+
+  // Tungsten
+  G4Element* elW = G4NistManager::Instance()->FindOrBuildElement("W");
+  fElementsList.push_back(elW);
 
   // Nitrogen
   G4Element* elN = G4NistManager::Instance()->FindOrBuildElement("N");

@@ -72,6 +72,7 @@ HistoManager::HistoManager()
     fWriteWorldEscape(false),
     fRootFile(0),
     fNtupleCrystals(0),
+    fNtupleCrystalsPE(0),
     fNtuplePMT(0),
 //    fNtuple_Flux(0),
     fNtupleOutOfWorld(0),
@@ -159,6 +160,15 @@ void HistoManager::Book()
   TString eDepLeafList = TString::Format("fEdep[%d]/D", G4Utils::getNCrystals());
   fNtupleCrystals->Branch("edep", fEdep, eDepLeafList.Data());
 
+  // Create variable length array for energy deposition
+  fPE = new G4double[G4Utils::getNCrystals()];
+
+  fNtupleCrystalsPE = new TTree("tree_crystals_pe","Number of PE in crystals");
+  // Writing arrays to tree:
+  // https://root.cern.ch/root/htmldoc/guides/users-guide/Trees.html#cb22
+  TString peLeafList = TString::Format("fPE[%d]/D", G4Utils::getNCrystals());
+  fNtupleCrystalsPE->Branch("pe", fPE, peLeafList.Data());
+
   if (fWriteStepPoints){
     // ... rudimentary Ho San's code
   }
@@ -214,6 +224,15 @@ void HistoManager::FillNtupleEnergyDep(G4double* energyDeposition){
   }
   // Save pair of particle pdg and name. Will write this to file later.
   fNtupleCrystals->Fill();
+}
+
+void HistoManager::FillNtuplePE(G4double* peNumber){
+  // Copy energy deposition values
+  for (G4int i = 0; i < G4Utils::getNCrystals(); i++){
+    fPE[i] = peNumber[i];
+  }
+  // Save pair of particle pdg and name. Will write this to file later.
+  fNtupleCrystalsPE->Fill();
 }
 
 //void HistoManager::FillNtuple()

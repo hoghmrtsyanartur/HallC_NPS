@@ -139,12 +139,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
 void DetectorConstruction::DefineMaterials()
 {
+  // NIST material database:
+  // https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/Appendix/materialNames.html
+
   G4NistManager* nist = G4NistManager::Instance();
   fVacuumMater = nist->FindOrBuildMaterial("G4_Galactic");
 
+  // fWorldMater = materials->getMaterial("Air");
+  fWorldMater = nist->FindOrBuildMaterial("G4_AIR");
+  // fWorldMater = nist->FindOrBuildMaterial("G4_Galactic");
+
+  fPMTmater = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+
   Materials* materials = Materials::getInstance();
-  fWorldMater = materials->getMaterial("Air");
-  fPMTmater = materials->getMaterial("SiO2");
+  // fPMTmater = materials->getMaterial("SiO2");
   fDetectorMater = materials->getMaterial("BaSi2O5");
   fWrapMater = materials->getMaterial("C10H8O4"); // VM2000
   fPMTcoverMater = materials->getMaterial("MuMetal");
@@ -154,22 +162,22 @@ void DetectorConstruction::DefineMaterials()
 
 G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 {
-  //optical photons properties
-  // 
+  // Generate & Add Material Properties Table
   
+  G4double OpticalPhotonWavelength[] =
+    {400., 440., 480., 520., 560., 600., 640., 680.}; // nm
   const G4int n = 8;
-  G4double OpticalPhotonWavelength[n] =
-    { 0.400, 0.440, 0.480, 0.520, 0.560, 0.600, 0.640, 0.680}; // um
 
   G4double OpticalPhotonEnergy[n] = {0.};
   for (G4int i = 0 ; i < n ; i++){
-    G4double hc = 1.23984193;
-    OpticalPhotonEnergy[i] = (hc/OpticalPhotonWavelength[i])*eV;
+    G4double hc = 1239.84193;
+    OpticalPhotonEnergy[i] = hc/OpticalPhotonWavelength[i]*eV; // E (eV) = 1239.8 / l (nm)
   }
 
   // Refractive Index of Crystal
-  G4double RefractiveIndexCrystal[n] = 
+  G4double RefractiveIndexCrystal[] =
     { 2.35, 2.30, 2.27, 2.25, 2.23, 2.21, 2.201, 2.2}; 
+  assert(sizeof(RefractiveIndexCrystal) == sizeof(OpticalPhotonWavelength));
 
   // Refractive Index of Air
   G4double RefractiveIndexAir[n] = 
@@ -189,27 +197,52 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   // Attenuation length
   G4double LAL[n] = {0.};
 
+  std::cout << std::endl << "Wavelength, nm   "
+                         << "Photon energy, eV   "
+                         << "Crystal refractive index   "
+                         << "Reflectivity   "
+                         << "Transmittance (longt)   "
+                         << "Absorption, mm" << std::endl;
   for (G4int i = 0 ; i < n ; i++){
-    R[i] = ((RefractiveIndexCrystal[i] - RefractiveIndexAir[i])*(RefractiveIndexCrystal[i] - RefractiveIndexAir[i]))/((RefractiveIndexCrystal[i] + RefractiveIndexAir[i])*(RefractiveIndexCrystal[i] + RefractiveIndexAir[i]));
-    Ts[i] = (1 - R[i])/(1 + R[i]); 
-    LAL[i] = fCrystal_Z/(log((T[i]*(1-Ts[i])*(1-Ts[i]))/(sqrt(4*Ts[i]*Ts[i]*Ts[i]*Ts[i] + T[i]*T[i]*(1-Ts[i]*Ts[i])*(1-Ts[i]*Ts[i]))-2*Ts[i]*Ts[i])));
-    G4cout << "n[i]" << RefractiveIndexCrystal[i]<<"["<<i<<"], "<<"Wavelength[i] : "<<OpticalPhotonWavelength[i]<<"["<<i<<"], "<<"R[i] : "<<R[i]<<"["<<i<<"], "<<"T[i] : "<<T[i]<<"["<<i<<"], "<<"LAL[i] : "<<LAL[i]<<"["<<i<<"]"<<G4endl;
+    // Reflectivity formula: https://en.wikipedia.org/wiki/Refractive_index#Reflectivity
+    R[i] = pow((RefractiveIndexCrystal[i] - RefractiveIndexAir[i])/(RefractiveIndexCrystal[i] + RefractiveIndexAir[i]), 2.);
+
+    // Theoretical Transmittance
+    Ts[i] = (1 - R[i])/(1 + R[i]);
+
+    // Absorption (light attenuation length)
+    // https://sci-hub.do/https://doi.org/10.1016/0168-9002(93)91185-P
+    LAL[i] = fCrystal_Z*mm/log(T[i]*pow(1-Ts[i],2)/(sqrt(4*pow(Ts[i],4) + pow(T[i],2)*pow(1-pow(Ts[i],2),2))-2*pow(Ts[i],2)));
+
+    // Print values
+    std::cout << std::setw(17) << OpticalPhotonWavelength[i]
+              << std::setw(17) << OpticalPhotonEnergy[i]/eV
+              << std::setw(27) << RefractiveIndexCrystal[i]
+              << std::setw(15) << R[i]
+              << std::setw(24) << T[i]
+              << std::setw(17) << LAL[i] << std::endl;
   }
 
   G4double ScintilFast[n] =
     {10., 25., 45., 55., 40., 35., 20., 12.};
 
   G4MaterialPropertiesTable* CrystalOP = new G4MaterialPropertiesTable();
-  CrystalOP->AddProperty("RINDEX",       OpticalPhotonEnergy, RefractiveIndexCrystal,n);
-  CrystalOP->AddProperty("ABSLENGTH",    OpticalPhotonEnergy, LAL,     n);
-  CrystalOP->AddProperty("FASTCOMPONENT",OpticalPhotonEnergy, ScintilFast,     n);
-  CrystalOP->AddProperty("SLOWCOMPONENT",OpticalPhotonEnergy, ScintilFast,     n);
+  CrystalOP->AddProperty("RINDEX",        OpticalPhotonEnergy, RefractiveIndexCrystal,n);
+  CrystalOP->AddProperty("ABSLENGTH",     OpticalPhotonEnergy, LAL, n);
+  CrystalOP->AddProperty("FASTCOMPONENT", OpticalPhotonEnergy, ScintilFast, n);
+  CrystalOP->AddProperty("SLOWCOMPONENT", OpticalPhotonEnergy, ScintilFast, n);
 
-  CrystalOP->AddConstProperty("SCINTILLATIONYIELD",0.455*0.5*3.34*15/MeV);//to make 15/MeV arrive at the PMT.
-  CrystalOP->AddConstProperty("RESOLUTIONSCALE",1.0);  
+  // Scintillation light yield - number of photons per unit energy deposition ~ 300 for PbWO4
+  // https://sci-hub.do/10.1016/j.phpro.2015.05.033
+  CrystalOP->AddConstProperty("SCINTILLATIONYIELD", 300./MeV);
+
+  // Fluctuation of mean number of optical photons produces for the step
+  CrystalOP->AddConstProperty("RESOLUTIONSCALE", 1.0);
+
+
   CrystalOP->AddConstProperty("FASTTIMECONSTANT", 13.26*ns);
   CrystalOP->AddConstProperty("SLOWTIMECONSTANT", 412.2*ns);
-  CrystalOP->AddConstProperty("YIELDRATIO",0.85);
+  CrystalOP->AddConstProperty("YIELDRATIO", 0.9);
   CrystalOP->DumpTable();
 
   fDetectorMater->SetMaterialPropertiesTable(CrystalOP);
@@ -425,7 +458,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   opWrapperSurface->SetFinish(polishedvm2000air);
   opWrapperSurface->SetModel(LUT);
 
-  new G4LogicalBorderSurface("WrapperSurface", crystalPos,fWrapPos,opWrapperSurface);
+  new G4LogicalBorderSurface("WrapperSurface", crystalPos, fWrapPos, opWrapperSurface);
   G4MaterialPropertiesTable* opWS = new G4MaterialPropertiesTable();
   opWS->DumpTable();
   opWrapperSurface->SetMaterialPropertiesTable(opWS);

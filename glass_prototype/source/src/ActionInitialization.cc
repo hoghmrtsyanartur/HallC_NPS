@@ -27,12 +27,13 @@
 /// \file ActionInitialization.cc
 /// \brief Implementation of the ActionInitialization class
 
-#include <EventAction.hh>
+#include "EventAction.hh"
+#include "OpticalEventAction.hh"
+#include "OpticalSteppingAction.hh"
 #include "ActionInitialization.hh"
 #include "RunAction.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "SteppingAction.hh"
-#include "SteppingActionOptical.hh"
 #include "HistoManager.hh"
 
 class DetectorConstruction;
@@ -85,8 +86,12 @@ void ActionInitialization::Build() const
   SteppingAction* outsideWorldSteppingAction = new SteppingAction(histoManager);
   SetUserAction(outsideWorldSteppingAction);
 
-  // Stepping action detects optical photons
-  SteppingActionOptical* opticalSteppingAction = new SteppingActionOptical(histoManager);
+  // Optical Event Action accumulates number of the charge carriers in each crystal during the event
+  OpticalEventAction* opticalEventAction = new OpticalEventAction(histoManager);
+  SetUserAction(opticalEventAction);
+
+  // Stepping action detects optical photons during the event and stores them in opticalEventAction
+  OpticalSteppingAction* opticalSteppingAction = new OpticalSteppingAction(histoManager, opticalEventAction);
   SetUserAction(opticalSteppingAction);
 }
 

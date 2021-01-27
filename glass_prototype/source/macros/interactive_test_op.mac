@@ -2,18 +2,18 @@
 /run/verbose 2
 
 # Specify the physics (TODO: try other physics)
-/testhadr/Physics QBBC
-/testhadr/Physics optical
+# /testhadr/Physics QBBC
+# /testhadr/Physics optical
 
 # Crystal size along X, Y and Z axis
 /detector/setCrystalSize 20 20 200 mm
 
 # Crystal material - currently supported values are BaGdSiO, BaSi2O5, PbWO4
-/detector/setCrystalMaterial BaGdSiO
+/detector/setCrystalMaterial PbWO4
 
 # Number of crystals in the assembly along X and Y axis
-/detector/setCrystalNumberX 3
-/detector/setCrystalNumberY 3
+/detector/setCrystalNumberX 1
+/detector/setCrystalNumberY 1
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape true
@@ -48,15 +48,15 @@
 /gps/source/intensity 1
 /gps/particle e-
 /gps/pos/type Point
-/gps/ene/mono 1 GeV
-/gps/pos/centre 0.  0. -400. mm
+/gps/ene/mono 1 MeV
+/gps/pos/centre 0.  0. -40. mm
 /gps/direction 0. 0. 1.
-/gps/source/multiplevertex true
+# /gps/source/multiplevertex true
 /gps/source/list
 
 # /vis/list
 # OpenGLStoredQt (OGLSQt, OGL, OGLS) - cannot have trajectories and mesh, legend disappears when move
-# /vis/open OGL
+/vis/open OGL
 # OpenGLImmediateQt (OGLIQt, OGLI) - cannot draw mesh after trajectories
 #/vis/open OGLIQt
 # OpenGLImmediateXm (OGLIXm, OGLIQt_FALLBACK) - separate window, freezes
@@ -64,7 +64,7 @@
 # OpenGLStoredXm (OGLSXm, OGLSQt_FALLBACK) - separate window, freezes
 #/vis/open OGLSXm
 # OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK, OGLIXm_FALLBACK) - separate window, everything works!
-/vis/open OGLIX
+#/vis/open OGLIX
 # OpenGLStoredX (OGLSX, OGLSQt_FALLBACK, OGLSXm_FALLBACK) - no trajectories with scorer
 # /vis/open OGLSX
 
@@ -77,7 +77,7 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 1
+/run/beamOn 200
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 
@@ -100,7 +100,7 @@
 # /score/drawProjection pmtsMesh eneDepPMT myColorMap
 
 # Output statistics
-/myvis/drawStats
+# /myvis/drawStats
 
 # Save scoring mesh data
 #/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
