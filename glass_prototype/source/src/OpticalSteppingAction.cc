@@ -10,6 +10,7 @@
 #include "G4VPhysicalVolume.hh"
 // #include "G4LogicalVolume.hh"
 // #include <G4StepPoint.hh>
+#include <G4RunManager.hh>
 #include "G4SystemOfUnits.hh"
 #include "QuantumEfficiency.hh"
 
@@ -53,10 +54,12 @@ void OpticalSteppingAction::UserSteppingAction(const G4Step* step) {
       G4double efficiency = qe->getEfficiency(waveLength);
 
       // Output
-      std::cout << "Track ID " << track->GetTrackID()
-                << ". OP in PMT " << copyNumber
-                << ". Vol1=" << volume1->GetName() << " Vol2=" << volume2->GetName()
-                << ". E=" << energy << " eV, wl="<< waveLength << " nm, " << "eff=" << efficiency << " %" << std::endl;
+      if (G4RunManager::GetRunManager()->GetVerboseLevel() != 0){
+        std::cout << "Track ID " << track->GetTrackID()
+                  << ". OP in PMT " << copyNumber
+                  << ". Vol1=" << volume1->GetName() << " Vol2=" << volume2->GetName()
+                  << ". E=" << energy << " eV, wl="<< waveLength << " nm, " << "eff=" << efficiency << " %" << std::endl;
+      }
 
       // Save number of photoelectrons to OpticalEventAction
       G4double peNumber = efficiency/100;

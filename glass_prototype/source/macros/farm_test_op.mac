@@ -1,0 +1,49 @@
+# Crystal size along X, Y and Z axis
+/detector/setCrystalSize 20 20 200 mm
+
+# Crystal material - currently supported values are BaGdSiO, BaSi2O5, PbWO4
+/detector/setCrystalMaterial PbWO4
+
+# Number of crystals in the assembly along X and Y axis
+/detector/setCrystalNumberX 3
+/detector/setCrystalNumberY 3
+
+/histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
+/histoManager/writeWorldEscape true
+
+/run/initialize
+
+# Incident particle type, energy and direction
+/gps/source/intensity 1
+/gps/particle e-
+/gps/pos/type Point
+/gps/ene/mono 3.5 GeV
+/gps/pos/centre 0.  0. -40. mm
+/gps/direction 0. 0. 1.
+# /gps/source/multiplevertex true
+/gps/source/list
+
+# Visualize some events for debuging 
+/vis/open OGLIX
+/vis/drawVolume
+/vis/scene/add/trajectories
+/vis/ogl/set/displayListLimit 500000
+
+# Number of events for the visualization run
+/tracking/verbose 0
+/run/beamOn 1
+
+# Center camera on the crystal and PMT assembly
+/myvis/centerViewer
+
+# Export visualization
+/vis/ogl/set/printMode pixmap
+/myvis/ogl/printEPS
+
+# Close visualization
+/vis/disable
+
+# Number of events for the energy resolution run
+/histoManager/writeWorldEscape false
+/tracking/verbose 0
+/run/beamOn 1000
