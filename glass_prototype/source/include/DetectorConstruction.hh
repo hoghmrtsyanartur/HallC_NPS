@@ -59,10 +59,11 @@ public:
 
 public:
   
+  // Mandatory virtual functions
   virtual G4VPhysicalVolume* Construct();
-    
   virtual void ConstructSDandField();
 
+  // Messenger setters and getters
   void SetDetectorGap(G4double value);
   G4double GetDetectorGap();
 
@@ -80,28 +81,39 @@ public:
  
   G4double GetPMTLength();
 
+  // Energy deposit getter
   G4VPrimitiveScorer* GetEdepScorer();
-
-//  G4TwoVector* GetMomXY();
-//
-//  G4double GetWrapThickness();
 
 private:
 
   const G4double     inch = 2.54*CLHEP::cm;
-  G4Material*          fVacuumMater;
+
+  // Materials
+  G4Material*          fWorldMater;
   G4Material*          fDetectorMater;
-  G4LogicalVolume*     fLogicDetector;
-
-  G4LogicalVolume*     fLogicCrystal; //in order to call from ConstructSDandField
-
-  G4LogicalVolume*     fLogicPMT;
-  G4LogicalVolume*     fLogicWrap;
-  G4LogicalVolume*     fLogicPMTcover;
-  G4LogicalVolume*     fLogicWrapFront;
-  G4Material*          fPMTmater;
+  G4Material*          fGreaseMater;
+  G4Material*          fPMTCaseMater;
+  G4Material*          fPMTWindowMater;
+  G4Material*          fPMTVacuumMater;
+  G4Material*          fPMTCathodeMater;
   G4Material*          fWrapMater;
   G4Material*          fPMTcoverMater;
+
+  // Physical Volumes
+  G4VPhysicalVolume*   fPhysiWorld;
+
+  // Logical Volumes
+  G4LogicalVolume*     fLogicDetector;
+  G4LogicalVolume*     fLogicCrystal; //in order to call from ConstructSDandField
+  G4LogicalVolume*     fLogicGrease;
+  G4LogicalVolume*     fLogicPMTCase;
+  G4LogicalVolume*     fLogicPMTWindow;
+  G4LogicalVolume*     fLogicPMTVacuum;
+  G4LogicalVolume*     fLogicPMTCathode;
+  G4LogicalVolume*     fLogicWrap;
+  G4LogicalVolume*     fLogicPMTcover;
+//  G4LogicalVolume*     fLogicWrapFront;
+
 
   G4double             fWorld_X;
   G4double             fWorld_Y;
@@ -123,20 +135,25 @@ private:
 
   G4double             fWrapThickness;
 
-  G4double             fPMT_radius;
-  G4double             fPMT_length;
+  G4double             fGreaseThickness;
+  G4double             fPMT_window_radius;
+  G4double             fPMT_window_thickness;
+  G4double             fPMT_case_thickness;
+  G4double             fPMT_cathode_radius;
+  G4double             fPMT_cathode_thickness;
+  G4double             fPMT_cathode_distance;
 
-  G4Material*          fWorldMater;     
-  G4VPhysicalVolume*   fPhysiWorld;
+  G4double             fPMT_length;
                 
   DetectorMessenger*   fDetectorMessenger;
   G4VPrimitiveScorer*  fEDepScorerCrystal;
 
 private:
     
-  void               DefineMaterials();
-  G4VPhysicalVolume* ConstructVolumes();     
-  void               InitVisScoringManager();
+  void DefineMaterials();
+  void ConstructVolumes();
+  void InitVisScoringManager();
+
   G4bool fCheckOverlaps;
 
 };

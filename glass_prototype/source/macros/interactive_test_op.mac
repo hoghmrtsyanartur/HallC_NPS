@@ -2,7 +2,7 @@
 /control/verbose 2
 
 # Set verbose level of the RunManager 
-/run/verbose 2
+/run/verbose 1
 
 # Specify the physics (TODO: try other physics)
 # /testhadr/Physics QBBC
@@ -80,7 +80,7 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 2000
+/run/beamOn 1
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 
@@ -108,3 +108,8 @@
 # Save scoring mesh data
 #/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
 #/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
+
+# Number of events for the energy resolution run
+/histoManager/writeWorldEscape false
+/tracking/verbose 0
+/run/beamOn 1000

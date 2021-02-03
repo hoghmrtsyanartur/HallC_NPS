@@ -79,13 +79,34 @@
 
 DetectorConstruction::DetectorConstruction()
   :G4VUserDetectorConstruction(),
-   fVacuumMater(0),
-   fDetectorMater(0), fLogicDetector(0),
+   // Materials
+   fWorldMater(0),
+   fDetectorMater(0),
+   fGreaseMater(0),
+   fPMTCaseMater(0),
+   fPMTWindowMater(0),
+   fPMTVacuumMater(0),
+   fPMTCathodeMater(0),
+   fWrapMater(0),
+   fPMTcoverMater(0),
+
+   // Physical Volumes
+   fPhysiWorld(0),
+
+   // Logical Volumes
+   fLogicDetector(0),
    fLogicCrystal(0),
-   fLogicPMT(0), fLogicWrap(0), fLogicPMTcover(0), fLogicWrapFront(0),
-   fPMTmater(0), fWrapMater(0), fPMTcoverMater(0), 
+   fLogicGrease(0),
+   fLogicPMTCase(0),
+   fLogicPMTWindow(0),
+   fLogicPMTVacuum(0),
+   fLogicPMTCathode(0),
+   fLogicWrap(0),
+   fLogicPMTcover(0),
+
    fMom_X(0), fMom_Y(0),
-   fWorldMater(0), fPhysiWorld(0), fEDepScorerCrystal(0)
+
+   fEDepScorerCrystal(0)
 {
   // Default size of crystals (can be overrided in DetectorMessenger)
   fCrystal_X = 20*mm;
@@ -103,8 +124,16 @@ DetectorConstruction::DetectorConstruction()
   fGap = 0.5*mm;
   fFrame_length = 20*mm; // ? need
 
+  // Optical grease
+  fGreaseThickness = 0.2*mm; //0.2*mm;
+
   // PMT tube dimensions
-  fPMT_radius = 18/2*mm;
+  fPMT_window_radius = 9*mm;
+  fPMT_window_thickness = 2*mm;
+  fPMT_case_thickness = 1*mm;
+  fPMT_cathode_radius = fPMT_window_radius*0.9;
+  fPMT_cathode_distance = 3*mm;
+  fPMT_cathode_thickness = 2*mm;
   fPMT_length = 88*mm;
 
   // World size - length depends on the crystal length and PMT length
@@ -112,27 +141,28 @@ DetectorConstruction::DetectorConstruction()
   fWorld_Y = fCrystal_Z + fPMT_length + 100*mm; // 4.5*m;
   fWorld_Z = 1.5*meter;   // 10*m;
 
-
-  DefineMaterials();
+  fCheckOverlaps = true;
 
   // Custom UImessenger for Detector geometry modification
   fDetectorMessenger = new DetectorMessenger(this);
+
+  // Instantiate the materials databse
+  Materials* materials = Materials::getInstance();
+  materials->setCrystalLength(fCrystal_Z);
+  DefineMaterials();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::~DetectorConstruction()
-{
+DetectorConstruction::~DetectorConstruction() {
   delete fDetectorMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4VPhysicalVolume* DetectorConstruction::Construct()
-{
-  return ConstructVolumes();
-
-  InitVisScoringManager();
+G4VPhysicalVolume* DetectorConstruction::Construct() {
+  ConstructVolumes();
+  return fPhysiWorld;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -141,125 +171,33 @@ void DetectorConstruction::DefineMaterials()
 {
   // NIST material database:
   // https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/Appendix/materialNames.html
+  fWorldMater = Materials::getInstance()->getMaterial("air");
 
-  G4NistManager* nist = G4NistManager::Instance();
-  fVacuumMater = nist->FindOrBuildMaterial("G4_Galactic");
+  fDetectorMater = Materials::getInstance()->getMaterial("BaSi2O5"); // By default
+  fWrapMater = Materials::getInstance()->getMaterial("C10H8O4"); // VM2000
 
-  // fWorldMater = materials->getMaterial("Air");
-  fWorldMater = nist->FindOrBuildMaterial("G4_AIR");
-  // fWorldMater = nist->FindOrBuildMaterial("G4_Galactic");
+  // PMT Cover
+  fPMTcoverMater = Materials::getInstance()->getMaterial("MuMetal");
 
-  fPMTmater = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+  // Optical grease
+  fGreaseMater = Materials::getInstance()->getMaterial("PDMS");
 
-  Materials* materials = Materials::getInstance();
-  // fPMTmater = materials->getMaterial("SiO2");
-  fDetectorMater = materials->getMaterial("BaSi2O5");
-  fWrapMater = materials->getMaterial("C10H8O4"); // VM2000
-  fPMTcoverMater = materials->getMaterial("MuMetal");
+  // PMT case
+  fPMTCaseMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
+
+  // PMT window
+  fPMTWindowMater = Materials::getInstance()->getMaterial("borosilicate");
+
+  // PMT window
+  fPMTVacuumMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
+
+  // PMT Bialkali photocathode - stainless stell substrate https://sci-hub.do/https://doi.org/10.1016/S0168-9002(96)00809-1
+  fPMTCathodeMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
-{
-  // Generate & Add Material Properties Table
-  
-  G4double OpticalPhotonWavelength[] =
-    {400., 440., 480., 520., 560., 600., 640., 680.}; // nm
-  const G4int n = 8;
-
-  G4double OpticalPhotonEnergy[n] = {0.};
-  for (G4int i = 0 ; i < n ; i++){
-    G4double hc = 1239.84193;
-    OpticalPhotonEnergy[i] = hc/OpticalPhotonWavelength[i]*eV; // E (eV) = 1239.8 / l (nm)
-  }
-
-  // Refractive Index of Crystal
-  G4double RefractiveIndexCrystal[] =
-    { 2.35, 2.30, 2.27, 2.25, 2.23, 2.21, 2.201, 2.2}; 
-  assert(sizeof(RefractiveIndexCrystal) == sizeof(OpticalPhotonWavelength));
-
-  // Refractive Index of Air
-  G4double RefractiveIndexAir[n] = 
-    { 1., 1., 1., 1., 1., 1., 1., 1.};
-
-  // Reflectivity. To be filled from down below
-  G4double R[n] = {0.};
-
-  // Theoretical Transmittance. To be filled from down below
-  G4double Ts[n] = {0.};
-
-  // Measured Transmittance (longitudinal I/I_0)
-  // https://sci-hub.do/https://www.sciencedirect.com/science/article/abs/pii/0168900296002860
-  G4double T[n] = 
-    { 0.33, 0.48, 0.62, 0.67, 0.68, 0.689, 0.69, 0.69};
-
-  // Attenuation length
-  G4double LAL[n] = {0.};
-
-  std::cout << std::endl << "Wavelength, nm   "
-                         << "Photon energy, eV   "
-                         << "Crystal refractive index   "
-                         << "Reflectivity   "
-                         << "Transmittance (longt)   "
-                         << "Absorption, mm" << std::endl;
-  for (G4int i = 0 ; i < n ; i++){
-    // Reflectivity formula: https://en.wikipedia.org/wiki/Refractive_index#Reflectivity
-    R[i] = pow((RefractiveIndexCrystal[i] - RefractiveIndexAir[i])/(RefractiveIndexCrystal[i] + RefractiveIndexAir[i]), 2.);
-
-    // Theoretical Transmittance
-    Ts[i] = (1 - R[i])/(1 + R[i]);
-
-    // Absorption (light attenuation length)
-    // https://sci-hub.do/https://doi.org/10.1016/0168-9002(93)91185-P
-    LAL[i] = fCrystal_Z*mm/log(T[i]*pow(1-Ts[i],2)/(sqrt(4*pow(Ts[i],4) + pow(T[i],2)*pow(1-pow(Ts[i],2),2))-2*pow(Ts[i],2)));
-
-    // Print values
-    std::cout << std::setw(17) << OpticalPhotonWavelength[i]
-              << std::setw(17) << OpticalPhotonEnergy[i]/eV
-              << std::setw(27) << RefractiveIndexCrystal[i]
-              << std::setw(15) << R[i]
-              << std::setw(24) << T[i]
-              << std::setw(17) << LAL[i] << std::endl;
-  }
-
-  G4double ScintilFast[n] =
-    {10., 25., 45., 55., 40., 35., 20., 12.};
-
-  G4MaterialPropertiesTable* CrystalOP = new G4MaterialPropertiesTable();
-  CrystalOP->AddProperty("RINDEX",        OpticalPhotonEnergy, RefractiveIndexCrystal,n);
-  CrystalOP->AddProperty("ABSLENGTH",     OpticalPhotonEnergy, LAL, n);
-  CrystalOP->AddProperty("FASTCOMPONENT", OpticalPhotonEnergy, ScintilFast, n);
-  CrystalOP->AddProperty("SLOWCOMPONENT", OpticalPhotonEnergy, ScintilFast, n);
-
-  // Scintillation light yield - number of photons per unit energy deposition ~ 300 for PbWO4
-  // https://sci-hub.do/10.1016/j.phpro.2015.05.033
-  CrystalOP->AddConstProperty("SCINTILLATIONYIELD", 300./MeV);
-
-  // Fluctuation of mean number of optical photons produces for the step
-  CrystalOP->AddConstProperty("RESOLUTIONSCALE", 1.0);
-
-
-  CrystalOP->AddConstProperty("FASTTIMECONSTANT", 13.26*ns);
-  CrystalOP->AddConstProperty("SLOWTIMECONSTANT", 412.2*ns);
-  CrystalOP->AddConstProperty("YIELDRATIO", 0.9);
-  CrystalOP->DumpTable();
-
-  fDetectorMater->SetMaterialPropertiesTable(CrystalOP);
-
-  G4double RefractiveIndexPMT[n] =
-    {1.50, 1.50, 1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
-
-  G4double AbsorptionPMT[n] =
-    { 1.*m, 1.*m, 1.*m, 1.*m, 1.*m, 1.*m, 1.*m, 1.*m};
-  
-  G4MaterialPropertiesTable* pmtOP = new G4MaterialPropertiesTable();
-  pmtOP->AddProperty("RINDEX",       OpticalPhotonEnergy, RefractiveIndexPMT,n);
-  pmtOP->AddProperty("ABSLENGTH",    OpticalPhotonEnergy, AbsorptionPMT,     n);
-  pmtOP->DumpTable();
-
-  fPMTmater->SetMaterialPropertiesTable(pmtOP);
-
+void  DetectorConstruction::ConstructVolumes() {
   // Cleanup old geometry
   G4GeometryManager::GetInstance()->OpenGeometry();
   G4PhysicalVolumeStore::GetInstance()->Clean();
@@ -267,7 +205,6 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   G4SolidStore::GetInstance()->Clean();
   
   // START DEFINING THE GEOMETRY
-  fCheckOverlaps = true; // activate checking overlaps
 
   // GEOMETRY: World volume
   G4Box* sWorld = new G4Box("World_sol",0.5*fWorld_X, 0.5*fWorld_Y, 0.5*fWorld_Z); //its size
@@ -287,7 +224,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   // Refer to picture
   G4double single_X = fCrystal_X + 2*fWrapThickness + fGap;
   G4double single_Y = fCrystal_Y + 2*fWrapThickness + fGap;
-  G4double single_Z = fWrapThickness + fCrystal_Z + fPMT_length;
+  G4double single_Z = fWrapThickness + fCrystal_Z + fGreaseThickness + fPMT_length;
 
   fMom_X = fCrystalNumX*single_X;  // Petr Stepanov: added variable crystal number
   fMom_Y = fCrystalNumY*single_Y;  // Petr Stepanov: added variable crystal number
@@ -360,7 +297,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                       fDetectorMater, // its material
                                       "Crystal_log"); // its name
   // Float crystals to the face of the Single container
-  G4double crystal_pos_Z = -(0.5*single_Z - 0.5*fCrystal_Z - fWrapThickness);
+  G4double crystal_pos_Z = -0.5*single_Z + 0.5*fCrystal_Z + fWrapThickness;
   G4VPhysicalVolume* crystalPos = new G4PVPlacement(0,   //no rotation
                                                     G4ThreeVector(0, 0, crystal_pos_Z), // translation
                                                     fLogicCrystal,           // its logical volume
@@ -390,22 +327,80 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                 fCheckOverlaps);
 
   // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT
-  G4Tubs* sPMT = new G4Tubs("PMT_sol", 0, fPMT_radius, fPMT_length/2, 0, twopi);
+  G4Tubs* sPMTCase = new G4Tubs("PMT_sol", 0, fPMT_window_radius + fPMT_case_thickness, fPMT_length/2, 0, twopi);
 
-  fLogicPMT = new G4LogicalVolume(sPMT, fPMTmater, "PMT_log");
-  G4double PMT_pos_Z = 0.5*single_Z - 0.5*fPMT_length;
-  G4VPhysicalVolume* fPMTpos = new G4PVPlacement(0,
+  fLogicPMTCase = new G4LogicalVolume(sPMTCase, fPMTCaseMater, "PMT_log");
+  G4double PMT_pos_Z = 0.5*single_Z - 0.5*fPMT_length; // Float PMTs to far end
+  /* G4VPhysicalVolume* fPMTpos = */ new G4PVPlacement(0,
                                              G4ThreeVector(0, 0, PMT_pos_Z),
-                                             fLogicPMT,
+                                             fLogicPMTCase,
                                              "PMT_pos",
                                              lSingle,
                                              false,
                                              0,
                                              fCheckOverlaps);
 
+
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> Optical grease
+  if (fGreaseThickness > 0){
+    G4Tubs* greaseSolid = new G4Tubs("greaseSolid", 0, fPMT_window_radius + fPMT_case_thickness, fGreaseThickness/2, 0, twopi);
+
+    fLogicGrease = new G4LogicalVolume(greaseSolid, fGreaseMater, "greaseLog");
+    G4double greasePosZ = 0.5*single_Z - 0.5*fGreaseThickness - fPMT_length;
+    /* G4VPhysicalVolume* greasePos = */ new G4PVPlacement(0,
+                                  G4ThreeVector(0, 0, greasePosZ),
+                                  fLogicGrease,
+                                  "greasePhys",
+                                  lSingle,
+                                  false,
+                                  0,
+                                  fCheckOverlaps);
+  }
+
+
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Window
+  G4Tubs* pmtWindowSolid = new G4Tubs("pmtWindowSolid", 0, fPMT_window_radius, fPMT_window_thickness/2, 0, twopi);
+  fLogicPMTWindow = new G4LogicalVolume(pmtWindowSolid, fPMTWindowMater, "pmtWindowLog");
+  G4double pmtWindowPosZ = - 0.5*fPMT_length + fPMT_window_thickness/2;
+  /* G4VPhysicalVolume* fPMTWindowPos = */ new G4PVPlacement(0,
+                                                       G4ThreeVector(0, 0, pmtWindowPosZ),
+                                                       fLogicPMTWindow,
+                                                       "pmtWindowPhys",
+                                                       fLogicPMTCase,
+                                                       false,
+                                                       0,
+                                                       fCheckOverlaps);
+
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Vacuum
+  G4double pmtVacuumLength = fPMT_length - fPMT_window_thickness - fPMT_case_thickness;
+  G4Tubs* pmtVacuumSolid = new G4Tubs("pmtVacuumSolid", 0, fPMT_window_radius, pmtVacuumLength/2, 0, twopi);
+  fLogicPMTVacuum = new G4LogicalVolume(pmtVacuumSolid, fPMTVacuumMater, "pmtVacuumLog");
+  G4double pmtVacuumPosZ = - fPMT_length/2 + pmtVacuumLength/2 + fPMT_window_thickness;
+  /* G4VPhysicalVolume* fPMTVacuumPos = */ new G4PVPlacement(0,
+                                                       G4ThreeVector(0, 0, pmtVacuumPosZ),
+                                                       fLogicPMTVacuum,
+                                                       "pmtVacuumPhys",
+                                                       fLogicPMTCase,
+                                                       false,
+                                                       0,
+                                                       fCheckOverlaps);
+
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Vacuum -> Photocathode
+  G4Tubs* pmtCathodeSolid = new G4Tubs("pmtCathodeSolid", 0, fPMT_cathode_radius, fPMT_cathode_thickness/2, 0, twopi);
+  fLogicPMTCathode = new G4LogicalVolume(pmtCathodeSolid, fPMTCathodeMater, "pmtCathodeLog");
+  G4double pmtCathodePosZ = - pmtVacuumLength/2 + fPMT_cathode_thickness/2 + fPMT_cathode_distance;
+  /* G4VPhysicalVolume* fPMTCathodePos = */ new G4PVPlacement(0,
+                                                       G4ThreeVector(0, 0, pmtCathodePosZ),
+                                                       fLogicPMTCathode,
+                                                       "pmtCathodePhys",
+                                                       fLogicPMTVacuum,
+                                                       false,
+                                                       0,
+                                                       fCheckOverlaps);
+
   // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT Cover
   G4Box* sPMTcoverOuter = new G4Box("PMTcover_outer", 0.5*(single_X), 0.5*(single_Y), 0.5*(fPMT_length));
-  G4Tubs* sPMTcoverInner = new G4Tubs("PMTcover_inner", 0, fPMT_radius, fPMT_length/2 + 1, 0, twopi); // + 1 just in case for better subtraction
+  G4Tubs* sPMTcoverInner = new G4Tubs("PMTcover_inner", 0, fPMT_window_radius + fPMT_case_thickness, fPMT_length/2 + 1, 0, twopi); // + 1 just in case for better subtraction
 
   G4RotationMatrix* coverRot = new G4RotationMatrix();
   G4ThreeVector coverTrans(0, 0, 0);
@@ -413,7 +408,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 
   fLogicPMTcover = new G4LogicalVolume(sPMTcover, fPMTcoverMater, "PMTcover_log");
 
-  G4VPhysicalVolume* fPMTcoverPos = new G4PVPlacement(0,
+  /* G4VPhysicalVolume* fPMTcoverPos = */ new G4PVPlacement(0,
                                                       G4ThreeVector(0, 0, PMT_pos_Z),
                                                       fLogicPMTcover,
                                                       "PMTcover_pos",
@@ -450,9 +445,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
         fCheckOverlaps);
 */
 
-  //
-  //opticalsurface
-  //
+  // Optical Surface for Crystal and Wrap
+
   G4OpticalSurface* opWrapperSurface = new G4OpticalSurface("WrapperSurface");
   opWrapperSurface->SetType(dielectric_LUT);
   opWrapperSurface->SetFinish(polishedvm2000air);
@@ -463,6 +457,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   opWS->DumpTable();
   opWrapperSurface->SetMaterialPropertiesTable(opWS);
 
+  // Optical Surface for Crystal and Grease
+
 //  G4OpticalSurface* opWrapperFrontSurface = new G4OpticalSurface("WrapperFrontSurface");
 //  opWrapperFrontSurface->SetType(dielectric_LUT);
 //  opWrapperFrontSurface->SetFinish(polishedvm2000air);
@@ -472,29 +468,29 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 //  opWFS->DumpTable();
 //  opWrapperFrontSurface->SetMaterialPropertiesTable(opWFS);
 
-  G4OpticalSurface* opPMTSurface = new G4OpticalSurface("PMTSurface");
-  opPMTSurface->SetType(dielectric_dielectric);
-  opPMTSurface->SetFinish(polished);
-  opPMTSurface->SetModel(unified);
-  new G4LogicalBorderSurface("PMTSurface", crystalPos,fPMTpos,opPMTSurface);
-  G4MaterialPropertiesTable* opPS = new G4MaterialPropertiesTable();
-  opPS->DumpTable();
-  opPMTSurface->SetMaterialPropertiesTable(opPS);
+//  G4OpticalSurface* opPMTSurface = new G4OpticalSurface("PMTSurface");
+//  opPMTSurface->SetType(dielectric_dielectric);
+//  opPMTSurface->SetFinish(polished);
+//  opPMTSurface->SetModel(unified);
+//  new G4LogicalBorderSurface("PMTSurface", crystalPos,fPMTpos,opPMTSurface);
+//  G4MaterialPropertiesTable* opPS = new G4MaterialPropertiesTable();
+//  opPS->DumpTable();
+//  opPMTSurface->SetMaterialPropertiesTable(opPS);
 
-  G4OpticalSurface* opPMTcoverSurface = new G4OpticalSurface("PMTcoverSurface");
-  opPMTcoverSurface->SetType(dielectric_metal);
-  opPMTcoverSurface->SetFinish(polished);
-  opPMTcoverSurface->SetModel(unified);
-  const  G4int nEntriesPMTcover = 2;
-  G4double PhotonEnergyPMTcover[nEntriesPMTcover] = { 2.30*eV, 3.26*eV}; 
-  G4double reflectivityPMTcover[nEntriesPMTcover] = {0., 0.};
-  G4double efficiencyPMTcover[nEntriesPMTcover] = {1., 1.};
-  new G4LogicalBorderSurface("PMTcoverSurface", fPMTpos,fPMTcoverPos,opPMTcoverSurface);
-  G4MaterialPropertiesTable* opPcS = new G4MaterialPropertiesTable();
-  opPcS -> AddProperty("REFLECTIVITY",PhotonEnergyPMTcover,reflectivityPMTcover,nEntriesPMTcover);
-  opPcS -> AddProperty("EFFICIENCY",PhotonEnergyPMTcover,efficiencyPMTcover,nEntriesPMTcover);  
-  opPcS->DumpTable();
-  opPMTcoverSurface->SetMaterialPropertiesTable(opPcS);
+//  G4OpticalSurface* opPMTcoverSurface = new G4OpticalSurface("PMTcoverSurface");
+//  opPMTcoverSurface->SetType(dielectric_metal);
+//  opPMTcoverSurface->SetFinish(polished);
+//  opPMTcoverSurface->SetModel(unified);
+//  const  G4int nEntriesPMTcover = 2;
+//  G4double PhotonEnergyPMTcover[nEntriesPMTcover] = { 2.30*eV, 3.26*eV};
+//  G4double reflectivityPMTcover[nEntriesPMTcover] = {0., 0.};
+//  G4double efficiencyPMTcover[nEntriesPMTcover] = {1., 1.};
+//  new G4LogicalBorderSurface("PMTcoverSurface", fPMTpos,fPMTcoverPos,opPMTcoverSurface);
+//  G4MaterialPropertiesTable* opPcS = new G4MaterialPropertiesTable();
+//  opPcS -> AddProperty("REFLECTIVITY",PhotonEnergyPMTcover,reflectivityPMTcover,nEntriesPMTcover);
+//  opPcS -> AddProperty("EFFICIENCY",PhotonEnergyPMTcover,efficiencyPMTcover,nEntriesPMTcover);
+//  opPcS->DumpTable();
+//  opPMTcoverSurface->SetMaterialPropertiesTable(opPcS);
 
   // COLORS
   G4VisAttributes* invisible = new G4VisAttributes(false);
@@ -503,23 +499,17 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   lTemp->SetVisAttributes(invisible);
   lSingle->SetVisAttributes(invisible);
 
-  G4VisAttributes* CrystalVisAtt = new G4VisAttributes(G4Colour::Cyan());
-  fLogicCrystal->SetVisAttributes(CrystalVisAtt);
+  fLogicCrystal->SetVisAttributes(new G4VisAttributes(G4Colour::Cyan()));
 
-  G4VisAttributes* WrapVisAtt = new G4VisAttributes(G4Colour::White());
-  fLogicWrap->SetVisAttributes(WrapVisAtt);
+  fLogicWrap->SetVisAttributes(new G4VisAttributes(G4Colour::White()));
 
-  G4VisAttributes* PMTVisAtt = new G4VisAttributes(G4Colour::Blue());
-  fLogicPMT->SetVisAttributes(PMTVisAtt);
+  fLogicPMTCase->SetVisAttributes(new G4VisAttributes(G4Colour::Brown()));
+  fLogicPMTWindow->SetVisAttributes(new G4VisAttributes(G4Colour::Yellow()));
+  fLogicPMTVacuum->SetVisAttributes(new G4VisAttributes(G4Colour::White()));
+  fLogicPMTCathode->SetVisAttributes(new G4VisAttributes(G4Colour::Magenta()));
 
-  G4VisAttributes* PMTcoverVisAtt = new G4VisAttributes(G4Colour::Green());
+  G4VisAttributes* PMTcoverVisAtt = new G4VisAttributes(G4Colour::Gray());
   fLogicPMTcover->SetVisAttributes(PMTcoverVisAtt);
-
-  // Initialize the scoring mesh for visualization
-  InitVisScoringManager();
-
-  //always return the root volume
-  return fPhysiWorld;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -550,6 +540,9 @@ void DetectorConstruction::ConstructSDandField()
   detectorCrystal->RegisterPrimitive(fEDepScorerCrystal);
   fLogicCrystal->SetSensitiveDetector(detectorCrystal);
   G4SDManager::GetSDMpointer()->AddNewDetector(detectorCrystal);
+
+  // Scoring mesh for energy deposition visualization
+  InitVisScoringManager();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -570,9 +563,15 @@ G4double DetectorConstruction::GetDetectorGap(){
 void DetectorConstruction::SetCrystalSize(G4ThreeVector vector){
   fCrystal_X = vector.getX();
   fCrystal_Y = vector.getY();
-  fCrystal_Z = vector.getZ();
+  if (vector.z() != fCrystal_Z){
+    fCrystal_Z = vector.getZ();
+    Materials::getInstance()->setCrystalLength(fCrystal_Z);
+    DefineMaterials();
+  }
   std::cout << "DetectorConstruction::SetCrystalSize()" << std::endl;
   std::cout << "- setting crystal size to " << vector.getX() << "x" << vector.getY() << "x" << vector.getZ() << std::endl;
+
+  // TODO: check if Materials were re-initialized with correct crystal length!
   G4RunManager::GetRunManager()->ReinitializeGeometry(true);
 }
 
@@ -585,8 +584,7 @@ G4ThreeVector* DetectorConstruction::GetCrystalSize(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::SetCrystalMaterial(const char* material){
-  Materials* materials = Materials::getInstance();
-  fDetectorMater = materials->getMaterial(material);
+  fDetectorMater = Materials::getInstance()->getMaterial(material);
   // Do we need that?
   // G4RunManager::GetRunManager()->ReinitializeGeometry(true);
 }
@@ -601,6 +599,8 @@ void DetectorConstruction::SetCrystalNumberX(G4int num){
   fCrystalNumX = num;
   G4cout << "DetectorConstruction::SetCrystalNumberX()" << G4endl;
   G4cout << "- setting crystal number along X axis to " << num << G4endl;
+
+  // TODO: check if geometry is reinitialized
   G4RunManager::GetRunManager()->ReinitializeGeometry(true);
 }
 
