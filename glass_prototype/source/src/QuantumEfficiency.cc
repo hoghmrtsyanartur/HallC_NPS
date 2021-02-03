@@ -11,6 +11,8 @@
 QuantumEfficiency::QuantumEfficiency(PhotoCathode photoCatode) {
   if (photoCatode == PhotoCathode::Bialkali){
     currentPoints.assign(pointsBialkali.begin(), pointsBialkali.end());
+  } else if (photoCatode == PhotoCathode::MPPC75){
+    currentPoints.assign(pointsMPPC75.begin(), pointsMPPC75.end());
   }
 }
 
@@ -19,9 +21,10 @@ QuantumEfficiency::~QuantumEfficiency() {
 }
 
 G4double QuantumEfficiency::getEfficiency(G4double wavelength){
-  if (wavelength < pointsBialkali[0]) return 0;
-  if (wavelength >= pointsBialkali[pointsBialkali.size()-2]) return 0;
+  if (wavelength < currentPoints[0]) return 0;
+  if (wavelength >= currentPoints[currentPoints.size()-2]) return 0;
 
+  // Return average value between most closest left and right points in the array
   for (G4int i = 0; i <= (G4int)currentPoints.size()-4; i+=2){
     if (wavelength >= currentPoints[i] && wavelength < currentPoints[i+2]){
       G4double dLeft = wavelength - currentPoints[i];

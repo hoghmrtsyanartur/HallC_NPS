@@ -18,6 +18,9 @@
 /detector/setCrystalNumberX 1
 /detector/setCrystalNumberY 1
 
+# Detector type
+/detector/setDetectorType MPPC
+
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape false
 

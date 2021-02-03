@@ -89,6 +89,8 @@ DetectorConstruction::DetectorConstruction()
    fPMTCathodeMater(0),
    fWrapMater(0),
    fPMTcoverMater(0),
+   fMPPCMater(0),
+   fMPPCCaseMater(0),
 
    // Physical Volumes
    fPhysiWorld(0),
@@ -103,6 +105,8 @@ DetectorConstruction::DetectorConstruction()
    fLogicPMTCathode(0),
    fLogicWrap(0),
    fLogicPMTcover(0),
+   fLogicMPPC(0),
+   fLogicMPPCCase(0),
 
    fMom_X(0), fMom_Y(0),
 
@@ -136,12 +140,19 @@ DetectorConstruction::DetectorConstruction()
   fPMT_cathode_thickness = 2*mm;
   fPMT_length = 88*mm;
 
+  // MPPC dimensions
+  fMPPC_size = 6*mm;
+  fMPPC_case_thickness = 2*mm;
+
   // World size - length depends on the crystal length and PMT length
   fWorld_X = 0.75*meter; // 4.5*m;
   fWorld_Y = fCrystal_Z + fPMT_length + 100*mm; // 4.5*m;
   fWorld_Z = 1.5*meter;   // 10*m;
 
   fCheckOverlaps = true;
+
+  // Default detector type:
+  detectorType = DetectorType::PMT;
 
   // Custom UImessenger for Detector geometry modification
   fDetectorMessenger = new DetectorMessenger(this);
@@ -193,6 +204,10 @@ void DetectorConstruction::DefineMaterials()
 
   // PMT Bialkali photocathode - stainless stell substrate https://sci-hub.do/https://doi.org/10.1016/S0168-9002(96)00809-1
   fPMTCathodeMater = Materials::getInstance()->getMaterial("vacuum"); // G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
+
+  // MPPC material
+  fMPPCMater = Materials::getInstance()->getMaterial("vacuum");
+  fMPPCCaseMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -325,21 +340,6 @@ void  DetectorConstruction::ConstructVolumes() {
                 0,
                 fCheckOverlaps);
 
-  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT
-  G4Tubs* sPMTCase = new G4Tubs("PMT_sol", 0, fPMT_window_radius + fPMT_case_thickness, fPMT_length/2, 0, twopi);
-
-  fLogicPMTCase = new G4LogicalVolume(sPMTCase, fPMTCaseMater, "PMT_log");
-  G4double PMT_pos_Z = 0.5*single_Z - 0.5*fPMT_length; // Float PMTs to far end
-  /* G4VPhysicalVolume* fPMTpos = */ new G4PVPlacement(0,
-                                             G4ThreeVector(0, 0, PMT_pos_Z),
-                                             fLogicPMTCase,
-                                             "PMT_pos",
-                                             lSingle,
-                                             false,
-                                             0,
-                                             fCheckOverlaps);
-
-
   // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> Optical grease
   if (fGreaseThickness > 0){
     G4Tubs* greaseSolid = new G4Tubs("greaseSolid", 0, fPMT_window_radius + fPMT_case_thickness, fGreaseThickness/2, 0, twopi);
@@ -356,66 +356,106 @@ void  DetectorConstruction::ConstructVolumes() {
                                   fCheckOverlaps);
   }
 
+  if (detectorType == DetectorType::PMT){
 
-  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Window
-  G4Tubs* pmtWindowSolid = new G4Tubs("pmtWindowSolid", 0, fPMT_window_radius, fPMT_window_thickness/2, 0, twopi);
-  fLogicPMTWindow = new G4LogicalVolume(pmtWindowSolid, fPMTWindowMater, "pmtWindowLog");
-  G4double pmtWindowPosZ = - 0.5*fPMT_length + fPMT_window_thickness/2;
-  /* G4VPhysicalVolume* fPMTWindowPos = */ new G4PVPlacement(0,
-                                                       G4ThreeVector(0, 0, pmtWindowPosZ),
-                                                       fLogicPMTWindow,
-                                                       "pmtWindowPhys",
-                                                       fLogicPMTCase,
-                                                       false,
-                                                       0,
-                                                       fCheckOverlaps);
+    // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT
+    G4Tubs* sPMTCase = new G4Tubs("PMT_sol", 0, fPMT_window_radius + fPMT_case_thickness, fPMT_length/2, 0, twopi);
 
-  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Vacuum
-  G4double pmtVacuumLength = fPMT_length - fPMT_window_thickness - fPMT_case_thickness;
-  G4Tubs* pmtVacuumSolid = new G4Tubs("pmtVacuumSolid", 0, fPMT_window_radius, pmtVacuumLength/2, 0, twopi);
-  fLogicPMTVacuum = new G4LogicalVolume(pmtVacuumSolid, fPMTVacuumMater, "pmtVacuumLog");
-  G4double pmtVacuumPosZ = - fPMT_length/2 + pmtVacuumLength/2 + fPMT_window_thickness;
-  /* G4VPhysicalVolume* fPMTVacuumPos = */ new G4PVPlacement(0,
-                                                       G4ThreeVector(0, 0, pmtVacuumPosZ),
-                                                       fLogicPMTVacuum,
-                                                       "pmtVacuumPhys",
-                                                       fLogicPMTCase,
-                                                       false,
-                                                       0,
-                                                       fCheckOverlaps);
+    fLogicPMTCase = new G4LogicalVolume(sPMTCase, fPMTCaseMater, "PMT_log");
+    G4double PMT_pos_Z = 0.5*single_Z - 0.5*fPMT_length; // Float PMTs to far end
+    /* G4VPhysicalVolume* fPMTpos = */ new G4PVPlacement(0,
+                                               G4ThreeVector(0, 0, PMT_pos_Z),
+                                               fLogicPMTCase,
+                                               "PMT_pos",
+                                               lSingle,
+                                               false,
+                                               0,
+                                               fCheckOverlaps);
 
-  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Vacuum -> Photocathode
-  G4Tubs* pmtCathodeSolid = new G4Tubs("pmtCathodeSolid", 0, fPMT_cathode_radius, fPMT_cathode_thickness/2, 0, twopi);
-  fLogicPMTCathode = new G4LogicalVolume(pmtCathodeSolid, fPMTCathodeMater, "pmtCathodeLog");
-  G4double pmtCathodePosZ = - pmtVacuumLength/2 + fPMT_cathode_thickness/2 + fPMT_cathode_distance;
-  /* G4VPhysicalVolume* fPMTCathodePos = */ new G4PVPlacement(0,
-                                                       G4ThreeVector(0, 0, pmtCathodePosZ),
-                                                       fLogicPMTCathode,
-                                                       "pmtCathodePhys",
-                                                       fLogicPMTVacuum,
-                                                       false,
-                                                       0,
-                                                       fCheckOverlaps);
+    // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Window
+    G4Tubs* pmtWindowSolid = new G4Tubs("pmtWindowSolid", 0, fPMT_window_radius, fPMT_window_thickness/2, 0, twopi);
+    fLogicPMTWindow = new G4LogicalVolume(pmtWindowSolid, fPMTWindowMater, "pmtWindowLog");
+    G4double pmtWindowPosZ = - 0.5*fPMT_length + fPMT_window_thickness/2;
+    /* G4VPhysicalVolume* fPMTWindowPos = */ new G4PVPlacement(0,
+                                                         G4ThreeVector(0, 0, pmtWindowPosZ),
+                                                         fLogicPMTWindow,
+                                                         "pmtWindowPhys",
+                                                         fLogicPMTCase,
+                                                         false,
+                                                         0,
+                                                         fCheckOverlaps);
 
-  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT Cover
-  G4Box* sPMTcoverOuter = new G4Box("PMTcover_outer", 0.5*(single_X), 0.5*(single_Y), 0.5*(fPMT_length));
-  G4Tubs* sPMTcoverInner = new G4Tubs("PMTcover_inner", 0, fPMT_window_radius + fPMT_case_thickness, fPMT_length/2 + 1, 0, twopi); // + 1 just in case for better subtraction
+    // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Vacuum
+    G4double pmtVacuumLength = fPMT_length - fPMT_window_thickness - fPMT_case_thickness;
+    G4Tubs* pmtVacuumSolid = new G4Tubs("pmtVacuumSolid", 0, fPMT_window_radius, pmtVacuumLength/2, 0, twopi);
+    fLogicPMTVacuum = new G4LogicalVolume(pmtVacuumSolid, fPMTVacuumMater, "pmtVacuumLog");
+    G4double pmtVacuumPosZ = - fPMT_length/2 + pmtVacuumLength/2 + fPMT_window_thickness;
+    /* G4VPhysicalVolume* fPMTVacuumPos = */ new G4PVPlacement(0,
+                                                         G4ThreeVector(0, 0, pmtVacuumPosZ),
+                                                         fLogicPMTVacuum,
+                                                         "pmtVacuumPhys",
+                                                         fLogicPMTCase,
+                                                         false,
+                                                         0,
+                                                         fCheckOverlaps);
 
-  G4RotationMatrix* coverRot = new G4RotationMatrix();
-  G4ThreeVector coverTrans(0, 0, 0);
-  G4SubtractionSolid* sPMTcover = new G4SubtractionSolid("PMTcover_sol", sPMTcoverOuter, sPMTcoverInner, coverRot, coverTrans);
+    // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Vacuum -> Photocathode
+    G4Tubs* pmtCathodeSolid = new G4Tubs("pmtCathodeSolid", 0, fPMT_cathode_radius, fPMT_cathode_thickness/2, 0, twopi);
+    fLogicPMTCathode = new G4LogicalVolume(pmtCathodeSolid, fPMTCathodeMater, "pmtCathodeLog");
+    G4double pmtCathodePosZ = - pmtVacuumLength/2 + fPMT_cathode_thickness/2 + fPMT_cathode_distance;
+    /* G4VPhysicalVolume* fPMTCathodePos = */ new G4PVPlacement(0,
+                                                         G4ThreeVector(0, 0, pmtCathodePosZ),
+                                                         fLogicPMTCathode,
+                                                         "pmtCathodePhys",
+                                                         fLogicPMTVacuum,
+                                                         false,
+                                                         0,
+                                                         fCheckOverlaps);
 
-  fLogicPMTcover = new G4LogicalVolume(sPMTcover, fPMTcoverMater, "PMTcover_log");
+    // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT Cover
+    G4Box* sPMTcoverOuter = new G4Box("PMTcover_outer", 0.5*(single_X), 0.5*(single_Y), 0.5*(fPMT_length));
+    G4Tubs* sPMTcoverInner = new G4Tubs("PMTcover_inner", 0, fPMT_window_radius + fPMT_case_thickness, fPMT_length/2 + 1, 0, twopi); // + 1 just in case for better subtraction
 
-  /* G4VPhysicalVolume* fPMTcoverPos = */ new G4PVPlacement(0,
-                                                      G4ThreeVector(0, 0, PMT_pos_Z),
-                                                      fLogicPMTcover,
-                                                      "PMTcover_pos",
-                                                      lSingle,
-                                                      false,
-                                                      0,
-                                                      fCheckOverlaps);
+    G4RotationMatrix* coverRot = new G4RotationMatrix();
+    G4ThreeVector coverTrans(0, 0, 0);
+    G4SubtractionSolid* sPMTcover = new G4SubtractionSolid("PMTcover_sol", sPMTcoverOuter, sPMTcoverInner, coverRot, coverTrans);
 
+    fLogicPMTcover = new G4LogicalVolume(sPMTcover, fPMTcoverMater, "PMTcover_log");
+
+    /* G4VPhysicalVolume* fPMTcoverPos = */ new G4PVPlacement(0,
+                                                        G4ThreeVector(0, 0, PMT_pos_Z),
+                                                        fLogicPMTcover,
+                                                        "PMTcover_pos",
+                                                        lSingle,
+                                                        false,
+                                                        0,
+                                                        fCheckOverlaps);
+  }
+  else if (detectorType == DetectorType::MPPC){
+    G4Box* mppcCaseSolid = new G4Box("MPPCCase_sol", 0.5*(fMPPC_size + fMPPC_case_thickness*2), 0.5*(fMPPC_size + fMPPC_case_thickness*2), 0.5*(fMPPC_size + fMPPC_case_thickness));
+    fLogicMPPCCase = new G4LogicalVolume(mppcCaseSolid, fMPPCCaseMater, "mppcCaseLog");
+    G4double mppcCasePosZ = 0.5*single_Z + 0.5*(fMPPC_size + fMPPC_case_thickness) - fPMT_length;
+    /* G4VPhysicalVolume* fMPPCPos = */ new G4PVPlacement(0,
+                                                         G4ThreeVector(0, 0, mppcCasePosZ),
+                                                         fLogicMPPCCase,
+                                                         "mppcCasePhys",
+                                                         lSingle,
+                                                         false,
+                                                         0,
+                                                         fCheckOverlaps);
+
+    G4Box* mppcSolid = new G4Box("MPPC_sol", 0.5*fMPPC_size, 0.5*fMPPC_size, 0.5*fMPPC_size);
+    fLogicMPPC = new G4LogicalVolume(mppcSolid, fMPPCMater, "mppcLog");
+    G4double mppcPosZ = -fMPPC_case_thickness/2;
+    /* G4VPhysicalVolume* fMPPCPos = */ new G4PVPlacement(0,
+                                                         G4ThreeVector(0, 0, mppcPosZ),
+                                                         fLogicMPPC,
+                                                         "mppcPhys",
+                                                         fLogicMPPCCase,
+                                                         false,
+                                                         0,
+                                                         fCheckOverlaps);
+  }
 /*
   G4Box* sFrame_outer = new G4Box("Frame_outer_sol", 0.5*single_X, 0.5*single_Y, 0.5*fFrame_length);
   G4Box* sFrame_inner = new G4Box("Frame_inner_sol", 0.5*(single_X - fGap), 0.5*(single_Y - fGap), 0.5*fFrame_length);
@@ -502,13 +542,14 @@ void  DetectorConstruction::ConstructVolumes() {
 
   fLogicWrap->SetVisAttributes(new G4VisAttributes(G4Colour::White()));
 
-  fLogicPMTCase->SetVisAttributes(new G4VisAttributes(G4Colour::Brown()));
-  fLogicPMTWindow->SetVisAttributes(new G4VisAttributes(G4Colour::Yellow()));
-  fLogicPMTVacuum->SetVisAttributes(new G4VisAttributes(G4Colour::White()));
-  fLogicPMTCathode->SetVisAttributes(new G4VisAttributes(G4Colour::Magenta()));
+  if (fLogicPMTCase) fLogicPMTCase->SetVisAttributes(new G4VisAttributes(G4Colour::Brown()));
+  if (fLogicPMTWindow) fLogicPMTWindow->SetVisAttributes(new G4VisAttributes(G4Colour::Yellow()));
+  if (fLogicPMTVacuum) fLogicPMTVacuum->SetVisAttributes(new G4VisAttributes(G4Colour::White()));
+  if (fLogicPMTCathode) fLogicPMTCathode->SetVisAttributes(new G4VisAttributes(G4Colour::Magenta()));
+  if (fLogicPMTcover) fLogicPMTcover->SetVisAttributes(new G4VisAttributes(G4Colour::Gray()));
 
-  G4VisAttributes* PMTcoverVisAtt = new G4VisAttributes(G4Colour::Gray());
-  fLogicPMTcover->SetVisAttributes(PMTcoverVisAtt);
+  if (fLogicMPPC) fLogicMPPC->SetVisAttributes(new G4VisAttributes(G4Colour::Magenta()));
+  if (fLogicMPPCCase) fLogicMPPCCase->SetVisAttributes(new G4VisAttributes(G4Colour::Brown()));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -718,4 +759,23 @@ void DetectorConstruction::InitVisScoringManager(){
 
 G4double DetectorConstruction::GetPMTLength() {
   return fPMT_length;
+}
+
+void DetectorConstruction::SetDetectorType(G4String dType) {
+  if (dType == "PMT"){
+    detectorType = DetectorType::PMT;
+  }
+  else if (dType == "MPPC"){
+    detectorType = DetectorType::MPPC;
+  }
+}
+
+G4String DetectorConstruction::GetDetectorType() {
+  if (detectorType == DetectorType::PMT){
+    return "PMT";
+  }
+  else if (detectorType == DetectorType::MPPC){
+    return "MPPC";
+  }
+  return "";
 }

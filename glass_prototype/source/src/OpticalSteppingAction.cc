@@ -36,7 +36,7 @@ void OpticalSteppingAction::UserSteppingAction(const G4Step* step) {
   // if (!volume2) return;
 
   // Ensure particle is inside PMT (provide physical volume name)
-  if (volume1->GetName() != "pmtCathodePhys") return;
+  if (volume1->GetName() != "pmtCathodePhys" || volume1->GetName() != "mppcPhys") return;
 
   // std::cout << volume1->GetName() << " " << volume2->GetName() << std::endl;
 
@@ -49,10 +49,12 @@ void OpticalSteppingAction::UserSteppingAction(const G4Step* step) {
   G4double waveLength = hc/(energy); // in nm
 
   // Crystal copy number
-  G4int copyNumber = touch1->GetCopyNumber(3);
+  G4int depth = (volume1->GetName() == "pmtCathodePhys") ? 3 : 2;
+  G4int copyNumber = touch1->GetCopyNumber(depth);
 
   // Quantum efficiency
-  QuantumEfficiency* qe = new QuantumEfficiency(PhotoCathode::Bialkali);
+  PhotoCathode phC = (volume1->GetName() == "pmtCathodePhys") ? PhotoCathode::Bialkali : PhotoCathode::MPPC75;
+  QuantumEfficiency* qe = new QuantumEfficiency(phC);
   G4double efficiency = qe->getEfficiency(waveLength); //  in percent
 
   // Output

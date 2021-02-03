@@ -51,6 +51,11 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+enum class DetectorType {
+  PMT,
+  MPPC
+};
+
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
 public:
@@ -81,6 +86,9 @@ public:
  
   G4double GetPMTLength();
 
+  void SetDetectorType(G4String type);
+  G4String GetDetectorType();
+
   // Energy deposit getter
   G4VPrimitiveScorer* GetEdepScorer();
 
@@ -98,6 +106,8 @@ private:
   G4Material*          fPMTCathodeMater;
   G4Material*          fWrapMater;
   G4Material*          fPMTcoverMater;
+  G4Material*          fMPPCMater;
+  G4Material*          fMPPCCaseMater;
 
   // Physical Volumes
   G4VPhysicalVolume*   fPhysiWorld;
@@ -112,8 +122,9 @@ private:
   G4LogicalVolume*     fLogicPMTCathode;
   G4LogicalVolume*     fLogicWrap;
   G4LogicalVolume*     fLogicPMTcover;
-//  G4LogicalVolume*     fLogicWrapFront;
 
+  G4LogicalVolume*     fLogicMPPC;
+  G4LogicalVolume*     fLogicMPPCCase;
 
   G4double             fWorld_X;
   G4double             fWorld_Y;
@@ -144,17 +155,20 @@ private:
   G4double             fPMT_cathode_distance;
 
   G4double             fPMT_length;
-                
+
+  G4double             fMPPC_size;
+  G4double             fMPPC_case_thickness;
+
   DetectorMessenger*   fDetectorMessenger;
   G4VPrimitiveScorer*  fEDepScorerCrystal;
 
-private:
-    
   void DefineMaterials();
   void ConstructVolumes();
   void InitVisScoringManager();
 
   G4bool fCheckOverlaps;
+
+  DetectorType detectorType;
 
 };
 

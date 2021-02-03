@@ -64,6 +64,11 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* Det) : G4UImessenger(
   fSetCrystalMaterialCmd->SetGuidance("Set crystal material type, \"BaSi2O5\" (default) or \"PbWO4\"");
   fSetCrystalMaterialCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
 
+  // Instantiate command for setting crystal Material
+  fSetDetectorTypeCmd = new G4UIcmdWithAString("/detector/setDetectorType", this);
+  fSetDetectorTypeCmd->SetGuidance("Set detector type, \"PMT\" (default) or \"MPPC\"");
+  fSetDetectorTypeCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
+
   // Instantiate commands for setting number of crystals
   fSetCrystalNumberXCmd = new G4UIcmdWithAnInteger("/detector/setCrystalNumberX", this);
   fSetCrystalNumberXCmd->SetGuidance("Number of crystals along X axis");
@@ -79,6 +84,7 @@ DetectorMessenger::~DetectorMessenger() {
   delete fSetGapCmd;
   delete fSetCrystalSizeCmd;
   delete fSetCrystalMaterialCmd;
+  delete fSetDetectorTypeCmd;
 //  delete fDirectory;
 }
 
@@ -91,6 +97,8 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
 	  fDetectorConstruction->SetCrystalSize(fSetCrystalSizeCmd->GetNew3VectorValue(newValue));
   } else if (command==fSetCrystalMaterialCmd){
     fDetectorConstruction->SetCrystalMaterial(newValue.c_str());
+  } else if (command==fSetDetectorTypeCmd){
+    fDetectorConstruction->SetDetectorType(newValue);
   } else if (command==fSetCrystalNumberXCmd){
     fDetectorConstruction->SetCrystalNumberX(fSetCrystalNumberXCmd->GetNewIntValue(newValue));
   } else if (command==fSetCrystalNumberYCmd){
