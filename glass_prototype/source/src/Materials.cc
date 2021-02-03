@@ -70,24 +70,25 @@ void Materials::init(){
   // █░█ ▄▀█ █▀▀ █░█ █░█ █▀▄▀█
   // ▀▄▀ █▀█ █▄▄ █▄█ █▄█ █░▀░█
 
-//  G4Material* vacuum = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
-//
-//  // Refractive Index of Vacuum
-//  std::vector<G4double> refractiveIndexVacuum = { 1., 1., 1., 1., 1., 1., 1., 1.};
-//  assert((G4int)refractiveIndexVacuum.size() == (G4int)fOpticalPhotonEnergy.size());
-//
-//  // Absorption length of Vacuum
-//  std::vector<G4double> absorptionLengthVacuum  = {1000*m, 1000*m, 1000*m, 1000*m, 1000*m, 1000*m, 1000*m, 1000*m};
-//  assert((G4int)absorptionLengthVacuum.size() == (G4int)fOpticalPhotonEnergy.size());
-//
-//  G4MaterialPropertiesTable* vacuumMPT = new G4MaterialPropertiesTable();
-//  vacuumMPT->AddProperty("RINDEX", fOpticalPhotonEnergy.data(), refractiveIndexVacuum.data(), n);
-//  vacuumMPT->AddProperty("ABSLENGTH", fOpticalPhotonEnergy.data(), absorptionLengthVacuum.data(), n);
-//  vacuumMPT->DumpTable();
-//  vacuum->SetMaterialPropertiesTable(vacuumMPT);
-//
-//  printMaterialProperties(vacuum);
-//  fMaterialsList.push_back(vacuum);
+  // Vacuum how-to: http://hurel.hanyang.ac.kr/Geant4/Doxygen/10.03/html/d2/dd7/_d_m_x_detector_material_8icc_source.html
+  G4Material* vacuum = new G4Material("vacuum", 1., 1.*g/mole, 1.e-20*g/cm3, kStateGas, 0.1*kelvin, 1.e-20*bar);
+
+  // Refractive Index of Vacuum
+  std::vector<G4double> refractiveIndexVacuum = { 1., 1., 1., 1., 1., 1., 1., 1.};
+  assert((G4int)refractiveIndexVacuum.size() == (G4int)fOpticalPhotonEnergy.size());
+
+  // Absorption length of Vacuum
+  std::vector<G4double> absorptionLengthVacuum  = {1000*km, 1000*km, 1000*km, 1000*km, 1000*km, 1000*km, 1000*km, 1000*km};
+  assert((G4int)absorptionLengthVacuum.size() == (G4int)fOpticalPhotonEnergy.size());
+
+  G4MaterialPropertiesTable* vacuumMPT = new G4MaterialPropertiesTable();
+  vacuumMPT->AddProperty("RINDEX", fOpticalPhotonEnergy.data(), refractiveIndexVacuum.data(), n);
+  vacuumMPT->AddProperty("ABSLENGTH", fOpticalPhotonEnergy.data(), absorptionLengthVacuum.data(), n);
+  vacuumMPT->DumpTable();
+  vacuum->SetMaterialPropertiesTable(vacuumMPT);
+
+  printMaterialProperties(vacuum);
+  fMaterialsList.push_back(vacuum);
 
   // ▄▀█ █ █▀█
   // █▀█ █ █▀▄
@@ -354,12 +355,12 @@ typedef std::map< G4int, G4MaterialPropertyVector*,
                   std::less<G4int> >::const_iterator MPiterator;
 
 void Materials::printMaterialProperties(G4Material* material){
+  std::cout << "\nMaterial name: " << material->GetName() << std::endl;
   G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
   if (!mpt) return;
 
   std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> >* pMap = mpt->GetPropertiesMap();
 
-  std::cout << "\nMaterial name: " << material->GetName() << std::endl;
 
   // Print photon wavelengths
   std::cout << std::left << std::setw(TAB_COLUMN_1) << "PHOTON_WAVELEGTH";

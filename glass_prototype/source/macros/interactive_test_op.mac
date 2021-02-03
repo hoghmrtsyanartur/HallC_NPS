@@ -15,8 +15,8 @@
 /detector/setCrystalMaterial PbWO4
 
 # Number of crystals in the assembly along X and Y axis
-/detector/setCrystalNumberX 1
-/detector/setCrystalNumberY 1
+/detector/setCrystalNumberX 3
+/detector/setCrystalNumberY 3
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape false
@@ -80,7 +80,7 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 1
+/run/beamOn 10
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 
@@ -110,6 +110,6 @@
 #/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
 
 # Number of events for the energy resolution run
-/histoManager/writeWorldEscape false
-/tracking/verbose 0
-/run/beamOn 1000
+#/histoManager/writeWorldEscape false
+#/tracking/verbose 0
+#/run/beamOn 1000

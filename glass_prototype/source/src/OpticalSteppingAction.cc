@@ -26,15 +26,19 @@ void OpticalSteppingAction::UserSteppingAction(const G4Step* step) {
   // Refer to OpNoviceSteppingAction.cc
 
   G4StepPoint* point1 = step->GetPreStepPoint();
-  // G4StepPoint* point2 = step->GetPostStepPoint();
+  G4StepPoint* point2 = step->GetPostStepPoint();
   G4TouchableHandle touch1 = point1->GetTouchableHandle();
-  // G4TouchableHandle touch2 = point2->GetTouchableHandle();
+  G4TouchableHandle touch2 = point2->GetTouchableHandle();
 
   G4VPhysicalVolume* volume1 = touch1->GetVolume();
   // G4VPhysicalVolume* volume2 = touch2->GetVolume();
 
+  // if (!volume2) return;
+
   // Ensure particle is inside PMT (provide physical volume name)
   if (volume1->GetName() != "pmtCathodePhys") return;
+
+  // std::cout << volume1->GetName() << " " << volume2->GetName() << std::endl;
 
   // Ensure particle type is optical photon
   if (step->GetTrack()->GetDefinition() != G4OpticalPhoton::Definition()) return;
@@ -64,6 +68,6 @@ void OpticalSteppingAction::UserSteppingAction(const G4Step* step) {
   fOpticalEventAction->IncreasePENumber(peNumber, copyNumber);
 
   // Terminate track
-  // step->GetTrack()->SetTrackStatus(fStopAndKill);
+  step->GetTrack()->SetTrackStatus(fStopAndKill);
 
 }

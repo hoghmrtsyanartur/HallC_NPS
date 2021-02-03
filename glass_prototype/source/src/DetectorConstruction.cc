@@ -131,8 +131,8 @@ DetectorConstruction::DetectorConstruction()
   fPMT_window_radius = 9*mm;
   fPMT_window_thickness = 2*mm;
   fPMT_case_thickness = 1*mm;
-  fPMT_cathode_radius = fPMT_window_radius*0.9;
-  fPMT_cathode_distance = 3*mm;
+  fPMT_cathode_radius = fPMT_window_radius*0.95;
+  fPMT_cathode_distance = 2*mm;
   fPMT_cathode_thickness = 2*mm;
   fPMT_length = 88*mm;
 
@@ -189,10 +189,10 @@ void DetectorConstruction::DefineMaterials()
   fPMTWindowMater = Materials::getInstance()->getMaterial("borosilicate");
 
   // PMT window
-  fPMTVacuumMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
+  fPMTVacuumMater = Materials::getInstance()->getMaterial("vacuum"); // G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
 
   // PMT Bialkali photocathode - stainless stell substrate https://sci-hub.do/https://doi.org/10.1016/S0168-9002(96)00809-1
-  fPMTCathodeMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
+  fPMTCathodeMater = Materials::getInstance()->getMaterial("vacuum"); // G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -290,8 +290,7 @@ void  DetectorConstruction::ConstructVolumes() {
     }
   }
 
-  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume ->
-  //           Crystal Volume
+  // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> Crystal Volume
   G4Box* sCrystal = new G4Box("Crystal_sol", 0.5*fCrystal_X, 0.5*fCrystal_Y, 0.5*fCrystal_Z);
   fLogicCrystal = new G4LogicalVolume(sCrystal,       // its solid
                                       fDetectorMater, // its material
