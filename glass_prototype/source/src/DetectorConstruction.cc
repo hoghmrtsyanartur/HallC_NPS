@@ -129,10 +129,10 @@ DetectorConstruction::DetectorConstruction()
 
   // PMT tube dimensions
   fPMT_window_radius = 9*mm;
-  fPMT_window_thickness = 2*mm;
-  fPMT_case_thickness = 1*mm;
-  fPMT_cathode_radius = fPMT_window_radius*0.95;
-  fPMT_cathode_distance = 2*mm;
+  fPMT_window_thickness = 0.5*mm;
+  fPMT_case_thickness = 0.8*mm; // https://www.hamamatsu.com/resources/pdf/etd/High_energy_PMT_TPMZ0003E.pdf
+  fPMT_cathode_radius = 7.5*mm;
+  fPMT_cathode_distance = 1.5*mm;
   fPMT_cathode_thickness = 2*mm;
   fPMT_length = 88*mm;
 
@@ -188,7 +188,7 @@ void DetectorConstruction::DefineMaterials()
   // PMT window
   fPMTWindowMater = Materials::getInstance()->getMaterial("borosilicate");
 
-  // PMT window
+  // PMT vacuum
   fPMTVacuumMater = Materials::getInstance()->getMaterial("vacuum"); // G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
 
   // PMT Bialkali photocathode - stainless stell substrate https://sci-hub.do/https://doi.org/10.1016/S0168-9002(96)00809-1

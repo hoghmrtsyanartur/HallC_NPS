@@ -15,8 +15,8 @@
 /detector/setCrystalMaterial PbWO4
 
 # Number of crystals in the assembly along X and Y axis
-/detector/setCrystalNumberX 3
-/detector/setCrystalNumberY 3
+/detector/setCrystalNumberX 1
+/detector/setCrystalNumberY 1
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape false
@@ -28,9 +28,9 @@
 #/process/optical/processActivation OpAbsorption  true
 #/process/optical/processActivation OpBoundary    true
 #/process/optical/processActivation Scintillation true
-/process/optical/processActivation OpRayleigh    false
-/process/optical/processActivation OpMieHG       false
-/process/optical/processActivation OpWLS         false
+#/process/optical/processActivation OpRayleigh    false
+#/process/optical/processActivation OpMieHG       false
+#/process/optical/processActivation OpWLS         false
 
 #/process/optical/scintillation/setExcitationRatio .5
 #/process/optical/scintillation/setByParticleType false
@@ -52,7 +52,7 @@
 /gps/particle e-
 /gps/pos/type Point
 /gps/ene/mono 1 MeV
-/gps/pos/centre 0.  0. -40. mm
+/gps/pos/centre 0.  0. 1. mm
 /gps/direction 0. 0. 1.
 # /gps/source/multiplevertex true
 /gps/source/list
@@ -109,7 +109,11 @@
 #/score/dumpAllQuantitiesToFile crystalsMesh crystalsMesh.txt
 #/score/dumpAllQuantitiesToFile pmtsMesh pmtsMesh.txt
 
+# Close visualization
+#/vis/disable
+
 # Number of events for the energy resolution run
 #/histoManager/writeWorldEscape false
 #/tracking/verbose 0
+#/run/verbose 0
 #/run/beamOn 1000
