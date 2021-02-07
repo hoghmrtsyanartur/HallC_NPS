@@ -159,12 +159,14 @@ void Materials::init(){
   // https://www.hamamatsu.com/resources/pdf/etd/PMT_handbook_v3aE.pdf
   // Borosilicate window with Bialkali photocathode work within 300-650 nm range, pp.35
   // https://www.hamamatsu.com/jp/en/product/optical-sensors/photodiodes/si-photodiodes/si-photodiode-faq/index.html
-  std::vector<G4double> refractiveIndexBorosilicate = {1.51, 1.51, 1.51, 1.51, 1.51, 1.51, 1.51, 1.51};
+  // LXeDetectorConstruction: 1.49
+  std::vector<G4double> refractiveIndexBorosilicate = {1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49};
   assert((G4int)refractiveIndexBorosilicate.size() == (G4int)fOpticalPhotonEnergy.size());
 
   // https://refractiveindex.info/?shelf=glass&book=SUMITA-BK&page=K-BK7
   // alpha = 0.0034706 cm-1 => 1/0.0034706 = 288 cm
-  std::vector<G4double> absorptionLengthBorosilicate = {288.*cm, 288.*cm, 288.*cm, 288.*cm, 288.*cm, 288.*cm, 288.*cm, 288.*cm};
+  // LXeDetectorConstruction: 420.*cm
+  std::vector<G4double> absorptionLengthBorosilicate = {420.*cm, 420.*cm, 420.*cm, 420.*cm, 420.*cm, 420.*cm, 420.*cm, 420.*cm};
   assert((G4int)absorptionLengthBorosilicate.size() == (G4int)fOpticalPhotonEnergy.size());
 
   G4MaterialPropertiesTable* borosilicateMPT = new G4MaterialPropertiesTable();
@@ -201,19 +203,22 @@ void Materials::init(){
   assert((G4int)absLengthPbWO4.size() == (G4int)fOpticalPhotonEnergy.size());
 
   // Energy spectrum for the fast scintillation component PbWO4
-  std::vector<G4double> scintilFastPbWO4 = {10., 25., 45., 55., 40., 35., 20., 12.};
+  // Ho San Values:
+  // std::vector<G4double> scintilFastPbWO4 = {10., 25., 45., 55., 40., 35., 20., 12.};
+  // PbWO4 emission spectrum (Berd sent paper): https://sci-hub.do/10.1088/1742-6596/293/1/012004
+  std::vector<G4double> digitizedPwoEmissionSpectra = {411.29848229342326, 10, 420.4047217537943, 14.606741573033702, 425.9696458684655, 21.68539325842697, 433.55817875210795, 30, 439.62900505902195, 37.64044943820225, 447.72344013490726, 44.49438202247191, 457.3355817875211, 50, 466.4418212478921, 51.79775280898876, 478.58347386172005, 49.7752808988764, 490.7251264755481, 42.92134831460674, 499.8313659359191, 35.1685393258427, 508.9376053962901, 27.752808988764045, 518.043844856661, 20.561797752809, 527.6559865092748, 13.932584269662925, 544.8566610455313, 7.752808988764045, 564.080944350759, 3.2584269662921344, 581.2816188870152, 2.0224719101123583};
+  G4MaterialPropertyVector* pwoFastComponent = toMPV(digitizedPwoEmissionSpectra);
 
-  // Energy spectrum for the slow scintillation component PbWO4
-  std::vector<G4double> scintilSlowPbWO4 = {10., 25., 45., 55., 40., 35., 20., 12.};
-
+  // These PARAMETERS explained on pp.55 http://epubs.surrey.ac.uk/811039/1/Sion%20Richards-Thesis-Final-Version.pdf
   PbWO4MPT->AddProperty("RINDEX",        fOpticalPhotonEnergy.data(), refractiveIndexPbWO4.data(),n);
   PbWO4MPT->AddProperty("ABSLENGTH",     fOpticalPhotonEnergy.data(), absLengthPbWO4.data(), n);
-  PbWO4MPT->AddProperty("FASTCOMPONENT", fOpticalPhotonEnergy.data(), scintilFastPbWO4.data(), n);
-  PbWO4MPT->AddProperty("SLOWCOMPONENT", fOpticalPhotonEnergy.data(), scintilSlowPbWO4.data(), n);
+  PbWO4MPT->AddProperty("FASTCOMPONENT", pwoFastComponent);
+  PbWO4MPT->AddProperty("SLOWCOMPONENT", pwoFastComponent);
 
   // Scintillation light yield - number of photons per unit energy deposition ~ 300 for PbWO4
-  // https://sci-hub.do/10.1016/j.phpro.2015.05.033
-  PbWO4MPT->AddConstProperty("SCINTILLATIONYIELD", 300./MeV);
+  // https://sci-hub.do/10.1016/j.phpro.2015.05.033 - says 300/MeV
+  // However we used 100/MeV to ensure correct PE output
+  PbWO4MPT->AddConstProperty("SCINTILLATIONYIELD", 600./MeV);
 
   // Fluctuation of mean number of optical photons produces for the step
   PbWO4MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
@@ -271,6 +276,12 @@ void Materials::init(){
   BaSi2O5->AddElement(elements->getElement("Ba"), 1);
   BaSi2O5->AddElement(elements->getElement("Si"), 2);
   BaSi2O5->AddElement(elements->getElement("O"), 5);
+
+  // BaSi2O5 emission spectrum: https://sci-hub.do/https://pubs.rsc.org/en/Content/ArticleLanding/NJ/2016/C6NJ01831A
+  std::vector<G4double> digitizedBaSiOEmissionSpectra = {388.24531516183987, 0.07421150278292998, 406.64395229982966, 0.371057513914657, 425.5536626916525, 1.113172541743971, 441.90800681431, 2.263450834879407, 455.7069846678024, 3.6734693877551017, 466.95059625212946, 5.083487940630796, 476.6609880749574, 6.345083487940631, 487.39352640545144, 7.38404452690167, 498.12606473594553, 8.274582560296846, 511.41396933560475, 8.534322820037104, 524.7018739352641, 8.256029684601113, 537.9897785349233, 7.4397031539888685, 552.2998296422487, 6.122448979591837, 566.0988074957411, 4.7680890538033385, 580.9199318568996, 3.6178107606679024, 598.8074957410563, 2.3191094619666046, 622.3168654173764, 1.2987012987012978, 647.359454855196, 0.649350649350648, 669.84667802385, 0.371057513914657, 697.9557069846678, 0.12987012987012925};
+  G4MaterialPropertyVector* basioFastComponent = toMPV(digitizedBaSiOEmissionSpectra);
+  PbWO4MPT->AddProperty("FASTCOMPONENT", basioFastComponent);
+  PbWO4MPT->AddProperty("SLOWCOMPONENT", basioFastComponent);
 
   fMaterialsList.push_back(BaSi2O5);
 }
@@ -363,9 +374,16 @@ void Materials::printMaterialProperties(G4Material* material){
 
 
   // Print photon wavelengths
-  std::cout << std::left << std::setw(TAB_COLUMN_1) << "PHOTON_WAVELEGTH";
+  std::cout << std::left << std::setw(TAB_COLUMN_1) << "PHOTON_WAVELEGTH, nm";
   for (G4int i = 0; i < (G4int)fOpticalPhotonWavelength.size(); i++){
     std::cout << std::left << std::setw(TAB_COLUMN) << fOpticalPhotonWavelength[i];
+  }
+  std::cout << std::endl;
+
+  // Print photon wavelengths
+  std::cout << std::left << std::setw(TAB_COLUMN_1) << "PHOTON_ENERGY, eV";
+  for (G4int i = 0; i < (G4int)fOpticalPhotonWavelength.size(); i++){
+    std::cout << std::left << std::setw(TAB_COLUMN) << fOpticalPhotonEnergy[i]/eV;
   }
   std::cout << std::endl;
 
@@ -393,6 +411,17 @@ Materials* Materials::getInstance() {
       instance = new Materials;
   }
   return instance;
+}
+
+G4MaterialPropertyVector* Materials::toMPV(std::vector<G4double> digitizedArrayNm){
+  G4MaterialPropertyVector* mpv = new G4MaterialPropertyVector();
+  for (G4int i = 0; i < (G4int)digitizedArrayNm.size(); i+=2){
+   G4double hc = 1239.84193;
+   G4double energy = hc/digitizedArrayNm[i]*eV; // E (eV) = 1239.8 / l (nm)
+   G4double value = digitizedArrayNm[i+1];
+   mpv->InsertValues(energy, value);
+  }
+  return mpv;
 }
 
 // PS: when having a static std::vector member

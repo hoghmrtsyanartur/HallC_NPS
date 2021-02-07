@@ -75,6 +75,8 @@
 #include "G4ScoringManager.hh"
 #include "G4VScoringMesh.hh"
 #include "G4ScoringBox.hh"
+
+#include "G4LogicalSkinSurface.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
@@ -89,8 +91,11 @@ DetectorConstruction::DetectorConstruction()
    fPMTCathodeMater(0),
    fWrapMater(0),
    fPMTcoverMater(0),
+   fPMTreflectorMater(0),
+
    fMPPCMater(0),
    fMPPCCaseMater(0),
+
 
    // Physical Volumes
    fPhysiWorld(0),
@@ -105,6 +110,8 @@ DetectorConstruction::DetectorConstruction()
    fLogicPMTCathode(0),
    fLogicWrap(0),
    fLogicPMTcover(0),
+   fLogicPMTReflector(0),
+
    fLogicMPPC(0),
    fLogicMPPCCase(0),
 
@@ -133,16 +140,17 @@ DetectorConstruction::DetectorConstruction()
 
   // PMT tube dimensions
   fPMT_window_radius = 9*mm;
-  fPMT_window_thickness = 0.5*mm;
-  fPMT_case_thickness = 0.8*mm; // https://www.hamamatsu.com/resources/pdf/etd/High_energy_PMT_TPMZ0003E.pdf
-  fPMT_cathode_radius = 7.5*mm;
+  fPMT_window_thickness = 1.5*mm;
+  fPMT_case_thickness = 1.5*mm; // https://www.hamamatsu.com/resources/pdf/etd/High_energy_PMT_TPMZ0003E.pdf
+  fPMT_cathode_radius = fPMT_window_radius;
   fPMT_cathode_distance = 1.5*mm;
   fPMT_cathode_thickness = 2*mm;
   fPMT_length = 88*mm;
+  fPMT_reflector_thickness = 100*micrometer;
 
   // MPPC dimensions
   fMPPC_size = 6*mm;
-  fMPPC_case_thickness = 2*mm;
+  fMPPC_case_thickness = 7*mm;
 
   // World size - length depends on the crystal length and PMT length
   fWorld_X = 0.75*meter; // 4.5*m;
@@ -194,7 +202,7 @@ void DetectorConstruction::DefineMaterials()
   fGreaseMater = Materials::getInstance()->getMaterial("PDMS");
 
   // PMT case
-  fPMTCaseMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
+  fPMTCaseMater = Materials::getInstance()->getMaterial("borosilicate"); // G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
 
   // PMT window
   fPMTWindowMater = Materials::getInstance()->getMaterial("borosilicate");
@@ -204,6 +212,9 @@ void DetectorConstruction::DefineMaterials()
 
   // PMT Bialkali photocathode - stainless stell substrate https://sci-hub.do/https://doi.org/10.1016/S0168-9002(96)00809-1
   fPMTCathodeMater = Materials::getInstance()->getMaterial("vacuum"); // G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
+
+  // PMT Reflective mirror from UltraDetectorConstruction.cc example
+  fPMTreflectorMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_Al");
 
   // MPPC material
   fMPPCMater = Materials::getInstance()->getMaterial("vacuum");
@@ -399,8 +410,42 @@ void  DetectorConstruction::ConstructVolumes() {
                                                          0,
                                                          fCheckOverlaps);
 
+    // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Vacuum -> Reflector
+    G4double pmtReflectorLength = fPMT_cathode_distance + fPMT_cathode_thickness;
+    G4Tubs* pmtReflectorSolid = new G4Tubs("pmtReflectorSolid", fPMT_window_radius - fPMT_reflector_thickness, fPMT_window_radius, pmtReflectorLength/2, 0, twopi);
+    G4double pmtReflectorPosZ = - pmtVacuumLength/2 + pmtReflectorLength/2;
+
+    fLogicPMTReflector = new G4LogicalVolume(pmtReflectorSolid, fPMTreflectorMater, "pmtReflectorLog");
+    /* G4VPhysicalVolume* fPMTReflectorPos = */ new G4PVPlacement(0,
+                                                         G4ThreeVector(0, 0, pmtReflectorPosZ),
+                                                         fLogicPMTReflector,
+                                                         "pmtReflectorPhys",
+                                                         fLogicPMTVacuum,
+                                                         false,
+                                                         0,
+                                                         fCheckOverlaps);
+
+    // Reflector surface - copied from UltraDetectotConstruction.cc
+    G4OpticalSurface* pmtReflectorOpticalSurface = new G4OpticalSurface("ReflectorOpticalSurface");
+    pmtReflectorOpticalSurface->SetType(dielectric_metal);
+    pmtReflectorOpticalSurface->SetFinish(polished);
+    pmtReflectorOpticalSurface->SetModel(unified);
+
+    //    const G4int NUM = 2;
+//    G4double lambda_min = 200*nm ;
+//    G4double lambda_max = 700*nm ;
+//    G4double XX[NUM] = {h_Planck*c_light/lambda_max, h_Planck*c_light/lambda_min} ;
+//    G4double ICEREFLECTIVITY[NUM] = { 0.95, 0.95 };
+
+    // G4MaterialPropertiesTable *VacuumMirrorMPT = new G4MaterialPropertiesTable();
+//    VacuumMirrorMPT->AddProperty("REFLECTIVITY", XX, ICEREFLECTIVITY,NUM);
+    // pmtReflectorOpticalSurface->SetMaterialPropertiesTable(VacuumMirrorMPT);
+
+    new G4LogicalSkinSurface("pmtReflectorSkinSurface", fLogicPMTReflector, pmtReflectorOpticalSurface);
+
+
     // GEOMETRY: World volume -> Mother volume -> Temperature control box -> Single volume -> PMT -> Vacuum -> Photocathode
-    G4Tubs* pmtCathodeSolid = new G4Tubs("pmtCathodeSolid", 0, fPMT_cathode_radius, fPMT_cathode_thickness/2, 0, twopi);
+    G4Tubs* pmtCathodeSolid = new G4Tubs("pmtCathodeSolid", 0, fPMT_cathode_radius, fPMT_cathode_thickness/2, 0, twopi);;
     fLogicPMTCathode = new G4LogicalVolume(pmtCathodeSolid, fPMTCathodeMater, "pmtCathodeLog");
     G4double pmtCathodePosZ = - pmtVacuumLength/2 + fPMT_cathode_thickness/2 + fPMT_cathode_distance;
     /* G4VPhysicalVolume* fPMTCathodePos = */ new G4PVPlacement(0,
@@ -492,9 +537,9 @@ void  DetectorConstruction::ConstructVolumes() {
   opWrapperSurface->SetModel(LUT);
 
   new G4LogicalBorderSurface("WrapperSurface", crystalPos, fWrapPos, opWrapperSurface);
-  G4MaterialPropertiesTable* opWS = new G4MaterialPropertiesTable();
-  opWS->DumpTable();
-  opWrapperSurface->SetMaterialPropertiesTable(opWS);
+
+  // G4MaterialPropertiesTable* opWS = new G4MaterialPropertiesTable();
+  // opWrapperSurface->SetMaterialPropertiesTable(opWS);
 
   // Optical Surface for Crystal and Grease
 
@@ -547,6 +592,7 @@ void  DetectorConstruction::ConstructVolumes() {
   if (fLogicPMTVacuum) fLogicPMTVacuum->SetVisAttributes(new G4VisAttributes(G4Colour::White()));
   if (fLogicPMTCathode) fLogicPMTCathode->SetVisAttributes(new G4VisAttributes(G4Colour::Magenta()));
   if (fLogicPMTcover) fLogicPMTcover->SetVisAttributes(new G4VisAttributes(G4Colour::Gray()));
+  if (fLogicPMTReflector) fLogicPMTReflector->SetVisAttributes(new G4VisAttributes(G4Colour::Cyan()));
 
   if (fLogicMPPC) fLogicMPPC->SetVisAttributes(new G4VisAttributes(G4Colour::Magenta()));
   if (fLogicMPPCCase) fLogicMPPCCase->SetVisAttributes(new G4VisAttributes(G4Colour::Brown()));

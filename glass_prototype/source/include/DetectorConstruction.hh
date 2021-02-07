@@ -106,6 +106,8 @@ private:
   G4Material*          fPMTCathodeMater;
   G4Material*          fWrapMater;
   G4Material*          fPMTcoverMater;
+  G4Material*          fPMTreflectorMater;
+
   G4Material*          fMPPCMater;
   G4Material*          fMPPCCaseMater;
 
@@ -122,6 +124,7 @@ private:
   G4LogicalVolume*     fLogicPMTCathode;
   G4LogicalVolume*     fLogicWrap;
   G4LogicalVolume*     fLogicPMTcover;
+  G4LogicalVolume*     fLogicPMTReflector;
 
   G4LogicalVolume*     fLogicMPPC;
   G4LogicalVolume*     fLogicMPPCCase;
@@ -153,6 +156,7 @@ private:
   G4double             fPMT_cathode_radius;
   G4double             fPMT_cathode_thickness;
   G4double             fPMT_cathode_distance;
+  G4double             fPMT_reflector_thickness;
 
   G4double             fPMT_length;
 

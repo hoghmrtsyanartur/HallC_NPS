@@ -35,8 +35,8 @@ void OpticalSteppingAction::UserSteppingAction(const G4Step* step) {
 
   // if (!volume2) return;
 
-  // Ensure particle is inside PMT (provide physical volume name)
-  if (volume1->GetName() != "pmtCathodePhys" || volume1->GetName() != "mppcPhys") return;
+  // Ensure particle reaches PMT cathode volume or MPPC volume
+  if (!(volume1->GetName() == "pmtCathodePhys" || volume1->GetName() == "mppcPhys")) return;
 
   // std::cout << volume1->GetName() << " " << volume2->GetName() << std::endl;
 

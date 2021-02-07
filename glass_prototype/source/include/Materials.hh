@@ -9,6 +9,7 @@
 #define SRC_MATERIALS_HH_
 
 #include "G4Material.hh"
+#include "G4MaterialPropertyVector.hh"
 #include <vector>
 
 class Materials {
@@ -40,6 +41,8 @@ private:
 
   void printLine(const char* heading, std::vector<G4double> values, G4double unit = 0.);
   void printHeader();
+
+  G4MaterialPropertyVector* toMPV(std::vector<G4double> digitizedArrayNm);
 
   const G4int TAB_COLUMN_1 = 25;
   const G4int TAB_COLUMN = 10;
