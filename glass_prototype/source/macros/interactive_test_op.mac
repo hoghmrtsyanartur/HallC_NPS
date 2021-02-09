@@ -20,6 +20,7 @@
 
 # Detector type (PMT or MPPC)
 /detector/setDetectorType PMT
+/detector/setPmtDiameter 9 mm
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape false

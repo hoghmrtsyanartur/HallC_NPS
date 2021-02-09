@@ -141,12 +141,12 @@ DetectorConstruction::DetectorConstruction()
   // PMT tube dimensions
   fPMT_window_radius = 9*mm;
   fPMT_window_thickness = 1.5*mm;
+  fPMT_reflector_thickness = 100*micrometer;
   fPMT_case_thickness = 1.5*mm; // https://www.hamamatsu.com/resources/pdf/etd/High_energy_PMT_TPMZ0003E.pdf
-  fPMT_cathode_radius = fPMT_window_radius;
+  fPMT_cathode_radius = fPMT_window_radius-fPMT_reflector_thickness;
   fPMT_cathode_distance = 1.5*mm;
   fPMT_cathode_thickness = 2*mm;
   fPMT_length = 88*mm;
-  fPMT_reflector_thickness = 100*micrometer;
 
   // MPPC dimensions
   fMPPC_size = 6*mm;
@@ -824,4 +824,12 @@ G4String DetectorConstruction::GetDetectorType() {
     return "MPPC";
   }
   return "";
+}
+
+void DetectorConstruction::SetPmtDiameter(G4double diameter){
+	fPMT_window_radius = diameter/2;
+	fPMT_cathode_radius = fPMT_window_radius-fPMT_reflector_thickness;
+}
+G4double DetectorConstruction::GetPmtDiameter(){
+	return fPMT_window_radius*2;
 }

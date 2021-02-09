@@ -55,7 +55,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* Det) : G4UImessenger(
 
 	// Instantiate command for setting crystal size
 	fSetCrystalSizeCmd = new G4UIcmdWith3VectorAndUnit("/detector/setCrystalSize", this);
-	fSetCrystalSizeCmd->SetGuidance("Set crystal size.");
+	fSetCrystalSizeCmd->SetGuidance("Set crystal size");
 	fSetCrystalSizeCmd->SetDefaultUnit("mm");
 	fSetCrystalSizeCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
 
@@ -68,6 +68,12 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* Det) : G4UImessenger(
   fSetDetectorTypeCmd = new G4UIcmdWithAString("/detector/setDetectorType", this);
   fSetDetectorTypeCmd->SetGuidance("Set detector type, \"PMT\" (default) or \"MPPC\"");
   fSetDetectorTypeCmd->AvailableForStates(G4ApplicationState::G4State_PreInit);
+
+  // Instantiate command for setting PMT diameter
+  fSetPmtDiameter = new G4UIcmdWithADoubleAndUnit("/detector/setPmtDiameter", this);
+  fSetPmtDiameter->SetGuidance("Set PMT diameter");
+  fSetPmtDiameter->SetDefaultUnit("mm");
+  fSetPmtDiameter->AvailableForStates(G4ApplicationState::G4State_PreInit);
 
   // Instantiate commands for setting number of crystals
   fSetCrystalNumberXCmd = new G4UIcmdWithAnInteger("/detector/setCrystalNumberX", this);
@@ -103,6 +109,8 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
     fDetectorConstruction->SetCrystalNumberX(fSetCrystalNumberXCmd->GetNewIntValue(newValue));
   } else if (command==fSetCrystalNumberYCmd){
     fDetectorConstruction->SetCrystalNumberY(fSetCrystalNumberYCmd->GetNewIntValue(newValue));
+  } else if (command == fSetPmtDiameter){
+	fDetectorConstruction->SetPmtDiameter(fSetGapCmd->GetNewDoubleValue(newValue));
   }
 }
 

@@ -89,6 +89,9 @@ public:
   void SetDetectorType(G4String type);
   G4String GetDetectorType();
 
+  void SetPmtDiameter(G4double diameter);
+  G4double GetPmtDiameter();
+
   // Energy deposit getter
   G4VPrimitiveScorer* GetEdepScorer();
 

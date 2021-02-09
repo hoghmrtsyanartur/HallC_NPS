@@ -218,7 +218,7 @@ void Materials::init(){
   // Scintillation light yield - number of photons per unit energy deposition ~ 300 for PbWO4
   // https://sci-hub.do/10.1016/j.phpro.2015.05.033 - says 300/MeV
   // However we used 100/MeV to ensure correct PE output
-  PbWO4MPT->AddConstProperty("SCINTILLATIONYIELD", 600./MeV);
+  PbWO4MPT->AddConstProperty("SCINTILLATIONYIELD", 300./MeV);
 
   // Fluctuation of mean number of optical photons produces for the step
   PbWO4MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
