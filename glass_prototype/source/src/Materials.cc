@@ -227,7 +227,6 @@ void Materials::init(){
   PbWO4MPT->AddConstProperty("SLOWTIMECONSTANT", 412.2*ns);
   PbWO4MPT->AddConstProperty("YIELDRATIO", 0.9);
   PbWO4MPT->DumpTable();
-
   PbWO4->SetMaterialPropertiesTable(PbWO4MPT);
 
   printMaterialProperties(PbWO4);
