@@ -57,7 +57,7 @@
 /gps/source/intensity 1
 /gps/particle gamma
 /gps/pos/type Point
-/gps/ene/mono 1 MeV
+/gps/ene/mono 0.6617 MeV
 /gps/pos/centre 0.  0. -40. mm
 /gps/direction 0. 0. 1.
 # /gps/source/multiplevertex true
