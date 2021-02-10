@@ -82,9 +82,9 @@ void OpticalEventAction::EndOfEventAction(const G4Event* event){
     std::cout << "Crystal " << i << ": numberOfPhotoElectrons = " << fNumberOfPhotoElectrons[i] << std::endl;
   }
 
-  G4cout << "Total number of optical photons produced in this event : " << fTotalPhotons << G4endl;
-  G4cout << "Number of Scintillation photons produced in this event : " << fScintillationPhotons << G4endl;
-  G4cout << "Number of Cerenkov photons produced in this event      : " << fCherenkovPhotons << G4endl;
+  std::cout << "Total number of optical photons produced in this event : " << fTotalPhotons << std::endl;
+  std::cout << "Number of Scintillation photons produced in this event : " << fScintillationPhotons << std::endl;
+  std::cout << "Number of Cerenkov photons produced in this event      : " << fCherenkovPhotons << std::endl;
 
   // In the end of the action pass total accumulated number of the PE in each crystal to HistoManager
   fHistoManager->FillNtupleOptical(fNumberOfPhotoElectrons, fTotalPhotons, fScintillationPhotons, fCherenkovPhotons);
