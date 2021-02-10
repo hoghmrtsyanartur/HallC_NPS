@@ -167,14 +167,14 @@ void HistoManager::Book()
   // Create variable length array for energy deposition
   fPE = new G4double[G4Utils::getNCrystals()];
 
-  fNtupleOptical = new TTree("tree_crystals_pe","Tree for optical photons data");
+  fNtupleOptical = new TTree("tree_optical","Tree for optical photons data");
   // Writing arrays to tree:
   // https://root.cern.ch/root/htmldoc/guides/users-guide/Trees.html#cb22
   TString peLeafList = TString::Format("fPE[%d]/D", G4Utils::getNCrystals());
   fNtupleOptical->Branch("pe", fPE, peLeafList.Data());
-  fNtupleOptical->Branch("total", &fTotalPhotonsPerEvent, "fTotalPhotonsPerEvent/I");
-  fNtupleOptical->Branch("cherenkov", &fCherePhotonsPerEvent, "fCherePhotonsPerEvent/I");
-  fNtupleOptical->Branch("scintillation", &fScintPhotonsPerEvent, "fScintPhotonsPerEvent/I");
+  fNtupleOptical->Branch("totalOpPerEvent", &fTotalPhotonsPerEvent, "fTotalPhotonsPerEvent/I");
+  fNtupleOptical->Branch("cherenkovOpPerEvent", &fCherePhotonsPerEvent, "fCherePhotonsPerEvent/I");
+  fNtupleOptical->Branch("scintillationOpPerEvent", &fScintPhotonsPerEvent, "fScintPhotonsPerEvent/I");
 
   if (fWriteStepPoints){
     // ... rudimentary Ho San's code
