@@ -9,7 +9,7 @@
 # /testhadr/Physics optical
 
 # Crystal size along X, Y and Z axis
-/detector/setCrystalSize 20 20 200 mm
+/detector/setCrystalSize 60 60 100 mm
 
 # Crystal material - currently supported values are BaGdSiO, BaSi2O5, PbWO4
 /detector/setCrystalMaterial PbWO4
@@ -22,7 +22,8 @@
 /detector/setDetectorType PMT
 
 # PMT window diameter (18 mm for R4125, 56 mm for H3177)
-/detector/setPmtDiameter 18 mm
+/detector/setPmtDiameter 56 mm
+/detector/setGreaseThickness 0 mm
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape false
@@ -60,7 +61,14 @@
 /gps/ene/mono 0.6617 MeV
 /gps/pos/centre 0.  0. -40. mm
 /gps/direction 0. 0. 1.
-# /gps/source/multiplevertex true
+
+/gps/source/add 1
+/gps/particle e-
+/gps/pos/type Point
+/gps/ene/mono 0.512 MeV
+/gps/pos/centre 0.  0. -40. mm
+/gps/direction 0. 0. 1.
+
 /gps/source/list
 
 # /vis/list
@@ -86,7 +94,7 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 10
+/run/beamOn 20
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 

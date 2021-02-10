@@ -68,7 +68,7 @@ class DetectorMessenger: public G4UImessenger
     G4UIcmdWithAnInteger* fSetCrystalNumberXCmd;
     G4UIcmdWithAnInteger* fSetCrystalNumberYCmd;
     G4UIcmdWithADoubleAndUnit* fSetPmtDiameter;
-
+    G4UIcmdWithADoubleAndUnit* fSetGreaseThickness;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

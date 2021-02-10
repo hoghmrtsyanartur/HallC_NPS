@@ -145,7 +145,7 @@ DetectorConstruction::DetectorConstruction()
   fPMT_case_thickness = 1.5*mm; // https://www.hamamatsu.com/resources/pdf/etd/High_energy_PMT_TPMZ0003E.pdf
   fPMT_cathode_radius = fPMT_window_radius-fPMT_reflector_thickness;
   fPMT_cathode_distance = 1.5*mm;
-  fPMT_cathode_thickness = 2*mm;
+  fPMT_cathode_thickness = 20*mm;
   fPMT_length = 88*mm;
 
   // MPPC dimensions
@@ -832,4 +832,11 @@ void DetectorConstruction::SetPmtDiameter(G4double diameter){
 }
 G4double DetectorConstruction::GetPmtDiameter(){
 	return fPMT_window_radius*2;
+}
+
+void DetectorConstruction::SetGreaseThickness(G4double thickness){
+	fGreaseThickness = thickness;
+}
+G4double DetectorConstruction::GetGreaseThickness(){
+	return fGreaseThickness;
 }

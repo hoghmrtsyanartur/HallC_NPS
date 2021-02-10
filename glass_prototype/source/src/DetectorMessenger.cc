@@ -75,6 +75,12 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* Det) : G4UImessenger(
   fSetPmtDiameter->SetDefaultUnit("mm");
   fSetPmtDiameter->AvailableForStates(G4ApplicationState::G4State_PreInit);
 
+  // Instantiate command for PMT grease thickness
+  fSetGreaseThickness = new G4UIcmdWithADoubleAndUnit("/detector/setGreaseThickness", this);
+  fSetGreaseThickness->SetGuidance("Set PMT grease thickness");
+  fSetGreaseThickness->SetDefaultUnit("mm");
+  fSetGreaseThickness->AvailableForStates(G4ApplicationState::G4State_PreInit);
+
   // Instantiate commands for setting number of crystals
   fSetCrystalNumberXCmd = new G4UIcmdWithAnInteger("/detector/setCrystalNumberX", this);
   fSetCrystalNumberXCmd->SetGuidance("Number of crystals along X axis");
@@ -110,7 +116,9 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
   } else if (command==fSetCrystalNumberYCmd){
     fDetectorConstruction->SetCrystalNumberY(fSetCrystalNumberYCmd->GetNewIntValue(newValue));
   } else if (command == fSetPmtDiameter){
-	fDetectorConstruction->SetPmtDiameter(fSetGapCmd->GetNewDoubleValue(newValue));
+	fDetectorConstruction->SetPmtDiameter(fSetPmtDiameter->GetNewDoubleValue(newValue));
+  } else if (command == fSetGreaseThickness){
+	fDetectorConstruction->SetGreaseThickness(fSetGreaseThickness->GetNewDoubleValue(newValue));
   }
 }
 

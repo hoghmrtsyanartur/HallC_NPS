@@ -92,6 +92,9 @@ public:
   void SetPmtDiameter(G4double diameter);
   G4double GetPmtDiameter();
 
+  void SetGreaseThickness(G4double thickness);
+  G4double GetGreaseThickness();
+
   // Energy deposit getter
   G4VPrimitiveScorer* GetEdepScorer();
 
