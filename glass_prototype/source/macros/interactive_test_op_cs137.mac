@@ -23,7 +23,7 @@
 
 # PMT window diameter (18 mm for R4125, 56 mm for H3177)
 /detector/setPmtDiameter 56 mm
-/detector/setGreaseThickness 0 mm
+/detector/setGreaseThickness 0.2 mm
 
 /histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape false

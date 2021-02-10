@@ -30,6 +30,7 @@
 #include "EventAction.hh"
 #include "OpticalEventAction.hh"
 #include "OpticalSteppingAction.hh"
+#include "OpticalStackingAction.hh"
 #include "ActionInitialization.hh"
 #include "RunAction.hh"
 #include "PrimaryGeneratorAction.hh"
@@ -91,8 +92,12 @@ void ActionInitialization::Build() const
   SetUserAction(opticalEventAction);
 
   // Stepping action detects optical photons during the event and stores them in opticalEventAction
-  OpticalSteppingAction* opticalSteppingAction = new OpticalSteppingAction(histoManager, opticalEventAction);
+  OpticalSteppingAction* opticalSteppingAction = new OpticalSteppingAction(opticalEventAction);
   SetUserAction(opticalSteppingAction);
+
+  // Optical Stacking Action detects number of optical photons (charankov vs scintillation)
+  OpticalStackingAction* opticalStackingAction = new OpticalStackingAction(opticalEventAction);
+  SetUserAction(opticalStackingAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

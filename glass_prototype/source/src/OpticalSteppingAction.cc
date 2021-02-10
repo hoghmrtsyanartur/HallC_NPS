@@ -15,8 +15,8 @@
 #include "QuantumEfficiency.hh"
 #include "G4OpticalPhoton.hh"
 
-OpticalSteppingAction::OpticalSteppingAction(HistoManager* histoManager, OpticalEventAction* opticalEventAction) :
-  G4UserSteppingAction(), fHistoManager(histoManager), fOpticalEventAction(opticalEventAction) {
+OpticalSteppingAction::OpticalSteppingAction(OpticalEventAction* opticalEventAction) :
+  G4UserSteppingAction(), fOpticalEventAction(opticalEventAction) {
 }
 
 OpticalSteppingAction::~OpticalSteppingAction() {

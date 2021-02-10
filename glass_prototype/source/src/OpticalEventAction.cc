@@ -47,6 +47,9 @@ OpticalEventAction::OpticalEventAction(HistoManager* histoManager) : G4UserEvent
                                                            fHistoManager(histoManager) {
   // Initialize array for numbers of charge carriers in every crystal
   fNumberOfPhotoElectrons = new G4double[G4Utils::getNCrystals()];
+  fTotalPhotons = 0;
+  fScintillationPhotons = 0;
+  fCherenkovPhotons = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -61,6 +64,12 @@ void OpticalEventAction::BeginOfEventAction(const G4Event* event){
   for (int i = 0; i < G4Utils::getNCrystals(); i++){
     fNumberOfPhotoElectrons[i] = 0;
   }
+
+  // Zero number of optical photons
+  fTotalPhotons = 0;
+  fScintillationPhotons = 0;
+  fCherenkovPhotons = 0;
+
   // Clear processed track ids
   // processedTrackIds.clear();
 }
@@ -72,12 +81,29 @@ void OpticalEventAction::EndOfEventAction(const G4Event* event){
   for (int i = 0; i < G4Utils::getNCrystals(); i++){
     std::cout << "Crystal " << i << ": numberOfPhotoElectrons = " << fNumberOfPhotoElectrons[i] << std::endl;
   }
+
+  G4cout << "Total number of optical photons produced in this event : " << fTotalPhotons << G4endl;
+  G4cout << "Number of Scintillation photons produced in this event : " << fScintillationPhotons << G4endl;
+  G4cout << "Number of Cerenkov photons produced in this event      : " << fCherenkovPhotons << G4endl;
+
   // In the end of the action pass total accumulated number of the PE in each crystal to HistoManager
-  fHistoManager->FillNtuplePE(fNumberOfPhotoElectrons);
+  fHistoManager->FillNtupleOptical(fNumberOfPhotoElectrons, fTotalPhotons, fScintillationPhotons, fCherenkovPhotons);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void OpticalEventAction::IncreasePENumber(Double_t number, Int_t crystalIndex){
   fNumberOfPhotoElectrons[crystalIndex] += number;
+}
+
+void OpticalEventAction::IncreaseScintillationNumber(){
+  fScintillationPhotons++;
+}
+
+void OpticalEventAction::IncreaseCherenkovNumber(){
+  fCherenkovPhotons++;
+}
+
+void OpticalEventAction::IncreaseOpNumber(){
+  fTotalPhotons++;
 }

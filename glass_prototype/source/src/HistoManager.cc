@@ -72,7 +72,7 @@ HistoManager::HistoManager()
     fWriteWorldEscape(false),
     fRootFile(0),
     fNtupleCrystals(0),
-    fNtupleCrystalsPE(0),
+    fNtupleOptical(0),
     fNtuplePMT(0),
 //    fNtuple_Flux(0),
     fNtupleOutOfWorld(0),
@@ -83,6 +83,7 @@ HistoManager::HistoManager()
     // PS: use the initializer list for array members (C++11)
     fEdep {0},
     fEdepTotal(0),
+		fPE(0),
 //    fOP_sc {0},
 //    fOP_ce {0},
 //    fOP_cover {0},
@@ -99,13 +100,16 @@ HistoManager::HistoManager()
     fOutWorldX(0),
     fOutWorldY(0),
     fOutWorldZ(0),
+	  fTotalPhotonsPerEvent(0),
+		fScintPhotonsPerEvent(0),
+		fCherePhotonsPerEvent(0),
     fPdg(0),
     pdgNameMap(new TMap())
 //    fTotalGPSEnergy(new RooRealVar("totalGpsEnergy", "Total energy shot from source", 0, "MeV"))
 {
   // Custom UImessenger for Detector geometry modification
   fHistoManagerMessenger = new HistoManagerMessenger(this);
-//  fPdgVector.clear();
+//  fPdgVectfOutWorldZor.clear();
 }
 
 HistoManager* HistoManager::instance = NULL;
@@ -163,11 +167,14 @@ void HistoManager::Book()
   // Create variable length array for energy deposition
   fPE = new G4double[G4Utils::getNCrystals()];
 
-  fNtupleCrystalsPE = new TTree("tree_crystals_pe","Number of PE in crystals");
+  fNtupleOptical = new TTree("tree_crystals_pe","Tree for optical photons data");
   // Writing arrays to tree:
   // https://root.cern.ch/root/htmldoc/guides/users-guide/Trees.html#cb22
   TString peLeafList = TString::Format("fPE[%d]/D", G4Utils::getNCrystals());
-  fNtupleCrystalsPE->Branch("pe", fPE, peLeafList.Data());
+  fNtupleOptical->Branch("pe", fPE, peLeafList.Data());
+  fNtupleOptical->Branch("total", &fTotalPhotonsPerEvent, "fTotalPhotonsPerEvent/I");
+  fNtupleOptical->Branch("cherenkov", &fScintPhotonsPerEvent, "fCherePhotonsPerEvent/I");
+  fNtupleOptical->Branch("scintillation", &fCherePhotonsPerEvent, "fScintPhotonsPerEvent/I");
 
   if (fWriteStepPoints){
     // ... rudimentary Ho San's code
@@ -226,13 +233,18 @@ void HistoManager::FillNtupleEnergyDep(G4double* energyDeposition){
   fNtupleCrystals->Fill();
 }
 
-void HistoManager::FillNtuplePE(G4double* peNumber){
+void HistoManager::FillNtupleOptical(G4double* peNumber, G4int totalOptical, G4int scintOptical, G4int cherenkOptical){
   // Copy energy deposition values
   for (G4int i = 0; i < G4Utils::getNCrystals(); i++){
     fPE[i] = peNumber[i];
   }
+  // Copy optical photon numbers
+  fTotalPhotonsPerEvent = totalOptical;
+  fScintPhotonsPerEvent = scintOptical;
+  fCherePhotonsPerEvent = cherenkOptical;
+
   // Save pair of particle pdg and name. Will write this to file later.
-  fNtupleCrystalsPE->Fill();
+  fNtupleOptical->Fill();
 }
 
 //void HistoManager::FillNtuple()

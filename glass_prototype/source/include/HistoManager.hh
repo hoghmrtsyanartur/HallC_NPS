@@ -67,7 +67,7 @@ public:
 //  void FillNtuple();
 //  void FillNtuple_Flux();
   void FillNtupleEnergyDep(G4double* energy);
-  void FillNtuplePE(G4double* peNumber);
+  void FillNtupleOptical(G4double* peNumber, G4int totalPhotons, G4int scintPhotons, G4int cherenkPhotons);
   void FillNtupleOutOfWorld(G4double energy, G4double x, G4double y, G4double z, G4int pdg, const char* particleName);
   void Save();
 
@@ -103,7 +103,8 @@ private:
 
   TFile*   fRootFile;
   TTree*   fNtupleCrystals;
-  TTree*   fNtupleCrystalsPE; // ntuple for number of charge carriers
+  TTree*   fNtupleOptical; // ntuple for number of charge carriers
+
   TTree*   fNtuplePMT;
 //  TTree*   fNtuple_Flux;
   TTree*   fNtupleOutOfWorld;
@@ -116,7 +117,11 @@ private:
   G4double* fEdep;
   G4double fEdepTotal;
 
+  // Photo-electrons counter
   G4double* fPE;
+
+  // Optical photons counters
+
 
   //  G4int    fOP_sc[MaxNtuple];
 //  G4int    fOP_ce[MaxNtuple];
@@ -137,6 +142,11 @@ private:
   G4double fOutWorldX;
   G4double fOutWorldY;
   G4double fOutWorldZ;
+
+  G4int fTotalPhotonsPerEvent;
+  G4int fScintPhotonsPerEvent;
+  G4int fCherePhotonsPerEvent;
+
   G4int fPdg;
   TMap* pdgNameMap;
 //  std::vector<int> fPdgVector;

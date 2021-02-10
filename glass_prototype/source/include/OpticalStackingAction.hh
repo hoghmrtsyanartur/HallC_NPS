@@ -23,48 +23,34 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file OpNovice/include/OpticalStackingAction.hh
+/// \brief Definition of the OpticalStackingAction class
 //
-/// \file OpticalEventAction.hh
-/// \brief Definition of the OpticalEventAction class
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef OpticalEventAction_h
-#define OpticalEventAction_h 1
+#ifndef OpticalStackingAction_h
+#define OpticalStackingAction_h 1
 
-#include "G4UserEventAction.hh"
-
-#include "G4THitsMap.hh"
 #include "globals.hh"
-#include "HistoManager.hh"
-/// Event action class
-///
-/// In EndOfOpticalEventAction(), it prints the accumulated quantities of the energy
-/// deposit and track lengths of charged particles in Absober and Gap layers
-/// stored in the hits collections.
+#include "G4UserStackingAction.hh"
+#include "OpticalEventAction.hh"
 
-class OpticalEventAction : public G4UserEventAction
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+class OpticalStackingAction : public G4UserStackingAction
 {
-public:
-  OpticalEventAction(HistoManager* histoManager);
-  virtual ~OpticalEventAction();
+ public:
+  OpticalStackingAction(OpticalEventAction* opticalEventAction);
+  ~OpticalStackingAction();
 
-  virtual void  BeginOfEventAction(const G4Event* event);
-  virtual void    EndOfEventAction(const G4Event* event);
+  G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack) override;
+  void NewStage() override;
+  void PrepareNewEvent() override;
 
-  void IncreasePENumber(Double_t number, Int_t crystalIndex);
-  void IncreaseScintillationNumber();
-  void IncreaseCherenkovNumber();
-  void IncreaseOpNumber();
-
-  // std::vector<G4int> processedTrackIds;
-
-private:
-  HistoManager* fHistoManager;
-  G4double* fNumberOfPhotoElectrons;
-
-  // For counting of the scintillation/cherenkov photons
-  G4int fTotalPhotons;
-  G4int fScintillationPhotons;
-  G4int fCherenkovPhotons;
+ private:
+  OpticalEventAction* fOpticalEventAction;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
