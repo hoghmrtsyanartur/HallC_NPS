@@ -62,12 +62,12 @@
 /gps/pos/centre 0.  0. -40. mm
 /gps/direction 0. 0. 1.
 
-/gps/source/add 1
-/gps/particle e-
-/gps/pos/type Point
-/gps/ene/mono 0.512 MeV
-/gps/pos/centre 0.  0. -40. mm
-/gps/direction 0. 0. 1.
+#/gps/source/add 1
+#/gps/particle e-
+#/gps/pos/type Point
+#/gps/ene/mono 0.512 MeV
+#/gps/pos/centre 0.  0. -40. mm
+#/gps/direction 0. 0. 1.
 
 /gps/source/list
 
@@ -94,7 +94,7 @@
 #/vis/scene/add/axes 0 0 0 10 cm
 #/vis/scene/endOfEventAction accumulate 10
 
-/run/beamOn 20
+/run/beamOn 1
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 
