@@ -10,8 +10,7 @@
 
 #include <G4UImessenger.hh>
 #include <HistoManager.hh>
-#include <G4UIcmdWithAString.hh>
-#include <G4UIcommand.hh>
+#include <G4UIcmdWithABool.hh>
 
 class HistoManagerMessenger : G4UImessenger {
 public:
@@ -25,9 +24,9 @@ private:
   HistoManager* fHistoManager;
 
   G4UIdirectory* fDirectory;
-  G4UIcmdWithAString* fileNameCommand;
-  G4UIcmdWithAString* writeStepPointsCommand;
-  G4UIcmdWithAString* writeWorldEscapeCommand;
+  // G4UIcmdWithAString* fileNameCommand;
+  // G4UIcmdWithAString* writeStepPointsCommand;
+  G4UIcmdWithABool* writeWorldEscapeCommand;
 };
 
 #endif /* SRC_HISTOMANAGERMESSENGER_HH_ */

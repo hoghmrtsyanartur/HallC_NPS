@@ -82,11 +82,12 @@ public:
   G4String getFileNamePattern();
   G4String getFileName();
 
-  void setWriteStepPoints(G4bool value);
-  void setWriteWorldEscape(G4bool value);
+//  void setWriteStepPoints(G4bool value);
+//  G4bool getWriteStepPoints();
 
-  G4bool getWriteStepPoints();
+  void setWriteWorldEscape(G4bool value);
   G4bool getWriteWorldEscape();
+
   //  void BookBeginOfEventAction();
 
   G4double getTotalWorldOutEnergy();
@@ -98,7 +99,9 @@ private:
   HistoManagerMessenger* fHistoManagerMessenger;
   G4String fFileNamePattern;
 
-  G4bool fWriteStepPoints;
+//  G4bool fWriteStepPoints;
+
+  // Controls if world escape locations are saved to output ROOT file
   G4bool fWriteWorldEscape;
 
   TFile*   fRootFile;

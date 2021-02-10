@@ -62,13 +62,16 @@
 
 #include "TSystem.h"
 
+#include <iostream>
+#include <sstream>
+
 #pragma GCC diagnostic pop
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HistoManager::HistoManager()
   : fFileNamePattern("file_x_%dmm_y_%dmm_z_%dmm_%.1fGeV.root"),
-    fWriteStepPoints(false),
+//    fWriteStepPoints(false),
     fWriteWorldEscape(false),
     fRootFile(0),
     fNtupleCrystals(0),
@@ -176,9 +179,9 @@ void HistoManager::Book()
   fNtupleOptical->Branch("cherenkovOpPerEvent", &fCherePhotonsPerEvent, "fCherePhotonsPerEvent/I");
   fNtupleOptical->Branch("scintillationOpPerEvent", &fScintPhotonsPerEvent, "fScintPhotonsPerEvent/I");
 
-  if (fWriteStepPoints){
-    // ... rudimentary Ho San's code
-  }
+//  if (fWriteStepPoints){
+//    // ... rudimentary Ho San's code
+//  }
 
   if (fWriteWorldEscape){
     // Detect energy of the particles that leave the world
@@ -406,31 +409,29 @@ G4String HistoManager::getFileNamePattern(){
 
 G4String HistoManager::getFileName(){
   // Construct filename
-  G4String crystalMaterial = G4Utils::getCrystalMaterial();
-  G4int numX = G4Utils::getNCrystalsX();
-  G4int numY = G4Utils::getNCrystalsY();
-  G4double x = G4Utils::getCrystalX();
-  G4double y = G4Utils::getCrystalY();
-  G4double z = G4Utils::getCrystalZ();
-  G4double gunEnergy = G4Utils::getGPSMonoEnergy();
-  G4int numberOfEvents = G4Utils::getNumberOfEvents();
-  TString fileName = TString::Format(fFileNamePattern.c_str(), crystalMaterial.c_str(), numX, numY, x, y, z, gunEnergy/1E3, numberOfEvents);
-  TString outputFileNamePath = "./output/" + fileName;
-  G4String fileNameString = G4String(outputFileNamePath.Data());
+	std::stringstream buffer;
+	buffer << "./output/";
+	buffer << G4Utils::getCrystalMaterial() << "-";
+	buffer << G4Utils::getNCrystalsX() << "x" << G4Utils::getNCrystalsY() << "-";
+	buffer << G4Utils::getCrystalX() << "mm-" << G4Utils::getCrystalY() << "mm-" << G4Utils::getCrystalZ() << "mm-";
+	buffer << G4Utils::getGPSMonoEnergy()/1E3 << "GeV-";
+	buffer << G4Utils::getNumberOfEvents() << "events.root" << std::endl;
+
+  G4String fileNameString = buffer.str();
   return fileNameString;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void HistoManager::setWriteStepPoints(G4bool value){
-  fWriteStepPoints = value;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4bool HistoManager::getWriteStepPoints(){
-  return fWriteStepPoints;
-}
+////....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//
+//void HistoManager::setWriteStepPoints(G4bool value){
+//  fWriteStepPoints = value;
+//}
+//
+////....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//
+//G4bool HistoManager::getWriteStepPoints(){
+//  return fWriteStepPoints;
+//}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

@@ -25,7 +25,6 @@
 /detector/setPmtDiameter 18 mm
 /detector/setGreaseThickness 0.2 mm
 
-/histoManager/setOutputFileNamePattern %s-%dx%d-%.2fmm-%.2fmm-%.2fmm_%.1fGeV_%devents.root
 /histoManager/writeWorldEscape false
 
 #/process/optical/verbose 2
