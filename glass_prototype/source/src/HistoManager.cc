@@ -173,8 +173,8 @@ void HistoManager::Book()
   TString peLeafList = TString::Format("fPE[%d]/D", G4Utils::getNCrystals());
   fNtupleOptical->Branch("pe", fPE, peLeafList.Data());
   fNtupleOptical->Branch("total", &fTotalPhotonsPerEvent, "fTotalPhotonsPerEvent/I");
-  fNtupleOptical->Branch("cherenkov", &fScintPhotonsPerEvent, "fCherePhotonsPerEvent/I");
-  fNtupleOptical->Branch("scintillation", &fCherePhotonsPerEvent, "fScintPhotonsPerEvent/I");
+  fNtupleOptical->Branch("cherenkov", &fCherePhotonsPerEvent, "fCherePhotonsPerEvent/I");
+  fNtupleOptical->Branch("scintillation", &fScintPhotonsPerEvent, "fScintPhotonsPerEvent/I");
 
   if (fWriteStepPoints){
     // ... rudimentary Ho San's code
