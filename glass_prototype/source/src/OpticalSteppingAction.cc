@@ -65,6 +65,9 @@ void OpticalSteppingAction::UserSteppingAction(const G4Step* step) {
               << ". E=" << energy << " eV, wl="<< waveLength << " nm, " << "eff=" << efficiency << " %" << std::endl;
   }
 
+  // Increase count of optical photons in correspondent photocathode
+  fOpticalEventAction->IncreaseOPNumber(copyNumber);
+
   // Save number of photo-electrons to OpticalEventAction
   G4double peNumber = efficiency/100;
   fOpticalEventAction->IncreasePENumber(peNumber, copyNumber);

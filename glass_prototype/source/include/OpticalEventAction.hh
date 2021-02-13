@@ -50,6 +50,7 @@ public:
   virtual void  BeginOfEventAction(const G4Event* event);
   virtual void    EndOfEventAction(const G4Event* event);
 
+  void IncreaseOPNumber(Int_t crystalIndex);
   void IncreasePENumber(Double_t number, Int_t crystalIndex);
   void IncreaseScintillationNumber();
   void IncreaseCherenkovNumber();
@@ -59,6 +60,8 @@ public:
 
 private:
   HistoManager* fHistoManager;
+
+  G4int* fNumberOfOpticalPhotons; // that ended up on the cathode
   G4double* fNumberOfPhotoElectrons;
 
   // For counting of the scintillation/cherenkov photons

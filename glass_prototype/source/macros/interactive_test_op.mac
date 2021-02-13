@@ -9,7 +9,7 @@
 # /testhadr/Physics optical
 
 # Crystal size along X, Y and Z axis
-/detector/setCrystalSize 20 20 200 mm
+/detector/setCrystalSize 10 10 5 mm
 
 # Crystal material - currently supported values are BaGdSiO, BaSi2O5, PbWO4
 /detector/setCrystalMaterial PbWO4
@@ -55,10 +55,10 @@
 
 # Incident particle type, energy and direction
 /gps/source/intensity 1
-/gps/particle gamma
+/gps/particle e-
 /gps/pos/type Point
-/gps/ene/mono 0.5 MeV
-/gps/pos/centre 0.  0. -40. mm
+/gps/ene/mono 1 MeV
+/gps/pos/centre 0.  0. 2. mm
 /gps/direction 0. 0. 1.
 # /gps/source/multiplevertex true
 /gps/source/list
@@ -84,9 +84,9 @@
 /vis/drawVolume
 /vis/scene/add/trajectories
 #/vis/scene/add/axes 0 0 0 10 cm
-#/vis/scene/endOfEventAction accumulate 10
+/vis/scene/endOfEventAction accumulate 3
 
-/run/beamOn 10
+/run/beamOn 1
 
 # https://geant4.web.cern.ch/sites/geant4.web.cern.ch/files/geant4/collaboration/workshops/users2002/talks/README.built_in_commands.txt
 

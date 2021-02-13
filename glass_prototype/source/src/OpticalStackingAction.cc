@@ -53,10 +53,10 @@ OpticalStackingAction::~OpticalStackingAction() {}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ClassificationOfNewTrack OpticalStackingAction::ClassifyNewTrack(const G4Track* aTrack) {
-  if(aTrack->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition())
-  {  // particle is optical photon
-    if(aTrack->GetParentID() > 0)
-    {  // particle is secondary
+  if(aTrack->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()){
+  	// particle is optical photon
+    if(aTrack->GetParentID() > 0) {
+    	// particle is secondary
       if(aTrack->GetCreatorProcess()->GetProcessName() == "Scintillation"){
       	fOpticalEventAction->IncreaseScintillationNumber();
       }

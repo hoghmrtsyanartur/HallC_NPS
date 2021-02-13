@@ -86,6 +86,7 @@ HistoManager::HistoManager()
     // PS: use the initializer list for array members (C++11)
     fEdep {0},
     fEdepTotal(0),
+		fOP(0),
 		fPE(0),
 //    fOP_sc {0},
 //    fOP_ce {0},
@@ -167,14 +168,19 @@ void HistoManager::Book()
   TString eDepLeafList = TString::Format("fEdep[%d]/D", G4Utils::getNCrystals());
   fNtupleCrystals->Branch("edep", fEdep, eDepLeafList.Data());
 
-  // Create variable length array for energy deposition
+  // Arrays for OP and PE ended up on the photocathodes
+  fOP = new G4double[G4Utils::getNCrystals()];
   fPE = new G4double[G4Utils::getNCrystals()];
 
   fNtupleOptical = new TTree("tree_optical","Tree for optical photons data");
   // Writing arrays to tree:
   // https://root.cern.ch/root/htmldoc/guides/users-guide/Trees.html#cb22
-  TString peLeafList = TString::Format("fPE[%d]/D", G4Utils::getNCrystals());
-  fNtupleOptical->Branch("pe", fPE, peLeafList.Data());
+  TString leafListOP = TString::Format("fOP[%d]/I", G4Utils::getNCrystals());
+  fNtupleOptical->Branch("op", fOP, leafListOP.Data());
+
+  TString leafListPE = TString::Format("fPE[%d]/D", G4Utils::getNCrystals());
+  fNtupleOptical->Branch("pe", fPE, leafListPE.Data());
+
   fNtupleOptical->Branch("totalOpPerEvent", &fTotalPhotonsPerEvent, "fTotalPhotonsPerEvent/I");
   fNtupleOptical->Branch("cherenkovOpPerEvent", &fCherePhotonsPerEvent, "fCherePhotonsPerEvent/I");
   fNtupleOptical->Branch("scintillationOpPerEvent", &fScintPhotonsPerEvent, "fScintPhotonsPerEvent/I");
@@ -236,10 +242,11 @@ void HistoManager::FillNtupleEnergyDep(G4double* energyDeposition){
   fNtupleCrystals->Fill();
 }
 
-void HistoManager::FillNtupleOptical(G4double* peNumber, G4int totalOptical, G4int scintOptical, G4int cherenkOptical){
-  // Copy energy deposition values
+void HistoManager::FillNtupleOptical(G4int* opNumber, G4double* peNumber, G4int totalOptical, G4int scintOptical, G4int cherenkOptical){
+  // Copy photoelectron numbers and
   for (G4int i = 0; i < G4Utils::getNCrystals(); i++){
-    fPE[i] = peNumber[i];
+  	fOP[i] = opNumber[i];
+  	fPE[i] = peNumber[i];
   }
   // Copy optical photon numbers
   fTotalPhotonsPerEvent = totalOptical;
@@ -415,7 +422,7 @@ G4String HistoManager::getFileName(){
 	buffer << G4Utils::getNCrystalsX() << "x" << G4Utils::getNCrystalsY() << "-";
 	buffer << G4Utils::getCrystalX() << "mm-" << G4Utils::getCrystalY() << "mm-" << G4Utils::getCrystalZ() << "mm-";
 	buffer << G4Utils::getGPSMonoEnergy()/1E3 << "GeV-";
-	buffer << G4Utils::getNumberOfEvents() << "events.root" << std::endl;
+	buffer << G4Utils::getNumberOfEvents() << "events.root";
 
   G4String fileNameString = buffer.str();
   return fileNameString;
@@ -429,9 +436,9 @@ G4String HistoManager::getFileName(){
 //
 ////....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //
-//G4bool HistoManager::getWriteStepPoints(){
+// G4bool HistoManager::getWriteStepPoints(){
 //  return fWriteStepPoints;
-//}
+// }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

@@ -67,7 +67,7 @@ public:
 //  void FillNtuple();
 //  void FillNtuple_Flux();
   void FillNtupleEnergyDep(G4double* energy);
-  void FillNtupleOptical(G4double* peNumber, G4int totalPhotons, G4int scintPhotons, G4int cherenkPhotons);
+  void FillNtupleOptical(G4int* opNumber, G4double* peNumber, G4int totalPhotons, G4int scintPhotons, G4int cherenkPhotons);
   void FillNtupleOutOfWorld(G4double energy, G4double x, G4double y, G4double z, G4int pdg, const char* particleName);
   void Save();
 
@@ -121,6 +121,7 @@ private:
   G4double fEdepTotal;
 
   // Photo-electrons counter
+  G4double* fOP;
   G4double* fPE;
 
   // Optical photons counters

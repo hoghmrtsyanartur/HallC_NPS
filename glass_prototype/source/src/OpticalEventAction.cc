@@ -46,7 +46,8 @@
 OpticalEventAction::OpticalEventAction(HistoManager* histoManager) : G4UserEventAction(),
                                                            fHistoManager(histoManager) {
   // Initialize array for numbers of charge carriers in every crystal
-  fNumberOfPhotoElectrons = new G4double[G4Utils::getNCrystals()];
+	fNumberOfOpticalPhotons = new G4int[G4Utils::getNCrystals()];
+	fNumberOfPhotoElectrons = new G4double[G4Utils::getNCrystals()];
   fTotalPhotons = 0;
   fScintillationPhotons = 0;
   fCherenkovPhotons = 0;
@@ -59,9 +60,11 @@ OpticalEventAction::~OpticalEventAction(){}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void OpticalEventAction::BeginOfEventAction(const G4Event* event){
-  std::cout << "OpticalEventAction::BeginOfOpticalEventAction" << "\n" << "  Event: " << event->GetEventID() << std::endl;
+  std::cout << std::endl << "OpticalEventAction::BeginOfOpticalEventAction" << "\n" << "  Event: " << event->GetEventID() << std::endl;
+
   // In the beginning of the action set number of the PE in each crystal to zero
   for (int i = 0; i < G4Utils::getNCrystals(); i++){
+  	fNumberOfOpticalPhotons[i] = 0;
     fNumberOfPhotoElectrons[i] = 0;
   }
 
@@ -77,20 +80,24 @@ void OpticalEventAction::BeginOfEventAction(const G4Event* event){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void OpticalEventAction::EndOfEventAction(const G4Event* event){
-  std::cout << "OpticalEventAction::EndOfOpticalEventAction" << "\n" << "  Event: " << event->GetEventID() << std::endl;
   for (int i = 0; i < G4Utils::getNCrystals(); i++){
-    std::cout << "Crystal " << i << ": numberOfPhotoElectrons = " << fNumberOfPhotoElectrons[i] << std::endl;
+    std::cout << "Crystal " << i << ": numberOfOpticalPhotonps = " << fNumberOfOpticalPhotons[i] << std::endl;
+    std::cout << "        " << i << "  numberOfPhotoElectrons = " << fNumberOfPhotoElectrons[i] << std::endl;
   }
 
-  std::cout << "Total number of optical photons produced in this event : " << fTotalPhotons << std::endl;
-  std::cout << "Number of Scintillation photons produced in this event : " << fScintillationPhotons << std::endl;
-  std::cout << "Number of Cerenkov photons produced in this event      : " << fCherenkovPhotons << std::endl;
+  std::cout << "Total number of optical photons produced in event " << event->GetEventID() << ": " << fTotalPhotons << std::endl;
+  std::cout << "Number of Scintillation photons produced in event " << event->GetEventID() << ": " << fScintillationPhotons << std::endl;
+  std::cout << "Number of Cerenkov photons produced in event " << event->GetEventID() << ": " << fCherenkovPhotons << std::endl;
 
   // In the end of the action pass total accumulated number of the PE in each crystal to HistoManager
-  fHistoManager->FillNtupleOptical(fNumberOfPhotoElectrons, fTotalPhotons, fScintillationPhotons, fCherenkovPhotons);
+  fHistoManager->FillNtupleOptical(fNumberOfOpticalPhotons, fNumberOfPhotoElectrons, fTotalPhotons, fScintillationPhotons, fCherenkovPhotons);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void OpticalEventAction::IncreaseOPNumber(Int_t crystalIndex){
+  fNumberOfPhotoElectrons[crystalIndex] ++;
+}
 
 void OpticalEventAction::IncreasePENumber(Double_t number, Int_t crystalIndex){
   fNumberOfPhotoElectrons[crystalIndex] += number;

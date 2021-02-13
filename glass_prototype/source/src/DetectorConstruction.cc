@@ -202,7 +202,8 @@ void DetectorConstruction::DefineMaterials()
   fGreaseMater = Materials::getInstance()->getMaterial("PDMS");
 
   // PMT case
-  fPMTCaseMater = Materials::getInstance()->getMaterial("borosilicate"); // G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
+  // fPMTCaseMater = Materials::getInstance()->getMaterial("borosilicate");
+  fPMTCaseMater = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
 
   // PMT window
   fPMTWindowMater = Materials::getInstance()->getMaterial("borosilicate");
@@ -248,8 +249,10 @@ void  DetectorConstruction::ConstructVolumes() {
 
   // GEOMETRY: World volume -> Mother volume
   // Refer to picture
-  G4double single_X = fCrystal_X + 2*fWrapThickness + fGap;
-  G4double single_Y = fCrystal_Y + 2*fWrapThickness + fGap;
+
+  // Single volume either wraps the crystal or pmt itself (if bigger)
+  G4double single_X = std::max(fCrystal_X + 2*fWrapThickness + fGap, (fPMT_window_radius + fPMT_case_thickness)*2);
+  G4double single_Y = std::max(fCrystal_Y + 2*fWrapThickness + fGap, (fPMT_window_radius + fPMT_case_thickness)*2);
   G4double single_Z = fWrapThickness + fCrystal_Z + fGreaseThickness + fPMT_length;
 
   fMom_X = fCrystalNumX*single_X;  // Petr Stepanov: added variable crystal number
@@ -533,8 +536,8 @@ void  DetectorConstruction::ConstructVolumes() {
 
   G4OpticalSurface* opWrapperSurface = new G4OpticalSurface("WrapperSurface");
   opWrapperSurface->SetType(dielectric_LUT);
-  opWrapperSurface->SetFinish(polishedvm2000air);
   opWrapperSurface->SetModel(LUT);
+  opWrapperSurface->SetFinish(polishedvm2000air);
 
   new G4LogicalBorderSurface("WrapperSurface", crystalPos, fWrapPos, opWrapperSurface);
 
@@ -581,7 +584,8 @@ void  DetectorConstruction::ConstructVolumes() {
   lWorld->SetVisAttributes(invisible);
   lMother->SetVisAttributes(invisible);
   lTemp->SetVisAttributes(invisible);
-  lSingle->SetVisAttributes(invisible);
+
+  lSingle->SetVisAttributes(new G4VisAttributes(G4Colour::Gray()));
 
   fLogicCrystal->SetVisAttributes(new G4VisAttributes(G4Colour::Cyan()));
 
